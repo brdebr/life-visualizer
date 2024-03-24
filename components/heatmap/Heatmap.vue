@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col justify-center items-center">
-    <h3 class="text-sm">{{ startDateComputed.year() }}</h3>
+    <h3 class="text-[10px]">{{ startDateComputed.year() }} {{ header }}</h3>
     <svg class="calendar-heatmap" :width="width" :height="height">
       <g :transform="transformMonthsLabel" class="month-labels">
         <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
@@ -29,23 +29,12 @@
               :opacity="day.date.isBefore(dayjs()) ? 0.4 : undefined"
               class="day"
             />
-            <text
-              v-if="dataset?.[day.date.format('YYYY-MM-DD')]?.title === 'Birthday'"
-              :y="day.num * (cellSize + cellMargin) + 8"
-              :x="day.x + 5"
-              text-anchor="middle"
-              class="event-label text-[8px]"
-            >
-              {{ dataset?.[day.date.format('YYYY-MM-DD')].description }}
-            </text>
           </template>
         </g>
       </g>
       <g :transform="transformDaysLabel">
         <text x="0" y="0" class="day-label" text-anchor="end">
-          <tspan x="-5" dy="1" dx="0">Mon</tspan>
-          <tspan x="-5" dy="24" dx="0">Wed</tspan>
-          <tspan x="-5" dy="24" dx="0">Fri</tspan>
+          <tspan v-for="day in weekdayLegend" :key="day.label" :x="day.x" :dy="day.dy" :dx="day.dx">{{ day.label }}</tspan>
         </text>
       </g>
     </svg>
@@ -57,6 +46,7 @@ import type { Dayjs } from 'dayjs';
 export type HeatmapProps = {
   startDate: Dayjs;
   endDate: Dayjs;
+  header?: string;
   dataset?: {
     [key: string]: {
       title: string;
@@ -67,23 +57,43 @@ export type HeatmapProps = {
   height?: number;
 };
 const props = withDefaults(defineProps<HeatmapProps>(), {
-  width: 825,
-  height: 110,
+  width: 676,
+  height: 84,
 });
 
 const dayjs = useDayjs();
 
-const cellSize = 10;
+const cellSize = 8;
 const cellMargin = 2;
 
-const spaceLeft = 40;
-const spaceTop = 10;
+const spaceLeft = 23;
+const spaceTop = 6;
 
 const transformMonthsLabel = `translate(${spaceLeft}, ${spaceTop})`;
-const transformWeeks = `translate(${spaceLeft}, ${spaceTop + 8})`;
-const transformDaysLabel = `translate(${spaceLeft - 10}, ${spaceTop + 15})`;
+const transformWeeks = `translate(${spaceLeft}, ${spaceTop + 5})`;
+const transformDaysLabel = `translate(${spaceLeft - 1}, ${spaceTop + 15})`;
 
 // const weekdayLegend = ['Mon', '', 'Wed', '', 'Fri', '', ''];
+const weekdayLegend = [
+  {
+    label: 'Mon',
+    x: -3,
+    dy: -4,
+    dx: 0,
+  },
+  {
+    label: 'Wed',
+    x: -3,
+    dy: 21,
+    dx: 0,
+  },
+  {
+    label: 'Fri',
+    x: -3,
+    dy: 20,
+    dx: 0,
+  },
+]
 
 const startDateComputed = computed(() => dayjs(props.startDate).startOf('day'));
 const endDateComputed = computed(() => {
@@ -176,7 +186,7 @@ const handleClick = (date: Dayjs) => {
   @apply border;
 
   .month-label {
-    @apply text-[10px];
+    @apply text-[8px];
   }
 
   .year-label {
@@ -184,7 +194,7 @@ const handleClick = (date: Dayjs) => {
   }
 
   .day-label {
-    @apply text-[10px];
+    @apply text-[8px];
   }
 
   .day {

@@ -1,18 +1,23 @@
 <template>
   <div class="mx-auto min-h-[100dvh]">
     <h1 class="text-slate-600 text-center">Life Visualizer</h1>
-    <h1 class="text-slate-600 text-center">Current year {{ percentOfCurrentYear }}</h1>
+    <h1 class="text-slate-600 text-center">Current year: {{ percentOfCurrentYear }}</h1>
+    <h1 class="text-slate-600 text-center">Life: {{ percentOfLife }}</h1>
     <div>
       <Heatmap
         v-bind="{
           startDate: dayjs().startOf('year'),
           endDate: dayjs().endOf('year'),
           dataset: dynamicDataset,
+          width,
+          height,
         }"
       />
     </div>
     <input type="date" v-model="wasBorn" />
     <input type="number" v-model="yearsToLive" />
+    <input type="number" v-model="width" />
+    <input type="number" v-model="height" />
     <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]">
       <Heatmap
         v-for="year in arrayOfLifeYears"
@@ -21,16 +26,29 @@
             startDate: year.startDate,
             endDate: year.endDate,
             dataset: dynamicDataset,
+            header: year.header,
           }"
         />
     </div>
   </div>
 </template>
 <script setup lang="ts">
+const faviconEmoji = '⌛';
+useHead({
+  title: 'Life Visualizer',
+  meta: [
+    { name: 'description', content: 'Little project to visualize your whole life like a github contributions heatmap' }
+  ],
+  link: [
+    { rel: 'icon', href: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2296%22>'+faviconEmoji+'</text></svg>' }
+  ]
+})
 
 const wasBorn = ref('1993-08-09');
-const yearsToLive = ref(4);
+const yearsToLive = ref(5);
 const debouncedYearsToLive = debouncedRef(yearsToLive, 500);
+const width = ref(676);
+const height = ref(84);
 
 const dayjs = useDayjs();
 
@@ -44,11 +62,21 @@ const percentOfCurrentYear = computed(() => {
   return `${((currentDay / diff) * 100).toFixed(2)}%`;
 });
 
+// Will return the percentage of the life, for example, if you were born in 1993-08-09 and today is 2022-08-09 and yearsToLive is 100, it will return 29.52
+const percentOfLife = computed(() => {
+  const startDate = dayjs(wasBorn.value);
+  const endDate = dayjs(wasBorn.value).add(yearsToLive.value, 'year');
+  const diff = endDate.diff(startDate, 'day');
+  const currentDay = dayjs().diff(startDate, 'day');
+  return `${((currentDay / diff) * 100).toFixed(2)}%`;
+});
+
 const arrayOfLifeYears = computed(() => {
   return Array.from({ length: debouncedYearsToLive.value + 1 }, (_, i) => {
     return {
       startDate: dayjs(`${parseInt(wasBorn.value) + i}-01-01`),
       endDate: dayjs(`${parseInt(wasBorn.value) + i}-12-31`),
+      header: `- [ ${i} ]`,
     }
   });
 });
