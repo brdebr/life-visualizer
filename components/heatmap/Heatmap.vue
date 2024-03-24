@@ -21,7 +21,7 @@
             <rect
               @click="handleClick(day.date)"
               :data-value="day.date.format('DD/MM/YYYY')"
-              :y="day.num * (cellSize + cellMargin)"
+              :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.date.day()) ? 1 : 0)"
               :x="day.x"
               :width="cellSize"
               :height="cellSize"
@@ -57,16 +57,17 @@ export type HeatmapProps = {
   height?: number;
 };
 const props = withDefaults(defineProps<HeatmapProps>(), {
-  width: 676,
-  height: 84,
+  width: 419,
+  height: 57,
 });
 
 const dayjs = useDayjs();
+const weekEndDays = [0, 6];
 
-const cellSize = 8;
-const cellMargin = 2;
+const cellSize = 5;
+const cellMargin = 1;
 
-const spaceLeft = 23;
+const spaceLeft = 22;
 const spaceTop = 6;
 
 const transformMonthsLabel = `translate(${spaceLeft}, ${spaceTop})`;
@@ -84,13 +85,19 @@ const weekdayLegend = [
   {
     label: 'Wed',
     x: -3,
-    dy: 21,
+    dy: 11,
     dx: 0,
   },
   {
     label: 'Fri',
     x: -3,
-    dy: 20,
+    dy: 12,
+    dx: 0,
+  },
+  {
+    label: 'Sun',
+    x: -3,
+    dy: 12,
     dx: 0,
   },
 ]

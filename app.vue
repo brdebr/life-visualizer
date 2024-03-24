@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto min-h-[100dvh]">
+  <div class="mx-auto min-h-[100dvh] pt-3 pb-10">
     <h1 class="text-slate-600 text-center">Life Visualizer</h1>
     <h1 class="text-slate-600 text-center">Current year: {{ percentOfCurrentYear }}</h1>
     <h1 class="text-slate-600 text-center">Life: {{ percentOfLife }}</h1>
@@ -47,8 +47,8 @@ useHead({
 const wasBorn = ref('1993-08-09');
 const yearsToLive = ref(5);
 const debouncedYearsToLive = debouncedRef(yearsToLive, 500);
-const width = ref(676);
-const height = ref(84);
+const width = ref(420);
+const height = ref(56);
 
 const dayjs = useDayjs();
 
@@ -76,7 +76,7 @@ const arrayOfLifeYears = computed(() => {
     return {
       startDate: dayjs(`${parseInt(wasBorn.value) + i}-01-01`),
       endDate: dayjs(`${parseInt(wasBorn.value) + i}-12-31`),
-      header: `- [ ${i} ]`,
+      header: `- [ ${i} years old ]`,
     }
   });
 });
