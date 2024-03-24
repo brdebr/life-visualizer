@@ -5,5 +5,12 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@nuxt/ui',
+    'dayjs-nuxt',
   ],
+  dayjs: {
+    locales: ['es', 'en'],
+    plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear'],
+    defaultLocale: 'en',
+    defaultTimezone: 'Europe/Madrid',
+  }
 })
