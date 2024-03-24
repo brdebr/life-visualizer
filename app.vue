@@ -1,9 +1,8 @@
 <template>
   <div class="mx-auto min-h-[100dvh] pt-3 pb-10">
-    <h1 class="text-slate-600 text-center">Life Visualizer</h1>
-    <h1 class="text-slate-600 text-center">Current year: {{ percentOfCurrentYear }}</h1>
-    <h1 class="text-slate-600 text-center">Life: {{ percentOfLife }}</h1>
-    <div>
+    <h1 class="text-slate-800 text-lg font-semibold tracking-wide mb-2 text-center">Life Visualizer</h1>
+    <h2 class="text-slate-600 text-center">You are at: {{ percentOfLife }} of your life</h2>
+    <div class="my-3">
       <Heatmap
         v-bind="{
           startDate: dayjs().startOf('year'),
@@ -11,6 +10,7 @@
           dataset: dynamicDataset,
           width,
           height,
+          header: ` - currently at ${percentOfCurrentYear}`
         }"
       />
     </div>
@@ -70,6 +70,16 @@ const percentOfLife = computed(() => {
   const currentDay = dayjs().diff(startDate, 'day');
   return `${((currentDay / diff) * 100).toFixed(2)}%`;
 });
+
+// Amount of sprints to lived/to live, an sprint is two weeks, for example if you were born in 1993-08-09 and today is 2022-08-09 and yearsToLive is 100, it will return the string "1452/7300"
+const sprintsToLive = computed(() => {
+  const startDate = dayjs(wasBorn.value);
+  const endDate = dayjs(wasBorn.value).add(yearsToLive.value, 'year');
+  const diff = endDate.diff(startDate, 'week');
+  const currentDay = dayjs().diff(startDate, 'week');
+  return `${currentDay}/${diff}`;
+});
+
 
 const arrayOfLifeYears = computed(() => {
   return Array.from({ length: debouncedYearsToLive.value + 1 }, (_, i) => {

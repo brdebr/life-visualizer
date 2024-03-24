@@ -166,8 +166,8 @@ const monthsLabels = computed(() => {
 
 const colorsMap = {
   NO_DATA: '#e5e7eb',
-  PERSONAL: '#bfdbfe',
-  HISTORICAL: '#134e4a',
+  PERSONAL: '#2563eb',
+  HISTORICAL: '#4d7c0f',
 }
 
 const getDayColor = (date: Dayjs) => {
