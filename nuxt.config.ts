@@ -9,8 +9,8 @@ export default defineNuxtConfig({
   ],
   dayjs: {
     locales: ['es', 'en'],
-    plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear'],
+    plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear', 'isBetween', 'isoWeek'],
     defaultLocale: 'en',
-    defaultTimezone: 'Europe/Madrid',
+    defaultTimezone: 'UTC',
   }
 })
