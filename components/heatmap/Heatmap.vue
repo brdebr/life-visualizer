@@ -1,20 +1,20 @@
 <template>
   <svg class="calendar-heatmap" :width="width" :height="height">
-    <g transform="translate(0, 8)" class="month-labels">
+    <g transform="translate(40, 20)" class="month-labels">
       <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
-        :transform="`translate(${month.translateX}, 0)`">
+        :transform="`translate(${month.translateX}, 2)`">
         <text x="0" y="0" class="month-label">
           {{ month.labelMonth }}
           <tspan class="year-label" dy="0" dx="2">{{ month.labelYear }}</tspan>
         </text>
       </g>
     </g>
-    <g transform="translate(10, 15)">
+    <g transform="translate(40, 28)">
       <g
         v-for="week in weeks"
         :key="week.label"
         :data-key="week.label"
-        :transform="`translate(${week.num * (cellSize + cellMargin)}, 0)`"
+        :transform="`translate(${week.translateX}, 0)`"
         >
         <rect
           v-for="day in week.days"
@@ -28,6 +28,13 @@
           class="day"
         />
       </g>
+    </g>
+    <g transform="translate(40, 35)">
+      <text x="0" y="0" class="day-label" text-anchor="end">
+        <tspan x="-5" dy="1" dx="0">Mon</tspan>
+        <tspan x="-5" dy="24" dx="0">Wed</tspan>
+        <tspan x="-5" dy="24" dx="0">Fri</tspan>
+      </text>
     </g>
   </svg>
   <div>
@@ -44,7 +51,6 @@ export type HeatmapProps = {
   width: number;
   height: number;
 };
-
 const props = defineProps<HeatmapProps>();
 
 const dayjs = useDayjs();
@@ -52,50 +58,24 @@ const dayjs = useDayjs();
 const cellSize = 10;
 const cellMargin = 2;
 
-const startComputed = computed(() => dayjs(props.startDate).startOf('day'));
-const endComputed = computed(() => {
+const weekdayLegend = ['Mon', '', 'Wed', '', 'Fri', '', ''];
+
+const startDateComputed = computed(() => dayjs(props.startDate).startOf('day'));
+const endDateComputed = computed(() => {
   const end = dayjs(props.endDate).endOf('day');
-  const maxEnd = startComputed.value.add(11, 'month').endOf('month');
+  const maxEnd = startDateComputed.value.add(11, 'month').endOf('month');
   return end.isBefore(maxEnd) ? end : maxEnd;
 });
 
-export type MonthLabel = {
-  start: Dayjs;
-  end: Dayjs;
-  num: number;
-  labelMonth: string;
-  labelYear: string;
-  label: string;
-  translateX: number;
-}
 
-const monthsLabels = computed<MonthLabel[]>(() => {
-  const months = endComputed.value.diff(startComputed.value, 'month') + 1;
-
-  return Array.from({ length: months }, (_, i) => {
-    const month = startComputed.value.clone().add(i, 'month');
-    const weeksInMonth = Math.ceil(month.daysInMonth() / 7);
-
-    return {
-      start: month.startOf('month'),
-      end: month.endOf('month'),
-      num: i,
-      labelMonth: month.format('MMM'),
-      labelYear: month.format('YY'),
-      label: month.format('MMM YY'),
-      translateX: (i * weeksInMonth) * (cellSize + cellMargin),
-    };
-  })
-});
-
-const isInRange = (date: Dayjs) => date.isBetween(startComputed.value, endComputed.value, 'day', '[]');
+const isInRange = (date: Dayjs) => date.isBetween(startDateComputed.value, endDateComputed.value, 'day', '[]');
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
-  const weeksCount = endComputed.value.diff(startComputed.value, 'week') + 1;
+  const weeksCount = endDateComputed.value.diff(startDateComputed.value, 'week') + 1;
 
   return Array.from({ length: weeksCount }, (_, weekIndex) => {
-    const startOfWeek = startComputed.value.clone().add(weekIndex, 'week').startOf('isoWeek');
+    const startOfWeek = startDateComputed.value.clone().add(weekIndex, 'week').startOf('isoWeek');
     const endOfWeek = startOfWeek.clone().endOf('isoWeek');
 
     const days = Array.from({ length: 7 }, (__, dayIndex) => {
@@ -108,14 +88,33 @@ const weeks = computed(() => {
     }).filter((day) => isInRange(day.date));
 
     return {
-      start: startOfWeek,
-      end: endOfWeek,
-      num: weekIndex,
+      startDate: startOfWeek,
+      endDate: endOfWeek,
+      index: weekIndex,
+      translateX: weekIndex * (cellSize + cellMargin),
       isFirstWeekOfMonth: days.some((day) => day.date.date() === 1),
       label: `${startOfWeek.format('DD/MM/YYYY')} - ${endOfWeek.format('DD/MM/YYYY')}`,
       days,
     };
   });
+});
+
+const monthsLabels = computed(() => {
+  const months = endDateComputed.value.diff(startDateComputed.value, 'month') + 1;
+
+  return Array.from({ length: months }, (_, i) => {
+    const month = startDateComputed.value.clone().add(i, 'month');
+
+    return {
+      startDate: month.startOf('month'),
+      endDate: month.endOf('month'),
+      index: i,
+      labelMonth: month.format('MMM'),
+      labelYear: month.format('YY'),
+      label: month.format('MMM YY'),
+      translateX: weeks.value.find((week) => week.startDate.isSame(month, 'month'))?.translateX || 0,
+    };
+  })
 });
 
 
@@ -157,8 +156,12 @@ type Month = {
     @apply text-[8px];
   }
 
+  .day-label {
+    @apply text-[10px];
+  }
+
   .day {
-    stroke: #fff;
+    stroke: transparent;
     stroke-width: 1;
   }
 
