@@ -51,8 +51,8 @@
         </UInput>
       </UFormGroup>
     </div>
-    <div class="flex gap-3">
-      <UFormGroup label="How many years do you expect to live?">
+    <div class="flex gap-3 mt-6">
+      <UFormGroup label="How many years do you expect to live?" class="min-w-[272px]">
         <UInput
           color="white"
           type="number"
@@ -74,7 +74,7 @@
         </UInput>
       </UFormGroup>
     </div>
-    <div class="my-6">
+    <div class="mt-9">
       <UButton :loading block @click="handleClick" color="primary">
         Calculate
       </UButton>

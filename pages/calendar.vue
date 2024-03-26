@@ -9,7 +9,7 @@
       }"
     />
   </div>
-  <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]">
+  <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
     <Heatmap
       v-for="year in appStore.arrayOfLifeYears"
       :key="year.startDate"
@@ -27,6 +27,11 @@ useHead({
   title: 'Calendar'
 })
 const appStore = useAppStore();
+const router = useRouter();
+
+if (!appStore.isConfigured) {
+  router.push('/setup');
+}
 
 const today = appStore.dayjs().format('YYYY-MM-DD');
 const year = today.slice(0, 4);

@@ -10,7 +10,7 @@ export const useAppStore = defineStore('app-store', () => {
 
   const wasBornDate = ref('1970-01-02');
   const yearsToLive = ref(105);
-  const configured = ref(false);
+  const isConfigured = ref(false);
 
   const wasBornForCalc = ref(wasBornDate.value);
   const yearsToLiveForCalc = ref(yearsToLive.value);
@@ -18,7 +18,7 @@ export const useAppStore = defineStore('app-store', () => {
   const calculate = () => {
     wasBornForCalc.value = wasBornDate.value;
     yearsToLiveForCalc.value = yearsToLive.value;
-    configured.value = true;
+    isConfigured.value = true;
   };
 
   const percentOfCurrentYear = computed(() => {
@@ -54,7 +54,7 @@ export const useAppStore = defineStore('app-store', () => {
   });
 
   const dynamicDataset = computed(() => {
-    if(!configured.value) {
+    if(!isConfigured.value) {
       return {};
     }
     const wasBorn = dayjs(wasBornForCalc.value);
@@ -124,5 +124,6 @@ export const useAppStore = defineStore('app-store', () => {
     getDayContent,
     selectedEvent,
     selectEvent,
+    isConfigured,
   }
 })

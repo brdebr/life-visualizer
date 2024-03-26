@@ -1,3 +1,6 @@
+<template>
+  <div></div>
+</template>
 <script setup lang="ts">
 import { useTippy } from "vue-tippy";
 import EventTooltip from "~/components/EventTooltip.vue";

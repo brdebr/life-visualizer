@@ -28,8 +28,7 @@
               :x="day.x"
               :width="cellSize"
               :height="cellSize"
-              :fill="day.color"
-              :opacity="day.isInThePast ? 0.4 : undefined"
+              :fill="day.isInThePast && !day.event?.title ? '#f3f3f3' : day.color"
               class="day"
             />
           </g>
@@ -178,7 +177,7 @@ const monthsLabels = computed(() => {
 const colorsMap = {
   NO_DATA: '#e5e7eb',
   PERSONAL: '#2563eb',
-  HISTORICAL: '#4d7c0f',
+  HISTORICAL: '#2dd4bf',
 }
 
 const getDayColor = (event: EventObject | null) => {
