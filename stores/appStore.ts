@@ -9,10 +9,15 @@ export const useAppStore = defineStore('app', () => {
   const dayjs = useDayjs();
 
   const wasBornDate = ref('1993-08-09');
-  const yearsToLive = ref(80);
+  const yearsToLive = ref(15);
 
-  const debouncedWasBorn = ref(wasBornDate.value);
-  const debouncedYearsToLive = ref(yearsToLive.value);
+  const wasBornForCalc = ref(wasBornDate.value);
+  const yearsToLiveForCalc = ref(yearsToLive.value);
+
+  const calculate = () => {
+    wasBornForCalc.value = wasBornDate.value;
+    yearsToLiveForCalc.value = yearsToLive.value;
+  };
 
   const percentOfCurrentYear = computed(() => {
     const currentDate = dayjs()
@@ -24,30 +29,30 @@ export const useAppStore = defineStore('app', () => {
   });
 
   const arrayOfLifeYears = computed(() => {
-    return Array.from({ length: debouncedYearsToLive.value + 1 }, (_, i) => {
+    return Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => {
       return {
-        startDate: dayjs(`${parseInt(debouncedWasBorn.value) + i}-01-01`),
-        endDate: dayjs(`${parseInt(debouncedWasBorn.value) + i}-12-31`),
-        header: `- [ ${i} years old ]`,
+        startDate: `${parseInt(wasBornForCalc.value) + i}-01-01`,
+        endDate: `${parseInt(wasBornForCalc.value) + i}-12-31`,
+        header: `${wasBornForCalc.value.slice(0, 4)} - [ ${i} years old ]`,
       }
     });
   });
 
   const percentOfLife = computed(() => {
-    const startDate = dayjs(debouncedWasBorn.value);
-    const endDate = startDate.clone().add(debouncedYearsToLive.value, 'year');
+    const startDate = dayjs(wasBornForCalc.value);
+    const endDate = startDate.clone().add(yearsToLiveForCalc.value, 'year');
     const diff = endDate.diff(startDate, 'day');
     const currentDay = dayjs().diff(startDate, 'day');
-    return `${((currentDay / diff) * 100).toFixed(2)}%`;
+    const percent = ((currentDay / diff) * 100);
+    if (percent > 100) {
+      return 'You are exceeding your expected life!!';
+    }
+
+    return `You are at ${percent.toFixed(2)}% of your expected life.`;
   });
 
-  watchDebounced([wasBornDate, yearsToLive], () => {
-    debouncedWasBorn.value = wasBornDate.value;
-    debouncedYearsToLive.value = yearsToLive.value;
-  }, { debounce: 1000, maxWait: 60 * 1000});
-
   const dynamicDataset = computed(() => {
-    const wasBorn = dayjs(debouncedWasBorn.value);
+    const wasBorn = dayjs(wasBornForCalc.value);
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
     const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD');
     const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD');
@@ -57,8 +62,8 @@ export const useAppStore = defineStore('app', () => {
     const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD');
     const endRetirementDate = wasBorn.clone().add(100, 'year').format('YYYY-MM-DD');
   
-    const birthdays = Array.from({ length: yearsToLive.value + 1 }, (_, i) => {
-        return { "date": dayjs(`${parseInt(debouncedWasBorn.value) + i}-08-09`).format('YYYY-MM-DD'), "title": "Birthday", "description": `It's your ${i} birthday !!` }
+    const birthdays = Array.from({ length: 100 }, (_, i) => {
+        return { "date": dayjs(`${parseInt(wasBornForCalc.value) + i}-08-09`).format('YYYY-MM-DD'), "title": "Birthday", "description": `It's your ${i} birthday !!` }
     });
     const finalDataset = [
       ...staticDataset,
@@ -103,12 +108,14 @@ export const useAppStore = defineStore('app', () => {
 
 
   return {
+    dayjs,
     wasBornDate,
     yearsToLive,
     percentOfCurrentYear,
     percentOfLife,
-    debouncedWasBorn,
-    debouncedYearsToLive,
+    wasBornForCalc,
+    yearsToLiveForCalc,
+    calculate,
     dynamicDataset,
     arrayOfLifeYears,
     getDayContent,

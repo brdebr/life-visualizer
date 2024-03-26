@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-center items-center">
     <ClientOnly>
-      <h3 class="text-[10px]">{{ startDate.year() }} {{ header }}</h3>
+      <h3 class="text-[10px]">{{ header }}</h3>
       <svg class="calendar-heatmap" :width="width" :height="height">
         <g :transform="transformMonthsLabel" class="month-labels">
           <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
@@ -50,10 +50,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { Dayjs } from 'dayjs';
 export type HeatmapProps = {
-  startDate: Dayjs;
-  endDate: Dayjs;
+  startDate: string;
+  endDate: string;
   header?: string;
   dataset?: {
     [key: string]: EventObject
