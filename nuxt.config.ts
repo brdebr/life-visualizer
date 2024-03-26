@@ -2,9 +2,8 @@
 export default defineNuxtConfig({
   devtools: {
     enabled: true,
-
     timeline: {
-      enabled: true
+      enabled: false
     }
   },
   imports: {

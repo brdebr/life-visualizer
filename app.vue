@@ -8,8 +8,6 @@
           startDate: $dayjs().startOf('year'),
           endDate: $dayjs().endOf('year'),
           dataset: appStore.dynamicDataset,
-          width,
-          height,
           header: ` - currently at ${appStore.percentOfCurrentYear}`
         }"
       />
@@ -17,19 +15,6 @@
     <div>
       <input type="date" v-model="wasBornDate" />
       <input type="number" v-model="yearsToLive" />
-      <input type="number" v-model="width" />
-      <input type="number" v-model="height" />
-    </div>
-    <div class="border rounded-md min-h-[180px] max-h-[180px] overflow-hidden container max-w-[420px] mx-auto my-3 px-3 pt-1 pb-2 grid grid-rows-[auto_1fr]">
-      <template v-if="!selectedEvent">
-        <h3 class="text-lg font-semibold text-slate-800">No selected event</h3>
-        <div class="flex items-center justify-center text-slate-600 h-28">Hover a day to see the details here</div>
-      </template>
-      <template v-else>
-        <h3 class="px-2 pt-1 mb-2 border-b text-sm">{{selectedEvent.eventDate}}</h3>
-        <h4 class="font-semibold text-sm">· {{selectedEvent.title || 'No events this day'}}</h4>
-        <p v-if="selectedEvent.description" class="p-2 h-28 text-sm">{{selectedEvent.description}}</p>
-      </template>
     </div>
     <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]">
       <Heatmap
@@ -57,9 +42,17 @@ useHead({
   ]
 })
 
-const width = ref(420);
-const height = ref(56);
-
 const appStore = useAppStore();
-const { wasBornDate, yearsToLive, selectedEvent } = storeToRefs(appStore);
+const { wasBornDate, yearsToLive } = storeToRefs(appStore);
+useTippyStore();
+
 </script>
+<style lang="scss">
+.tippy-box {
+  @apply bg-white dark:bg-slate-950;
+}
+.tippy-content {
+  @apply p-0;
+  @apply text-slate-900 dark:text-white;
+}
+</style>

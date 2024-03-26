@@ -9,7 +9,7 @@ export const useAppStore = defineStore('app', () => {
   const dayjs = useDayjs();
 
   const wasBornDate = ref('1993-08-09');
-  const yearsToLive = ref(10);
+  const yearsToLive = ref(80);
 
   const debouncedWasBorn = ref(wasBornDate.value);
   const debouncedYearsToLive = ref(yearsToLive.value);
@@ -49,11 +49,10 @@ export const useAppStore = defineStore('app', () => {
   const dynamicDataset = computed(() => {
     const wasBorn = dayjs(debouncedWasBorn.value);
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
-    const startSchoolDate = wasBorn.clone().add(5, 'year').format('YYYY-MM-DD');
-    const endSchoolDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD');
+    const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD');
     const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD');
-    const endCollegeDate = wasBorn.clone().add(22, 'year').format('YYYY-MM-DD');
-    const startWorkDate = wasBorn.clone().add(22, 'year').format('YYYY-MM-DD');
+    const endCollegeDate = wasBorn.clone().add(22, 'year').month(5).day(15).format('YYYY-MM-DD');
+    const startWorkDate = wasBorn.clone().add(22, 'year').add(6, 'month').format('YYYY-MM-DD');
     const endWorkDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD');
     const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD');
     const endRetirementDate = wasBorn.clone().add(100, 'year').format('YYYY-MM-DD');
@@ -66,7 +65,6 @@ export const useAppStore = defineStore('app', () => {
       ...birthdays,
       { "date": wasBornDate, "title": "Birth", "description": "You were born." },
       { "date": startSchoolDate, "title": "Start of School", "description": "You started school." },
-      { "date": endSchoolDate, "title": "End of School", "description": "You finished school." },
       { "date": legalAgeDate, "title": "Legal Age", "description": "You reached the legal age." },
       { "date": endCollegeDate, "title": "End of College", "description": "You finished college." },
       { "date": startWorkDate, "title": "Start of Work", "description": "You started working." },
@@ -74,7 +72,6 @@ export const useAppStore = defineStore('app', () => {
       { "date": startRetirementDate, "title": "Start of Retirement", "description": "You started retirement." },
       { "date": endRetirementDate, "title": "End of Retirement", "description": "You are a hundred years old!!" },
     ]
-    // Return an object with the date as the key and the rest as the value
     return finalDataset.reduce((acc, event) => {
       acc[event.date] = { title: event.title, description: event.description };
       return acc;
@@ -88,8 +85,7 @@ export const useAppStore = defineStore('app', () => {
       return;
     }
     selectedEvent.value = getDayContent(date);
-  }, 300);
-  
+  }, 250);
 
   const getDayContent = (date: string): EventObject | null => {
     const event = dynamicDataset.value?.[date];
@@ -103,21 +99,6 @@ export const useAppStore = defineStore('app', () => {
       ...event,
       eventDate,
     };
-    // if (!event) {
-    //   return `
-    //     <div>
-    //       <h3 class="px-2 pb-1">${eventDate}</h3>
-    //     </div>
-    //   `;
-    // }
-    // const content = `
-    //   <div>
-    //     <h3 class="px-2 mb-2 border-b">${eventDate}</h3>
-    //     <h4 class="font-semibold">· ${event?.title || ''}</h4>
-    //     <p class="p-2">${event?.description || ''}</p>
-    //   </div>
-    // `
-    // return content;
   };
 
 

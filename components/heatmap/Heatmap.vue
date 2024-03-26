@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-center items-center">
-    <h3 class="text-[10px]">{{ startDate.year() }} {{ header }}</h3>
     <ClientOnly>
+      <h3 class="text-[10px]">{{ startDate.year() }} {{ header }}</h3>
       <svg class="calendar-heatmap" :width="width" :height="height">
         <g :transform="transformMonthsLabel" class="month-labels">
           <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
@@ -23,7 +23,7 @@
                 @click="() => appStore.selectEvent(day.dayId)"
                 @mouseenter="() => appStore.selectEvent(day.dayId)"
                 @mouseleave="() => appStore.selectEvent('')"
-                :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.weekDay) ? 1 : 0)"
+                :y="day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)"
                 :x="day.x"
                 :width="cellSize"
                 :height="cellSize"
@@ -40,6 +40,11 @@
           </text>
         </g>
       </svg>
+      <template #fallback>
+        <div class="w-[419px] h-[57px] mt-[15px] bg-gray-200 rounded-lg overflow-hidden relative">
+          <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent animate-pulse"></div>
+        </div>
+      </template>
     </ClientOnly>
   </div>
 </template>
@@ -62,8 +67,10 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
   height: 57,
 });
 
+const appStore = useAppStore();
 const dayjs = useDayjs();
-const weekEndDays = [0, 6];
+
+const weekendDays = [0, 6];
 
 const cellSize = 5;
 const cellMargin = 1;
@@ -184,15 +191,6 @@ const getDayColor = (event: EventObject | null) => {
   }
   return colorsMap.NO_DATA;
 };
-
-const appStore = useAppStore();
-
-
-// const handleClick = (date: Dayjs) => {
-//   // console.log(date.format('dddd DD/MM/YYYY HH:mm:ss'))
-//   const event = props.dataset?.[date.format('YYYY-MM-DD')];
-//   console.log(event);
-// };
 </script>
 
 <style lang="scss">
