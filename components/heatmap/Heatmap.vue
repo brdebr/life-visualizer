@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col justify-center items-center">
-    <h3 class="text-[10px]">{{ startDateComputed.year() }} {{ header }}</h3>
+    <h3 class="text-[10px]">{{ startDate.year() }} {{ header }}</h3>
     <ClientOnly>
       <svg class="calendar-heatmap" :width="width" :height="height">
         <g :transform="transformMonthsLabel" class="month-labels">
@@ -21,14 +21,13 @@
             <template v-for="day in week.days" :key="day.date.toISOString()">
               <rect
                 @click="handleClick(day.date)"
-                v-tippy="{ content: getDayContent(day.date) }"
                 :data-value="day.date.format('DD/MM/YYYY')"
                 :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.date.day()) ? 1 : 0)"
                 :x="day.x"
                 :width="cellSize"
                 :height="cellSize"
                 :fill="getDayColor(day.date)"
-                :opacity="day.date.isBefore(dayjs()) ? 0.4 : undefined"
+                :opacity="day.date.isBefore($dayjs()) ? 0.4 : undefined"
                 class="day"
               />
             </template>
@@ -59,12 +58,6 @@ export type HeatmapProps = {
   width?: number;
   height?: number;
 };
-
-// import { useSingleton } from 'vue-tippy';
-// const singletons = ref<Array<Element>>([])
-// useSingleton(singletons, {
-//   placement: 'top',
-// })
 
 const props = withDefaults(defineProps<HeatmapProps>(), {
   width: 419,
@@ -112,24 +105,26 @@ const weekdayLegend = [
   },
 ]
 
-const startDateComputed = computed(() => dayjs(props.startDate).startOf('day'));
-const endDateComputed = computed(() => {
-  const end = dayjs(props.endDate).endOf('day');
-  const maxEnd = startDateComputed.value.add(11, 'month').endOf('month');
-  return end.isBefore(maxEnd) ? end : maxEnd;
-});
+// const startDateComputed = computed(() => dayjs(props.startDate).startOf('day'));
+// const endDateComputed = computed(() => {
+//   const end = dayjs(props.endDate).endOf('day');
+//   const maxEnd = startDateComputed.value.add(11, 'month').endOf('month');
+//   return end.isBefore(maxEnd) ? end : maxEnd;
+// });
 
-
-const isInRange = (date: Dayjs) => date.isBetween(startDateComputed.value, endDateComputed.value, 'day', '[]');
 
 const space = 1;
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
-  const weeksCount = endDateComputed.value.diff(startDateComputed.value, 'week') + 1;
+  const startDateComputed = dayjs(props.startDate).startOf('day');
+  const end = dayjs(props.endDate).endOf('day');
+  const maxEnd = startDateComputed.add(11, 'month').endOf('month');
+  const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd;
+  const weeksCount = endDateComputed.diff(startDateComputed, 'week') + 1;
 
   return Array.from({ length: weeksCount }, (_, weekIndex) => {
-    const startOfWeek = startDateComputed.value.clone().add(weekIndex, 'week').startOf('isoWeek');
+    const startOfWeek = startDateComputed.clone().add(weekIndex, 'week').startOf('isoWeek');
     const endOfWeek = startOfWeek.endOf('isoWeek');
 
     const days = Array.from({ length: 7 }, (__, dayIndex) => {
@@ -140,7 +135,7 @@ const weeks = computed(() => {
         x: day.month() * (cellSize + cellMargin + space),
         label: day.format('ddd DD/MM/YYYY HH:mm:ss'),
       };
-    }).filter((day) => isInRange(day.date));
+    })
 
     return {
       startDate: startOfWeek,
@@ -155,10 +150,14 @@ const weeks = computed(() => {
 });
 
 const monthsLabels = computed(() => {
-  const months = endDateComputed.value.diff(startDateComputed.value, 'month') + 1;
+  const startDateComputed = dayjs(props.startDate).startOf('day');
+  const end = dayjs(props.endDate).endOf('day');
+  const maxEnd = startDateComputed.add(11, 'month').endOf('month');
+  const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd;
+  const months = endDateComputed.diff(startDateComputed, 'month') + 1;
 
   return Array.from({ length: months }, (_, i) => {
-    const month = startDateComputed.value.clone().add(i, 'month');
+    const month = startDateComputed.clone().add(i, 'month');
     const labelMonth = month.format('MMM');
     const labelYear = month.format('YY');
     const label = `${labelMonth} ${labelYear}`;
