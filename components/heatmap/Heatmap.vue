@@ -17,21 +17,21 @@
             :key="week.label"
             :data-key="week.label"
             :transform="`translate(${week.translateX}, 0)`"
-            >
-            <template v-for="day in week.days" :key="day.dayId">
-              <rect
-                @click="() => appStore.selectEvent(day.dayId)"
-                @mouseenter="() => appStore.selectEvent(day.dayId)"
-                @mouseleave="() => appStore.selectEvent('')"
-                :y="day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)"
-                :x="day.x"
-                :width="cellSize"
-                :height="cellSize"
-                :fill="day.color"
-                :opacity="day.isInThePast ? 0.4 : undefined"
-                class="day"
-              />
-            </template>
+          >
+            <rect
+              v-for="day in week.days"
+              :key="day.dayId"
+              @click="() => appStore.selectEvent(day.dayId)"
+              @mouseenter="() => appStore.selectEvent(day.dayId)"
+              @mouseleave="() => appStore.selectEvent('')"
+              :y="day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)"
+              :x="day.x"
+              :width="cellSize"
+              :height="cellSize"
+              :fill="day.color"
+              :opacity="day.isInThePast ? 0.4 : undefined"
+              class="day"
+            />
           </g>
         </g>
         <g :transform="transformDaysLabel">
@@ -112,6 +112,7 @@ const weekdayLegend = [
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
+  const year = dayjs(props.startDate).year();
   const startDateComputed = dayjs(props.startDate).startOf('day');
   const end = dayjs(props.endDate).endOf('day');
   const maxEnd = startDateComputed.add(11, 'month').endOf('month');
@@ -141,12 +142,11 @@ const weeks = computed(() => {
 
     return {
       startDate: startOfWeek,
-      // endDate: endOfWeek,
       index: weekIndex,
       translateX: weekIndex * (cellSize + cellMargin),
       isFirstWeekOfMonth: days.some((day) => day.weekDay === 1),
       label: `${startOfWeek.format('DD/MM/YYYY')} - ${endOfWeek.format('DD/MM/YYYY')}`,
-      days,
+      days: days.filter((day) => day.dayId.slice(0, 4) === year.toString()),
     };
   });
 });
@@ -194,7 +194,7 @@ const getDayColor = (event: EventObject | null) => {
 
 <style lang="scss">
 .calendar-heatmap {
-  @apply border;
+  @apply border overflow-hidden;
 
   .month-label {
     @apply text-[8px] pointer-events-none select-none;

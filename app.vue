@@ -15,6 +15,7 @@
     <div>
       <input type="date" v-model="wasBornDate" />
       <input type="number" v-model="yearsToLive" />
+      <button @click="appStore.calculate">Calculate</button>
     </div>
     <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]">
       <Heatmap
