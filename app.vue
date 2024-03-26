@@ -1,33 +1,44 @@
 <template>
   <div class="mx-auto min-h-[100dvh] pt-3 pb-10">
     <h1 class="text-slate-800 text-lg font-semibold tracking-wide mb-2 text-center">Life Visualizer</h1>
-    <h2 class="text-slate-600 text-center">You are at: {{ percentOfLife }} of your life</h2>
+    <h2 class="text-slate-600 text-center">You are at: {{ appStore.percentOfLife }} of your life</h2>
     <div class="my-3">
       <Heatmap
         v-bind="{
           startDate: $dayjs().startOf('year'),
           endDate: $dayjs().endOf('year'),
-          dataset: dynamicDataset,
+          dataset: appStore.dynamicDataset,
           width,
           height,
-          header: ` - currently at ${percentOfCurrentYear}`
+          header: ` - currently at ${appStore.percentOfCurrentYear}`
         }"
       />
     </div>
     <div>
-      <input type="date" v-model="wasBorn" />
+      <input type="date" v-model="wasBornDate" />
       <input type="number" v-model="yearsToLive" />
       <input type="number" v-model="width" />
       <input type="number" v-model="height" />
     </div>
+    <div class="border rounded-md min-h-[180px] max-h-[180px] overflow-hidden container max-w-[420px] mx-auto my-3 px-3 pt-1 pb-2 grid grid-rows-[auto_1fr]">
+      <template v-if="!selectedEvent">
+        <h3 class="text-lg font-semibold text-slate-800">No selected event</h3>
+        <div class="flex items-center justify-center text-slate-600 h-28">Hover a day to see the details here</div>
+      </template>
+      <template v-else>
+        <h3 class="px-2 pt-1 mb-2 border-b text-sm">{{selectedEvent.eventDate}}</h3>
+        <h4 class="font-semibold text-sm">· {{selectedEvent.title || 'No events this day'}}</h4>
+        <p v-if="selectedEvent.description" class="p-2 h-28 text-sm">{{selectedEvent.description}}</p>
+      </template>
+    </div>
     <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]">
       <Heatmap
-        v-for="year in arrayOfLifeYears"
+        v-for="year in appStore.arrayOfLifeYears"
         :key="year.startDate.year()"
           v-bind="{
             startDate: year.startDate,
             endDate: year.endDate,
-            dataset: dynamicDataset,
+            dataset: appStore.dynamicDataset,
             header: year.header,
           }"
       />
@@ -46,156 +57,9 @@ useHead({
   ]
 })
 
-const wasBorn = ref('1993-08-09');
-const debouncedWasBorn = ref('1993-08-09');
-const yearsToLive = ref(35);
-const debouncedYearsToLive = ref(35);
 const width = ref(420);
 const height = ref(56);
 
-const dayjs = useDayjs();
-
-// Will return the percentage of the current year, for example, if today is 2022-08-09, it will return 0.5
-const percentOfCurrentYear = computed(() => {
-  const currentYear = dayjs().year();
-  const startDate = dayjs(`${currentYear}-01-01`);
-  const endDate = dayjs(`${currentYear}-12-31`);
-  const diff = endDate.diff(startDate, 'day');
-  const currentDay = dayjs().dayOfYear();
-  return `${((currentDay / diff) * 100).toFixed(2)}%`;
-});
-
-// Will return the percentage of the life, for example, if you were born in 1993-08-09 and today is 2022-08-09 and yearsToLive is 100, it will return 29.52
-const percentOfLife = computed(() => {
-  const startDate = dayjs(debouncedWasBorn.value);
-  const endDate = dayjs(debouncedWasBorn.value).add(yearsToLive.value, 'year');
-  const diff = endDate.diff(startDate, 'day');
-  const currentDay = dayjs().diff(startDate, 'day');
-  return `${((currentDay / diff) * 100).toFixed(2)}%`;
-});
-
-// Amount of sprints to lived/to live, an sprint is two weeks, for example if you were born in 1993-08-09 and today is 2022-08-09 and yearsToLive is 100, it will return the string "1452/7300"
-const sprintsToLive = computed(() => {
-  const startDate = dayjs(debouncedWasBorn.value);
-  const endDate = dayjs(debouncedWasBorn.value).add(yearsToLive.value, 'year');
-  const diff = endDate.diff(startDate, 'week');
-  const currentDay = dayjs().diff(startDate, 'week');
-  return `${currentDay}/${diff}`;
-});
-
-
-const arrayOfLifeYears = computed(() => {
-  return Array.from({ length: debouncedYearsToLive.value + 1 }, (_, i) => {
-    return {
-      startDate: dayjs(`${parseInt(debouncedWasBorn.value) + i}-01-01`),
-      endDate: dayjs(`${parseInt(debouncedWasBorn.value) + i}-12-31`),
-      header: `- [ ${i} years old ]`,
-    }
-  });
-});
-
-const dynamicDataset = computed(() => {
-  const wasBornDate = dayjs(debouncedWasBorn.value).format('YYYY-MM-DD');
-  const startSchoolDate = dayjs(debouncedWasBorn.value).add(5, 'year').format('YYYY-MM-DD');
-  const endSchoolDate = dayjs(debouncedWasBorn.value).add(18, 'year').format('YYYY-MM-DD');
-  const legalAgeDate = dayjs(debouncedWasBorn.value).add(18, 'year').format('YYYY-MM-DD');
-  const endCollegeDate = dayjs(debouncedWasBorn.value).add(22, 'year').format('YYYY-MM-DD');
-  const startWorkDate = dayjs(debouncedWasBorn.value).add(22, 'year').format('YYYY-MM-DD');
-  const endWorkDate = dayjs(debouncedWasBorn.value).add(65, 'year').format('YYYY-MM-DD');
-  const startRetirementDate = dayjs(debouncedWasBorn.value).add(65, 'year').format('YYYY-MM-DD');
-  const endRetirementDate = dayjs(debouncedWasBorn.value).add(100, 'year').format('YYYY-MM-DD');
-
-  const birthdays = Array.from({ length: yearsToLive.value + 1 }, (_, i) => {
-    if (i % 10 === 0) {
-      return { "date": dayjs(`${parseInt(debouncedWasBorn.value) + i}-08-09`).format('YYYY-MM-DD'), "title": "Birthday", "description": `It's your ${i} birthday !!` }
-    } else {
-      return { "date": dayjs(`${parseInt(debouncedWasBorn.value) + i}-08-09`).format('YYYY-MM-DD'), "title": "Birthday", "description": `It's your birthday !!` }
-    }
-  });
-  const finalDataset = [
-    ...staticDataset,
-    ...birthdays,
-    { "date": wasBornDate, "title": "Birth", "description": "You were born." },
-    { "date": startSchoolDate, "title": "Start of School", "description": "You started school." },
-    { "date": endSchoolDate, "title": "End of School", "description": "You finished school." },
-    { "date": legalAgeDate, "title": "Legal Age", "description": "You reached the legal age." },
-    { "date": endCollegeDate, "title": "End of College", "description": "You finished college." },
-    { "date": startWorkDate, "title": "Start of Work", "description": "You started working." },
-    { "date": endWorkDate, "title": "End of Work", "description": "You retired." },
-    { "date": startRetirementDate, "title": "Start of Retirement", "description": "You started retirement." },
-    { "date": endRetirementDate, "title": "End of Retirement", "description": "You are a hundred years old!!" },
-  ]
-  // Return an object with the date as the key and the rest as the value
-  return finalDataset.reduce((acc, event) => {
-    acc[event.date] = { title: event.title, description: event.description };
-    return acc;
-  }, {} as Record<string, { title: string; description: string }>);
-});
-
-const staticDataset = [
-  { "date": "1903-12-17", "title": "First Powered Flight", "description": "The Wright brothers, Orville and Wilbur Wright, successfully conducted the first powered, sustained, and controlled airplane flight in Kitty Hawk, North Carolina." },
-  { "date": "1912-04-15", "title": "Sinking of the Titanic", "description": "The RMS Titanic, the largest ship afloat at the time it entered service, sank in the North Atlantic Ocean after hitting an iceberg during its maiden voyage from Southampton to New York City." },
-  { "date": "1914-07-28", "title": "Start of World War I", "description": "World War I began after the assassination of Archduke Franz Ferdinand of Austria, leading to a major conflict that involved many of the world's great powers." },
-  { "date": "1929-10-29", "title": "Stock Market Crash of 1929", "description": "A major stock market crash hit the New York Stock Exchange, leading to the Great Depression, affecting the world economy for over a decade." },
-  { "date": "1939-09-01", "title": "Beginning of World War II", "description": "World War II began with the invasion of Poland by Nazi Germany, eventually becoming the deadliest conflict in human history." },
-  { "date": "1945-08-06", "title": "Atomic Bombing of Hiroshima", "description": "The United States dropped an atomic bomb on the Japanese city of Hiroshima, marking the first time a nuclear weapon was used in war." },
-  { "date": "1969-07-20", "title": "First Man on the Moon", "description": "Neil Armstrong became the first human to step on the moon during NASA's Apollo 11 mission, marking a significant achievement in space exploration." },
-  { "date": "1986-04-26", "title": "Chernobyl Nuclear Disaster", "description": "The Chernobyl Nuclear Power Plant in the Soviet Union suffered a catastrophic nuclear accident, causing widespread environmental and health effects." },
-  { "date": "1989-11-09", "title": "Fall of the Berlin Wall", "description": "The Berlin Wall, a symbol of the Cold War division between East and West Germany, was brought down, leading to the eventual reunification of Germany." },
-  { "date": "1991-08-06", "title": "Launch of the World Wide Web", "description": "Tim Berners-Lee launched the World Wide Web, making it publicly available on the Internet for the first time. This event marked the beginning of a new era in information sharing and digital communication." },
-  { "date": "1997-08-31", "title": "Death of Princess Diana", "description": "Princess Diana died in a car crash in Paris, leading to widespread media attention and public mourning around the world." },
-  { "date": "1997-09-17", "title": "Release of Final Fantasy VII", "description": "Square Enix released Final Fantasy VII for the PlayStation, revolutionizing the role-playing game (RPG) genre with its compelling story, groundbreaking graphics, and cinematic cutscenes." },
-  { "date": "1998-09-03", "title": "Release of Metal Gear Solid", "description": "Konami released Metal Gear Solid, a stealth action game directed by Hideo Kojima. The game was a critical and commercial success, noted for its cinematic presentation and complex story." },
-  { "date": "1998-11-19", "title": "Release of Half-Life", "description": "Valve released Half-Life, a first-person shooter that received universal acclaim for its narrative depth, immersive world, and seamless storytelling integrated into the gameplay, setting a new standard for the genre." },
-  { "date": "1999-09-10", "title": "Debut of The Sopranos", "description": "The Sopranos aired its first episode on HBO, heralding a new era for television by focusing on the complex life of a New Jersey mob boss. It is often cited as one of the greatest TV series ever made." },
-  { "date": "1999-11-08", "title": "Release of Counter-Strike", "description": "Valve released Counter-Strike, a mod for Half-Life that became a standalone game. It quickly rose to prominence as one of the most popular first-person shooters, known for its team-based action and strategic gameplay." },
-  { "date": "2001-09-11", "title": "September 11 Attacks", "description": "A series of four coordinated terrorist attacks by the Islamic terrorist group al-Qaeda against the United States, including the destruction of the World Trade Center towers in New York City." },
-  { "date": "2002-07-03", "title": "Release of Warcraft III: Reign of Chaos", "description": "Blizzard Entertainment released Warcraft III: Reign of Chaos, a high fantasy real-time strategy game. It was notable for its story, introduction of hero units, and its contribution to the development of the MOBA genre." },
-  { "date": "2003-07-01", "title": "Release of Warcraft III: The Frozen Throne", "description": "Blizzard Entertainment released The Frozen Throne, an expansion pack for Warcraft III. It introduced new campaigns, units, and a suite of tools for custom games, which led to the creation of iconic mods like Defense of the Ancients." },
-  { "date": "2003-09-12", "title": "Launch of Steam", "description": "Valve launched Steam, a digital distribution platform, offering digital rights management, multiplayer gaming, video streaming, and social networking services. Steam has since become the largest digital distribution platform for PC gaming." },
-  { "date": "2004-02-04", "title": "Launch of Facebook", "description": "Mark Zuckerberg, along with fellow Harvard College students and roommates, launched Facebook, a social networking site that would become one of the world's largest and most influential platforms." },
-  { "date": "2004-11-16", "title": "Release of Half-Life 2", "description": "Valve released Half-Life 2, featuring the advanced Source engine, physics-based gameplay, and a compelling story. It was praised for its graphics, physics, narrative, and is considered one of the greatest video games of all time." },
-  { "date": "2004-11-23", "title": "World of Warcraft Release", "description": "Blizzard Entertainment released World of Warcraft, a massively multiplayer online role-playing game (MMORPG) that went on to become one of the most popular and influential video games in history." },
-  { "date": "2004-12-26", "title": "Indian Ocean Tsunami", "description": "A devastating tsunami, triggered by a magnitude 9.1–9.3 earthquake, struck the coasts of several countries around the Indian Ocean, causing over 230,000 deaths in 14 countries." },
-  { "date": "2006-02-01", "title": "Launch of Tuenti", "description": "Tuenti, a Spain-based, invitation-only private social networking website, was launched. It was widely popular among Spanish youth as a communication and social discovery platform." },
-  { "date": "2006-11-01", "title": "Release of Half-Life 2: Episode One", "description": "Valve released Half-Life 2: Episode One, continuing the story of Half-Life 2. It was well-received for its character development, storytelling, and graphical improvements." },
-  { "date": "2006-11-11", "title": "Release of PlayStation 3", "description": "Sony released the PlayStation 3, a home video game console that was praised for its powerful hardware, multimedia capabilities, and as the first console to use Blu-ray Disc as its primary storage medium." },
-  { "date": "2007-01-09", "title": "Launch of the iPhone", "description": "Apple Inc. announced the first iPhone, revolutionizing the smartphone industry with its innovative design and technology, setting the standard for future mobile devices." },
-  { "date": "2007-10-10", "title": "Release of Half-Life 2: Episode Two", "description": "Valve released Half-Life 2: Episode Two, part of the second installment in the Half-Life 2 series, acclaimed for its exploration, storytelling, and driving sequences." },
-  { "date": "2008-01-20", "title": "Breaking Bad Premieres", "description": "AMC aired the first episode of Breaking Bad, a TV series about a high school chemistry teacher turned methamphetamine manufacturing drug dealer, which became a critical and commercial success." },
-  { "date": "2008-09-15", "title": "Global Financial Crisis", "description": "Marked by the collapse of Lehman Brothers, this financial crisis was the worst since the Great Depression, leading to significant economic downturns worldwide." },
-  { "date": "2009-07-03", "title": "Release of Minecraft", "description": "Mojang released Minecraft, a sandbox video game that became a global phenomenon, noted for its creative and building aspects that allow players to build with a variety of different cubes in a 3D procedurally generated world." },
-  { "date": "2011-03-11", "title": "Fukushima Nuclear Disaster", "description": "Following a massive earthquake and tsunami in Japan, the Fukushima Daiichi nuclear power plant experienced a series of equipment failures, nuclear meltdowns, and releases of radioactive materials." },
-  { "date": "2011-04-17", "title": "Premiere of Game of Thrones", "description": "HBO's Game of Thrones, based on George R. R. Martin's series of fantasy novels, premiered, becoming one of the most popular and critically acclaimed TV series of the 21st century." },
-  { "date": "2012-12-21", "title": "End of the Mayan Calendar", "description": "This date marked the end of a 5,126-year-long cycle in the Mesoamerican Long Count calendar, leading to widespread discussions and theories about the end of the world." },
-  { "date": "2013-05-29", "title": "Release of AngularJS", "description": "Google released AngularJS, an open-source web application framework aimed at simplifying both the development and the testing of such applications by providing a framework for client-side model–view–controller (MVC) and model–view–viewmodel (MVVM) architectures, along with components commonly used in rich internet applications." },
-  { "date": "2014-05-29", "title": "Launch of React", "description": "Facebook released React, a JavaScript library for building user interfaces, specifically aimed at creating large web applications that can change data, without reloading the page. Its main goal is to be fast, scalable, and simple." },
-  { "date": "2014-12-17", "title": "U.S.-Cuba Relations", "description": "The United States and Cuba announced efforts to normalize relations between the two countries, ending over half a century of hostility." },
-  { "date": "2015-05-19", "title": "Release of The Witcher 3: Wild Hunt", "description": "CD Projekt Red released The Witcher 3: Wild Hunt, receiving universal acclaim for its expansive open world, deep storytelling, and complex characters, further influencing the RPG genre." },
-  { "date": "2015-12-11", "title": "OpenAI Founded", "description": "OpenAI was founded as a research laboratory based in San Francisco, California. Its mission is to ensure that artificial general intelligence (AGI) benefits all of humanity. OpenAI conducts research in the field of AI with the aim of promoting and developing friendly AI for the benefit of humanity. Its significant contributions include the development of advanced natural language processing models like GPT-3 and innovations in robotics and AI safety." },
-  { "date": "2016-06-23", "title": "Brexit Referendum", "description": "The United Kingdom voted to leave the European Union in a referendum, leading to political, economic, and social implications for the UK and the EU." },
-  { "date": "2016-08-09", "title": "Release of No Man's Sky", "description": "Hello Games released No Man's Sky, an action-adventure survival game noted for its open universe with over 18 quintillion planets. It faced mixed initial reviews but was praised for its extensive post-launch updates and support." },
-  { "date": "2016-09-30", "title": "Release of Vue 2", "description": "Vue.js 2.0 was released, featuring significant improvements over its predecessor, including a virtual DOM and improved server-side rendering capabilities. Vue.js is a progressive framework for building user interfaces." },
-  { "date": "2016-10-12", "title": "Westworld Series Premiere", "description": "HBO's Westworld premiered, exploring themes of artificial consciousness and reality, and becoming known for its complex narratives and high production values." },
-  { "date": "2016-10-13", "title": "Release of Angular (Angular 2+)", "description": "Google released Angular, a complete rewrite of AngularJS, with better performance, more powerful templates, and many other improvements. This version was officially just called Angular, marking a departure from the AngularJS name to signify a completely new version." },
-  { "date": "2017-09-29", "title": "Launch of Fortnite", "description": "Epic Games released Fortnite, a battle royale game that quickly became a cultural phenomenon, noted for its fast-paced gameplay, free-to-play model, and unique building mechanics." },
-  { "date": "2017-10-25", "title": "Launch of Next.js", "description": "Vercel (formerly Zeit) launched Next.js, a React-based framework that enables functionality such as server-side rendering and generating static websites for React-based web applications." },
-  { "date": "2018-04-05", "title": "Release of God of War", "description": "Sony Interactive Entertainment released God of War for the PlayStation 4, praised for its narrative, world design, graphics, and combat system. It won several Game of the Year awards." },
-  { "date": "2019-05-21", "title": "Release of Oculus Quest", "description": "Facebook Technologies, LLC released the Oculus Quest, a standalone virtual reality headset with six degrees of freedom, allowing users to move in 3D space and use hand-held controllers with positional tracking." },
-  { "date": "2019-05-21", "title": "Release of Oculus Rift S", "description": "Simultaneously with the Oculus Quest, the Oculus Rift S was released as an improvement over the original Oculus Rift, featuring higher resolution, a new tracking system, and a more comfortable headset design." },
-  { "date": "2019-06-28", "title": "Release of Valve Index", "description": "Valve Corporation released the Valve Index, a high-end virtual reality headset known for its high-fidelity visuals, precise tracking, and superior audio quality, catering to a premium VR experience." },
-  { "date": "2019-10-30", "title": "Release of Nuxt.js", "description": "Nuxt.js, a framework for creating Vue.js applications, officially released its first stable version. It aims at making web development simple and powerful through server-side rendering, code-splitting, and pre-fetching views." },
-  { "date": "2019-12-31", "title": "COVID-19 Pandemic Begins", "description": "The World Health Organization was alerted to several cases of pneumonia in Wuhan, China. The virus did not match any other known virus, leading to the discovery of the novel coronavirus (COVID-19)." },
-  { "date": "2020-01-08", "title": "Australian Bushfires", "description": "Australia faced unprecedented bushfires that burned vast areas of land, destroyed homes, and resulted in the loss of human and animal lives." },
-  { "date": "2020-03-23", "title": "Release of Half-Life: Alyx", "description": "Valve released Half-Life: Alyx, a virtual reality first-person shooter set in the Half-Life universe. It was praised for its immersive gameplay, visuals, and storytelling, showcasing the potential of VR gaming." },
-  { "date": "2020-08-19", "title": "Launch of GPT-3", "description": "OpenAI released GPT-3, an autoregressive language model that uses deep learning to produce human-like text. It represented a significant advancement in natural language processing technologies." },
-  { "date": "2020-09-18", "title": "Release of Vue 3", "description": "Vue.js 3.0, codenamed 'One Piece', was officially released. It introduced the Composition API, improved TypeScript integration, and better performance compared to Vue 2." },
-  { "date": "2020-10-13", "title": "Release of Oculus Quest 2", "description": "The Oculus Quest 2 was released, offering an even more powerful standalone VR experience with a higher resolution display, improved performance, and backward compatibility with Quest games." },
-  { "date": "2021-10-28", "title": "Launch of Facebook Meta rebrand", "description": "Facebook Inc. announced its rebranding to Meta Platforms Inc., or Meta, to better encompass its focus on building the metaverse, a collective virtual shared space, created by the convergence of virtually enhanced physical and digital reality." },
-  { "date": "2022-02-24", "title": "Invasion of Ukraine", "description": "Russia invaded Ukraine, leading to a significant military conflict in Europe, widespread international condemnation, and severe economic sanctions against Russia." },
-  { "date": "2022-08-22", "title": "Release of Stable Diffusion", "description": "Stability AI released Stable Diffusion, a deep learning model capable of generating high-quality images from textual descriptions, marking a significant development in AI-generated art." },
-  { "date": "2022-10-25", "title": "Release of Oculus Quest 3", "description": "Meta Platforms (formerly Facebook) launched the Oculus Quest 3, further advancing the standalone VR experience with enhanced processing power, display technology, and new immersive features, making virtual reality more accessible and compelling for a broader audience." }
-  { "date": "2022-11-30", "title": "ChatGPT Launch", "description": "OpenAI launched ChatGPT, a conversational AI model based on the GPT architecture, capable of understanding and generating human-like text responses. It quickly became a significant tool for various applications." },
-  { "date": "2023-11-06", "title": "OpenAI DevDay", "description": "OpenAI's first developer conference, OpenAI DevDay, was held in San Francisco. The event showcased new tools and features for developers, including GPT-4 Turbo, a new Assistants API, GPT-4 with Vision, DALL·E 3 API, and more, marking a significant milestone in AI development and accessibility. Over 2 million developers are now utilizing OpenAI's technologies like GPT-4, GPT-3.5, DALL·E, and Whisper across various applications." },
-]
+const appStore = useAppStore();
+const { wasBornDate, yearsToLive, selectedEvent } = storeToRefs(appStore);
 </script>

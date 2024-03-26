@@ -7,6 +7,9 @@ export default defineNuxtConfig({
       enabled: true
     }
   },
+  imports: {
+    dirs: ['data']
+  },
   modules: [
     '@pinia/nuxt',
     '@vueuse/nuxt',

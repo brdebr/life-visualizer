@@ -18,16 +18,17 @@
             :data-key="week.label"
             :transform="`translate(${week.translateX}, 0)`"
             >
-            <template v-for="day in week.days" :key="day.date.toISOString()">
+            <template v-for="day in week.days" :key="day.dayId">
               <rect
-                @click="handleClick(day.date)"
-                :data-value="day.date.format('DD/MM/YYYY')"
-                :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.date.day()) ? 1 : 0)"
+                @click="() => appStore.selectEvent(day.dayId)"
+                @mouseenter="() => appStore.selectEvent(day.dayId)"
+                @mouseleave="() => appStore.selectEvent('')"
+                :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.weekDay) ? 1 : 0)"
                 :x="day.x"
                 :width="cellSize"
                 :height="cellSize"
-                :fill="getDayColor(day.date)"
-                :opacity="day.date.isBefore($dayjs()) ? 0.4 : undefined"
+                :fill="day.color"
+                :opacity="day.isInThePast ? 0.4 : undefined"
                 class="day"
               />
             </template>
@@ -50,10 +51,7 @@ export type HeatmapProps = {
   endDate: Dayjs;
   header?: string;
   dataset?: {
-    [key: string]: {
-      title: string;
-      description: string;
-    }
+    [key: string]: EventObject
   }
   width?: number;
   height?: number;
@@ -73,11 +71,12 @@ const cellMargin = 1;
 const spaceLeft = 22;
 const spaceTop = 6;
 
+const space = 1;
+
 const transformMonthsLabel = `translate(${spaceLeft}, ${spaceTop})`;
 const transformWeeks = `translate(${spaceLeft}, ${spaceTop + 5})`;
 const transformDaysLabel = `translate(${spaceLeft - 1}, ${spaceTop + 15})`;
 
-// const weekdayLegend = ['Mon', '', 'Wed', '', 'Fri', '', ''];
 const weekdayLegend = [
   {
     label: 'Mon',
@@ -105,16 +104,6 @@ const weekdayLegend = [
   },
 ]
 
-// const startDateComputed = computed(() => dayjs(props.startDate).startOf('day'));
-// const endDateComputed = computed(() => {
-//   const end = dayjs(props.endDate).endOf('day');
-//   const maxEnd = startDateComputed.value.add(11, 'month').endOf('month');
-//   return end.isBefore(maxEnd) ? end : maxEnd;
-// });
-
-
-const space = 1;
-
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
   const startDateComputed = dayjs(props.startDate).startOf('day');
@@ -129,20 +118,27 @@ const weeks = computed(() => {
 
     const days = Array.from({ length: 7 }, (__, dayIndex) => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day');
+      const dayId = day.format('YYYY-MM-DD');
+      const event = appStore.getDayContent(dayId);
       return {
-        date: day,
+        // date: day,
+        weekDay: day.day(),
         num: dayIndex,
+        dayId,
         x: day.month() * (cellSize + cellMargin + space),
         label: day.format('ddd DD/MM/YYYY HH:mm:ss'),
+        isInThePast: day.isBefore(dayjs()),
+        color: getDayColor(event),
+        event,
       };
     })
 
     return {
       startDate: startOfWeek,
-      endDate: endOfWeek,
+      // endDate: endOfWeek,
       index: weekIndex,
       translateX: weekIndex * (cellSize + cellMargin),
-      isFirstWeekOfMonth: days.some((day) => day.date.date() === 1),
+      isFirstWeekOfMonth: days.some((day) => day.weekDay === 1),
       label: `${startOfWeek.format('DD/MM/YYYY')} - ${endOfWeek.format('DD/MM/YYYY')}`,
       days,
     };
@@ -179,41 +175,24 @@ const colorsMap = {
   HISTORICAL: '#4d7c0f',
 }
 
-const getDayColor = (date: Dayjs) => {
-  const event = props.dataset?.[date.format('YYYY-MM-DD')];
-  if (event?.description.startsWith('You') || event?.title === 'Birthday') {
+const getDayColor = (event: EventObject | null) => {
+  if (event?.description?.startsWith('You') || event?.title === 'Birthday') {
     return colorsMap.PERSONAL;
   }
-  if (event) {
+  if (event?.description || event?.title) {
     return colorsMap.HISTORICAL;
   }
   return colorsMap.NO_DATA;
 };
 
-const getDayContent = (date: Dayjs) => {
-  const event = props.dataset?.[date.format('YYYY-MM-DD')];
-  if (!event) {
-    return `
-      <div>
-        <h3 class="px-2 pb-1">${date.format('dddd - DD/MM/YYYY')}</h3>
-      </div>
-    `;
-  }
-  const content = `
-    <div>
-      <h3 class="px-2 mb-2 border-b">${date.format('dddd - DD/MM/YYYY')}</h3>
-      <h4 class="font-semibold">· ${event?.title || ''}</h4>
-      <p class="p-2">${event?.description || ''}</p>
-    </div>
-  `
-  return content;
-};
+const appStore = useAppStore();
 
-const handleClick = (date: Dayjs) => {
-  console.log(date.format('dddd DD/MM/YYYY HH:mm:ss'))
-  const event = props.dataset?.[date.format('YYYY-MM-DD')];
-  console.log(event);
-};
+
+// const handleClick = (date: Dayjs) => {
+//   // console.log(date.format('dddd DD/MM/YYYY HH:mm:ss'))
+//   const event = props.dataset?.[date.format('YYYY-MM-DD')];
+//   console.log(event);
+// };
 </script>
 
 <style lang="scss">
