@@ -1,43 +1,46 @@
 <template>
   <div class="flex flex-col justify-center items-center">
     <h3 class="text-[10px]">{{ startDateComputed.year() }} {{ header }}</h3>
-    <svg class="calendar-heatmap" :width="width" :height="height">
-      <g :transform="transformMonthsLabel" class="month-labels">
-        <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
-          :transform="`translate(${month.translateX}, 2)`">
-          <text x="0" y="0" class="month-label">
-            {{ month.labelMonth }}
+    <ClientOnly>
+      <svg class="calendar-heatmap" :width="width" :height="height">
+        <g :transform="transformMonthsLabel" class="month-labels">
+          <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
+            :transform="`translate(${month.translateX}, 2)`">
+            <text x="0" y="0" class="month-label">
+              {{ month.labelMonth }}
+            </text>
+          </g>
+        </g>
+        <g :transform="transformWeeks">
+          <g
+            v-for="week in weeks"
+            :key="week.label"
+            :data-key="week.label"
+            :transform="`translate(${week.translateX}, 0)`"
+            >
+            <template v-for="day in week.days" :key="day.date.toISOString()">
+              <rect
+                @click="handleClick(day.date)"
+                v-tippy="{ content: getDayContent(day.date) }"
+                :data-value="day.date.format('DD/MM/YYYY')"
+                :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.date.day()) ? 1 : 0)"
+                :x="day.x"
+                :width="cellSize"
+                :height="cellSize"
+                :fill="getDayColor(day.date)"
+                :opacity="day.date.isBefore(dayjs()) ? 0.4 : undefined"
+                class="day"
+              />
+            </template>
+          </g>
+        </g>
+        <g :transform="transformDaysLabel">
+          <text x="0" y="0" class="day-label" text-anchor="end">
+            <tspan v-for="day in weekdayLegend" :key="day.label" :x="day.x" :dy="day.dy" :dx="day.dx">{{ day.label }}</tspan>
           </text>
         </g>
-      </g>
-      <g :transform="transformWeeks">
-        <g
-          v-for="week in weeks"
-          :key="week.label"
-          :data-key="week.label"
-          :transform="`translate(${week.translateX}, 0)`"
-          >
-          <template v-for="day in week.days" :key="day.date.toISOString()">
-            <rect
-              @click="handleClick(day.date)"
-              :data-value="day.date.format('DD/MM/YYYY')"
-              :y="day.num * (cellSize + cellMargin) + (weekEndDays.includes(day.date.day()) ? 1 : 0)"
-              :x="day.x"
-              :width="cellSize"
-              :height="cellSize"
-              :fill="getDayColor(day.date)"
-              :opacity="day.date.isBefore(dayjs()) ? 0.4 : undefined"
-              class="day"
-            />
-          </template>
-        </g>
-      </g>
-      <g :transform="transformDaysLabel">
-        <text x="0" y="0" class="day-label" text-anchor="end">
-          <tspan v-for="day in weekdayLegend" :key="day.label" :x="day.x" :dy="day.dy" :dx="day.dx">{{ day.label }}</tspan>
-        </text>
-      </g>
-    </svg>
+      </svg>
+    </ClientOnly>
   </div>
 </template>
 
@@ -56,6 +59,13 @@ export type HeatmapProps = {
   width?: number;
   height?: number;
 };
+
+// import { useSingleton } from 'vue-tippy';
+// const singletons = ref<Array<Element>>([])
+// useSingleton(singletons, {
+//   placement: 'top',
+// })
+
 const props = withDefaults(defineProps<HeatmapProps>(), {
   width: 419,
   height: 57,
@@ -181,6 +191,25 @@ const getDayColor = (date: Dayjs) => {
   return colorsMap.NO_DATA;
 };
 
+const getDayContent = (date: Dayjs) => {
+  const event = props.dataset?.[date.format('YYYY-MM-DD')];
+  if (!event) {
+    return `
+      <div>
+        <h3 class="px-2 pb-1">${date.format('dddd - DD/MM/YYYY')}</h3>
+      </div>
+    `;
+  }
+  const content = `
+    <div>
+      <h3 class="px-2 mb-2 border-b">${date.format('dddd - DD/MM/YYYY')}</h3>
+      <h4 class="font-semibold">· ${event?.title || ''}</h4>
+      <p class="p-2">${event?.description || ''}</p>
+    </div>
+  `
+  return content;
+};
+
 const handleClick = (date: Dayjs) => {
   console.log(date.format('dddd DD/MM/YYYY HH:mm:ss'))
   const event = props.dataset?.[date.format('YYYY-MM-DD')];
@@ -193,19 +222,23 @@ const handleClick = (date: Dayjs) => {
   @apply border;
 
   .month-label {
-    @apply text-[8px];
+    @apply text-[8px] pointer-events-none select-none;
+    @apply fill-slate-950 dark:fill-white;
   }
 
   .year-label {
-    @apply text-[8px];
+    @apply text-[8px] pointer-events-none select-none;
+    @apply fill-slate-950 dark:fill-white;
   }
 
   .day-label {
-    @apply text-[8px];
+    @apply text-[8px] pointer-events-none select-none;
+    @apply fill-slate-950 dark:fill-white;
   }
 
   .day {
     stroke: transparent;
+    outline: none;
     stroke-width: 1;
   }
 
