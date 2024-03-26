@@ -6,7 +6,7 @@
         v-bind="{
           startDate: startOfYear,
           endDate: endOfYear,
-          zoomLevel: 1.7,
+          zoomLevel: 1.5,
           header: `${year} is at ${appStore.percentOfCurrentYear}`
         }"
       />
@@ -20,7 +20,12 @@
         color="primary"
         class="mb-3"
       >
-        Start here
+        <template #default>
+          Start here
+        </template>
+        <template #trailing>
+          <UIcon name="fluent:cursor-click-24-filled" dynamic class="ml-1 -mr-1 size-5" />
+        </template>
       </UButton>
     </div>
   </div>

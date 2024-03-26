@@ -76,7 +76,12 @@
     </div>
     <div class="mt-9">
       <UButton :loading block @click="handleClick" color="primary">
-        Calculate
+        <template #default>
+          Calculate
+        </template>
+        <template #trailing>
+          <UIcon name="material-symbols:event-upcoming-rounded" dynamic class="size-5" />
+        </template>
       </UButton>
     </div>
   </div>
