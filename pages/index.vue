@@ -1,13 +1,27 @@
 <template>
-  <h1 class="text-slate-800 text-xl font-semibold tracking-wide mb-2 text-center">Life Visualizer</h1>
-  <div class="my-3">
-    <Heatmap
-      v-bind="{
-        startDate: startOfYear,
-        endDate: endOfYear,
-        header: `${year} is at ${appStore.percentOfCurrentYear}`
-      }"
-    />
+  <Heading />
+  <div class="flex flex-col items-center gap-4 mt-5">
+    <div class="">
+      <Heatmap
+        v-bind="{
+          startDate: startOfYear,
+          endDate: endOfYear,
+          header: `${year} is at ${appStore.percentOfCurrentYear}`
+        }"
+      />
+    </div>
+    <div class="prose">
+      See your whole life visualized as a calendar
+    </div>
+    <div>
+      <UButton
+        @click="$router.push('/setup')"
+        color="primary"
+        class="mb-3"
+      >
+        Start here
+      </UButton>
+    </div>
   </div>
 </template>
 <script setup lang="ts">

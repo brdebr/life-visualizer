@@ -62,7 +62,7 @@ export type HeatmapProps = {
 };
 
 const props = withDefaults(defineProps<HeatmapProps>(), {
-  width: 419,
+  width: 420,
   height: 57,
 });
 

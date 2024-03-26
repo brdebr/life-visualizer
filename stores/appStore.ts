@@ -8,17 +8,17 @@ export type EventObject = {
 export const useAppStore = defineStore('app-store', () => {
   const dayjs = useDayjs();
 
-  const wasBornDate = ref('1993-08-09');
-  const yearsToLive = ref(15);
+  const wasBornDate = ref('1970-01-02');
+  const yearsToLive = ref(105);
+  const configured = ref(false);
 
   const wasBornForCalc = ref(wasBornDate.value);
   const yearsToLiveForCalc = ref(yearsToLive.value);
 
   const calculate = () => {
-    setTimeout(() => {
-      wasBornForCalc.value = wasBornDate.value;
-      yearsToLiveForCalc.value = yearsToLive.value;
-    }, 500);
+    wasBornForCalc.value = wasBornDate.value;
+    yearsToLiveForCalc.value = yearsToLive.value;
+    configured.value = true;
   };
 
   const percentOfCurrentYear = computed(() => {
@@ -54,17 +54,20 @@ export const useAppStore = defineStore('app-store', () => {
   });
 
   const dynamicDataset = computed(() => {
+    if(!configured.value) {
+      return {};
+    }
     const wasBorn = dayjs(wasBornForCalc.value);
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
     const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD');
-    const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD');
+    const legalAgeDate = wasBorn.clone().add(18, 'year').add(1, 'day').format('YYYY-MM-DD');
     const endCollegeDate = wasBorn.clone().add(22, 'year').month(5).day(15).format('YYYY-MM-DD');
     const startWorkDate = wasBorn.clone().add(22, 'year').add(6, 'month').format('YYYY-MM-DD');
-    const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD');
-    const endRetirementDate = wasBorn.clone().add(100, 'year').format('YYYY-MM-DD');
+    const startRetirementDate = wasBorn.clone().add(65, 'year').add(1, 'day').format('YYYY-MM-DD');
+    const hundredYearsDate = wasBorn.clone().add(100, 'year').format('YYYY-MM-DD');
   
     const birthdays = Array.from({ length: 120 }, (_, i) => {
-        return { "date": `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}-08-09`, "title": "Birthday", "description": `It's your ${i} birthday !!` }
+        return { "date": `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, "title": "Birthday", "description": `It's your ${i} birthday !!` }
     });
     const finalDataset = [
       ...staticDataset,
@@ -75,7 +78,7 @@ export const useAppStore = defineStore('app-store', () => {
       { "date": endCollegeDate, "title": "End of College", "description": "You finished college." },
       { "date": startWorkDate, "title": "Start of Work", "description": "You started working." },
       { "date": startRetirementDate, "title": "Start of Retirement", "description": "You started retirement." },
-      { "date": endRetirementDate, "title": "End of Retirement", "description": "You are a hundred years old!!" },
+      { "date": hundredYearsDate, "title": "End of Retirement", "description": "You are a hundred years old!!" },
     ]
     return finalDataset.reduce((acc, event) => {
       acc[event.date] = { title: event.title, description: event.description };
