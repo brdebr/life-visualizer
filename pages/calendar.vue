@@ -5,9 +5,13 @@
       v-bind="{
         startDate: startOfYear,
         endDate: endOfYear,
+        zoomLevel: 1.5,
         header: `${year} is at ${appStore.percentOfCurrentYear}`
       }"
     />
+  </div>
+  <div class="container mx-auto px-5 pb-3">
+    <hr class="my-8">
   </div>
   <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
     <Heatmap

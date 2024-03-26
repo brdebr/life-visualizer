@@ -6,6 +6,7 @@
         v-bind="{
           startDate: startOfYear,
           endDate: endOfYear,
+          zoomLevel: 1.7,
           header: `${year} is at ${appStore.percentOfCurrentYear}`
         }"
       />

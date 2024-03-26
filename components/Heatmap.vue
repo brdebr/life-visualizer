@@ -1,8 +1,10 @@
 <template>
   <div class="flex flex-col justify-center items-center">
     <ClientOnly>
-      <h3 class="text-[10px]">{{ header }}</h3>
-      <svg class="calendar-heatmap" :width="width" :height="height">
+      <h3 :style="{
+        fontSize: `${props.zoomLevel * 10}px`,
+      }">{{ header }}</h3>
+      <svg class="calendar-heatmap" :width="computedSizes.width" :height="computedSizes.height" :viewBox="computedViewBox">
         <g :transform="transformMonthsLabel" class="month-labels">
           <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
             :transform="`translate(${month.translateX}, 2)`">
@@ -40,7 +42,13 @@
         </g>
       </svg>
       <template #fallback>
-        <div class="w-[419px] h-[57px] mt-[15px] bg-gray-200 rounded-lg overflow-hidden relative">
+        <div
+          class="mt-[15px] bg-gray-200 rounded-lg overflow-hidden relative"
+          :style="{
+            width: `${computedSizes.width}px`,
+            height: `${computedSizes.height}px`,
+          }"
+        >
           <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent animate-pulse"></div>
         </div>
       </template>
@@ -58,11 +66,13 @@ export type HeatmapProps = {
   }
   width?: number;
   height?: number;
+  zoomLevel?: number;
 };
 
 const props = withDefaults(defineProps<HeatmapProps>(), {
   width: 420,
   height: 57,
+  zoomLevel: 1,
 });
 
 const appStore = useAppStore();
@@ -81,6 +91,18 @@ const space = 1;
 const transformMonthsLabel = `translate(${spaceLeft}, ${spaceTop})`;
 const transformWeeks = `translate(${spaceLeft}, ${spaceTop + 5})`;
 const transformDaysLabel = `translate(${spaceLeft - 1}, ${spaceTop + 15})`;
+
+const computedSizes = computed(() => {
+  return {
+    width: props.width * props.zoomLevel,
+    height: props.height * props.zoomLevel,
+  };
+});
+
+const computedViewBox = computed(() => {
+  if (props.zoomLevel === 1) return undefined;
+  return `${0} ${0} ${props.width} ${props.height}`;
+});
 
 const weekdayLegend = [
   {
