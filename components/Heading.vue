@@ -1,5 +1,5 @@
 <template>
-  <h1 class="text-slate-800 text-4xl font-semibold tracking-wide mb-6 text-center pl-7 flex items-center justify-center gap-2">
+  <h1 class="text-slate-800 text-4xl font-semibold tracking-wide mb-6 text-center pl-6 flex items-center justify-center gap-2">
     <span>
       Life Visualizer
     </span>
