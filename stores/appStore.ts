@@ -3,6 +3,12 @@ export type EventObject = {
   title?: string;
   description?: string;
   eventDate?: string;
+  type?: string;
+}
+
+export type EventsObject = {
+  eventDate: string;
+  events?: EventObject[];
 }
 
 export const useAppStore = defineStore('app-store', () => {
@@ -67,26 +73,41 @@ export const useAppStore = defineStore('app-store', () => {
     const hundredYearsDate = wasBorn.clone().add(100, 'year').format('YYYY-MM-DD');
   
     const birthdays = Array.from({ length: 120 }, (_, i) => {
-        return { "date": `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, "title": "Birthday", "description": `It's your ${i} birthday !!` }
+        return { "date": `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, "title": "Birthday", "description": `It's your ${i} birthday !!`, "type": "personal" };
     });
-    const finalDataset = [
-      ...staticDataset,
+
+    const personalEvents = [
       ...birthdays,
-      { "date": wasBornDate, "title": "Birth", "description": "You were born." },
-      { "date": startSchoolDate, "title": "Start of School", "description": "You started school." },
-      { "date": legalAgeDate, "title": "Legal Age", "description": "You reached the legal age." },
-      { "date": endCollegeDate, "title": "End of College", "description": "You finished college." },
-      { "date": startWorkDate, "title": "Start of Work", "description": "You started working." },
-      { "date": startRetirementDate, "title": "Start of Retirement", "description": "You started retirement." },
-      { "date": hundredYearsDate, "title": "End of Retirement", "description": "You are a hundred years old!!" },
-    ]
-    return finalDataset.reduce((acc, event) => {
-      acc[event.date] = { title: event.title, description: event.description };
+      { "date": wasBornDate, "title": "Birth", "description": "You were born.", "type": "personal" },
+      { "date": startSchoolDate, "title": "Start of School", "description": "You started school.", "type": "personal" },
+      { "date": legalAgeDate, "title": "Legal Age", "description": "You reached the legal age.", "type": "personal" },
+      { "date": endCollegeDate, "title": "End of College", "description": "You finished college.", "type": "personal" },
+      { "date": startWorkDate, "title": "Start of Work", "description": "You started working.", "type": "personal" },
+      { "date": startRetirementDate, "title": "Start of Retirement", "description": "You started retirement.", "type": "personal" },
+      { "date": hundredYearsDate, "title": "End of Retirement", "description": "You are a hundred years old!!", "type": "personal" },
+    ];
+
+    const finalDataset: {
+      date: string;
+      title: string;
+      description: string;
+      type?: string;
+    }[] = [
+      ...staticDataset,
+      ...personalEvents,
+    ];
+    const finalRecord = finalDataset.reduce((acc, event) => {
+      const events = acc[event.date] || [];
+      events.push({ title: event.title, description: event.description, type: event.type });
+
+      acc[event.date] = events;
       return acc;
-    }, {} as Record<string, EventObject>);
+    }, {} as Record<string, EventObject[]>);
+    // console.log(finalRecord);
+    return finalRecord;
   });
 
-  const selectedEvent = ref<EventObject | null>(null);
+  const selectedEvent = ref<EventsObject | null>(null);
   const selectEvent = useDebounceFn((date: string) => {
     if (!date) {
       selectedEvent.value = null;
@@ -95,20 +116,20 @@ export const useAppStore = defineStore('app-store', () => {
     selectedEvent.value = getDayContent(date);
   }, 250);
 
-  const getDayContent = (date: string): EventObject | null => {
-    const event = dynamicDataset.value?.[date];
+  const getDayContent = (date: string): EventsObject => {
+    const events = dynamicDataset.value?.[date];
     const eventDate = dayjs(date).format('dddd - YYYY-MM-DD');
-    if (!event) {
+    if (!events?.length) {
       return {
         eventDate,
+        events: [{ title: 'No events for this day.', description: '' }],
       };
     }
     return {
-      ...event,
       eventDate,
+      events: events,
     };
   };
-
 
   return {
     dayjs,
