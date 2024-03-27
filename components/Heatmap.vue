@@ -30,7 +30,7 @@
               :x="day.x"
               :width="cellSize"
               :height="cellSize"
-              :fill="day.isInThePast && !day.event?.title ? '#f3f3f3' : day.color"
+              :fill="day.color"
               class="day"
             />
           </g>
@@ -148,16 +148,15 @@ const weeks = computed(() => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day');
       const dayId = day.format('YYYY-MM-DD');
       const event = appStore.getDayContent(dayId);
+      const isInThePast = day.isBefore(dayjs());
       return {
-        // date: day,
-        weekDay: day.day(),
         num: dayIndex,
         dayId,
-        x: day.month() * (cellSize + cellMargin + space),
-        label: day.format('ddd DD/MM/YYYY HH:mm:ss'),
-        isInThePast: day.isBefore(dayjs()),
-        color: getDayColor(event),
+        weekDay: day.day(),
+        isInThePast,
         event,
+        color: getDayColor(event, isInThePast),
+        x: day.month() * (cellSize + cellMargin + space),
       };
     })
 
@@ -200,14 +199,18 @@ const colorsMap = {
   NO_DATA: '#e5e7eb',
   PERSONAL: '#2563eb',
   HISTORICAL: '#2dd4bf',
+  PAST: '#f3f3f3',
 }
 
-const getDayColor = (event: EventObject | null) => {
-  if (event?.description?.startsWith('You') || event?.title === 'Birthday') {
+const getDayColor = (event: EventsObject | null, isInThePast: boolean): string => {
+  if (event?.events?.some((event) => event.type === 'personal')){
     return colorsMap.PERSONAL;
   }
-  if (event?.description || event?.title) {
+  if (event?.events?.every((event) => !!event.description)){
     return colorsMap.HISTORICAL;
+  }
+  if (isInThePast){
+    return colorsMap.PAST;
   }
   return colorsMap.NO_DATA;
 };
