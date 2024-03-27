@@ -18,7 +18,7 @@ useHead({
 useSeoMeta({
   ogTitle: 'Life Visualizer',
   ogDescription: 'Little project to visualize your whole life like a Github contributions heatmap',
-  ogImage: '/thumbnail.jpg',
+  ogImage: (process.env.URL || '') + '/thumbnail.jpg',
 })
 </script>
 <style lang="scss">
