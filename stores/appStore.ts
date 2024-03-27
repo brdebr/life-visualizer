@@ -53,10 +53,10 @@ export const useAppStore = defineStore('app-store', () => {
     const currentDay = dayjs().diff(startDate, 'day');
     const percent = ((currentDay / diff) * 100);
     if (percent > 100) {
-      return 'You are exceeding your expected life!!';
+      return 100;
     }
 
-    return `You are at ${percent.toFixed(2)}% of your expected life.`;
+    return percent;
   });
 
   const dynamicDataset = computed(() => {

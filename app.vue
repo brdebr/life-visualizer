@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto min-h-[100dvh] pt-3 pb-10">
+  <div class="mx-auto min-h-[100dvh] pt-2 pb-10">
     <Tooltip />
     <NuxtPage />
   </div>

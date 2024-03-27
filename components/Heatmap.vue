@@ -62,7 +62,7 @@ export type HeatmapProps = {
   endDate: string;
   header?: string;
   dataset?: {
-    [key: string]: EventObject
+    [key: string]: EventObject[]
   }
   width?: number;
   height?: number;
@@ -76,7 +76,6 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
 });
 
 const appStore = useAppStore();
-const dayjs = useDayjs();
 
 const weekendDays = [0, 6];
 
@@ -133,9 +132,9 @@ const weekdayLegend = [
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
-  const year = dayjs(props.startDate).year();
-  const startDateComputed = dayjs(props.startDate).startOf('day');
-  const end = dayjs(props.endDate).endOf('day');
+  const year = appStore.dayjs(props.startDate).year();
+  const startDateComputed = appStore.dayjs(props.startDate).startOf('day');
+  const end = appStore.dayjs(props.endDate).endOf('day');
   const maxEnd = startDateComputed.add(11, 'month').endOf('month');
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd;
   const weeksCount = endDateComputed.diff(startDateComputed, 'week') + 1;
@@ -148,7 +147,7 @@ const weeks = computed(() => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day');
       const dayId = day.format('YYYY-MM-DD');
       const event = appStore.getDayContent(dayId);
-      const isInThePast = day.isBefore(dayjs());
+      const isInThePast = day.isBefore(appStore.dayjs());
       return {
         num: dayIndex,
         dayId,
@@ -172,8 +171,8 @@ const weeks = computed(() => {
 });
 
 const monthsLabels = computed(() => {
-  const startDateComputed = dayjs(props.startDate).startOf('day');
-  const end = dayjs(props.endDate).endOf('day');
+  const startDateComputed = appStore.dayjs(props.startDate).startOf('day');
+  const end = appStore.dayjs(props.endDate).endOf('day');
   const maxEnd = startDateComputed.add(11, 'month').endOf('month');
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd;
   const months = endDateComputed.diff(startDateComputed, 'month') + 1;
