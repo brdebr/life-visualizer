@@ -11,8 +11,8 @@
         }"
       />
     </div>
-    <div class="prose">
-      See your whole life visualized as a calendar
+    <div class="prose text-sm text-center">
+      See your whole life visualized as a this boxed calendar. <br> Marked with historical and personal events.
     </div>
     <div>
       <UButton

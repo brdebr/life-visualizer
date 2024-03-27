@@ -8,13 +8,12 @@ const appStore = useAppStore();
 const { selectedEvent } = storeToRefs(appStore);
 
 const { show, hide, tippy } = useTippy(() => document.body, {
-  content: EventTooltip,
+  placement: "top",
   duration: [300, 250],
-  showOnCreate: false,
-  allowHTML: true,
+  content: EventTooltip,
   followCursor: true,
   trigger: "manual",
-  placement: "top",
+  showOnCreate: false,
   hideOnClick: false,
 });
 

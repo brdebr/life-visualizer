@@ -104,6 +104,7 @@ export const useAppStore = defineStore('app-store', () => {
       return acc;
     }, {} as Record<string, EventObject[]>);
     // console.log(finalRecord);
+    // console.log('duplikates', Object.values(finalRecord).filter((item) => item.length > 1));
     return finalRecord;
   });
 
