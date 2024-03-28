@@ -29,4 +29,7 @@ useSeoMeta({
   @apply p-0;
   @apply text-slate-900 dark:text-white;
 }
+.tippy-arrow {
+ @apply text-slate-600;
+}
 </style>
