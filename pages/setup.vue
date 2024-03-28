@@ -123,7 +123,7 @@ const amountOfDaysLived = computed(() => {
   const start = appStore.dayjs(`${bornYear.value}-${bornMonth.value}-${bornDay.value}`);
   if (!start.isValid()) return '';
   const end = appStore.dayjs();
-  return end.diff(start, 'days') + ' / ';
+  return end.diff(start, 'days').toLocaleString('en') + ' / ';
 });
 
 const amountOfDaysInExpectedYears = computed(() => {
@@ -131,7 +131,7 @@ const amountOfDaysInExpectedYears = computed(() => {
   const start = appStore.dayjs(`${bornYear.value}-${bornMonth.value}-${bornDay.value}`);
   if (!start.isValid()) return '';
   const end = start.add(expectedYearsToLive.value, 'years');
-  return end.diff(start, 'days');
+  return end.diff(start, 'days').toLocaleString('en');
 });
 
 const percentOfLife = computed(() => {

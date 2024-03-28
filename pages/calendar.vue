@@ -11,7 +11,18 @@
     />
   </div>
   <div class="container mx-auto my-7 px-5 pb-6" v-if="appStore.isConfigured">
-    <UMeter :label="`Percent of your life -- ${appStore.amountOfDaysLivedStr[0].toLocaleString('en')} days / ${appStore.amountOfDaysLivedStr[1].toLocaleString('en')} days`" color="teal" :value="appStore.percentOfLife" indicator />
+    <UMeter color="teal" :value="appStore.percentOfLife" indicator>
+      <template #label>
+        <p class="text-sm flex items-center gap-4">
+          <span class="text-teal-500 dark:text-teal-400">
+            Percent of your life
+          </span>
+          <span class="prose text-xs">
+            {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
+          </span>
+        </p>
+      </template>
+    </UMeter> 
   </div>
   <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
     <Heatmap
