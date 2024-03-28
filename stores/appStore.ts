@@ -59,6 +59,19 @@ export const useAppStore = defineStore('app-store', () => {
     return percent;
   });
 
+  const amountOfDaysLivedStr = computed(() => {
+    const start = dayjs(wasBornForCalc.value);
+    const end = dayjs();
+
+    const daysLived = end.diff(start, 'days');
+    const expectedDaysToLive = start.clone().add(yearsToLiveForCalc.value, 'years').diff(start, 'days');
+
+    return [
+      daysLived,
+      expectedDaysToLive,
+    ];
+  });
+  
   const dynamicDataset = computed(() => {
     if(!isConfigured.value) {
       return {};
@@ -93,12 +106,12 @@ export const useAppStore = defineStore('app-store', () => {
       description: string;
       type?: string;
     }[] = [
-      ...staticDataset,
       ...personalEvents,
+      ...staticDataset,
     ];
     const finalRecord = finalDataset.reduce((acc, event) => {
       const events = acc[event.date] || [];
-      events.push({ title: event.title, description: event.description, type: event.type });
+      events.push({ title: event.title, description: event.description, type: event.type, eventDate: event.date });
 
       acc[event.date] = events;
       return acc;
@@ -147,5 +160,6 @@ export const useAppStore = defineStore('app-store', () => {
     selectedEvent,
     selectEvent,
     isConfigured,
+    amountOfDaysLivedStr,
   }
 })
