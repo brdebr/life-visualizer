@@ -59,9 +59,24 @@ export const useAppStore = defineStore('app-store', () => {
     return percent;
   });
 
-  const dynamicDataset = computed(() => {
+  const amountOfDaysLivedStr = computed(() => {
+    const start = dayjs(wasBornForCalc.value);
+    const end = dayjs();
+
+    const daysLived = end.diff(start, 'days');
+    const expectedDaysToLive = start.clone().add(yearsToLiveForCalc.value, 'years').diff(start, 'days');
+
+    return [
+      daysLived,
+      expectedDaysToLive,
+    ];
+  });
+
+  const highlightedDates = ref<string[]>([]);
+
+  const arrayDataset = computed(() => {
     if(!isConfigured.value) {
-      return {};
+      return [];
     }
     const wasBorn = dayjs(wasBornForCalc.value);
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
@@ -93,14 +108,23 @@ export const useAppStore = defineStore('app-store', () => {
       description: string;
       type?: string;
     }[] = [
-      ...staticDataset,
       ...personalEvents,
+      ...staticDataset,
     ];
-    const finalRecord = finalDataset.reduce((acc, event) => {
-      const events = acc[event.date] || [];
-      events.push({ title: event.title, description: event.description, type: event.type });
 
-      acc[event.date] = events;
+    return finalDataset;
+  });
+  
+  const dynamicDataset = computed(() => {
+    if(!isConfigured.value) {
+      return {};
+    }
+    
+    const finalRecord = arrayDataset.value.reduce((acc, { title, description, date, type }) => {
+      const events = acc[date] || [];
+      events.push({ title, description, type, eventDate: date });
+
+      acc[date] = events;
       return acc;
     }, {} as Record<string, EventObject[]>);
     // console.log(finalRecord);
@@ -147,5 +171,8 @@ export const useAppStore = defineStore('app-store', () => {
     selectedEvent,
     selectEvent,
     isConfigured,
+    amountOfDaysLivedStr,
+    arrayDataset,
+    highlightedDates,
   }
 })

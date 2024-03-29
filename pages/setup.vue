@@ -91,13 +91,15 @@ useHead({
   title: 'Setup'
 })
 const appStore = useAppStore();
+const setupStore = useSetupStore();
+const { savedWasBornDate, savedYearsToLive } = storeToRefs(setupStore);
 const router = useRouter();
 
-const bornDay = ref(parseInt(appStore.wasBornDate?.split('-')[2]))
-const bornMonth = ref(parseInt(appStore.wasBornDate?.split('-')[1]))
-const bornYear = ref(parseInt(appStore.wasBornDate?.split('-')[0]))
+const bornDay = ref(parseInt(savedWasBornDate.value?.split('-')[2]))
+const bornMonth = ref(parseInt(savedWasBornDate.value?.split('-')[1]))
+const bornYear = ref(parseInt(savedWasBornDate.value?.split('-')[0]))
 
-const expectedYearsToLive = ref(appStore.yearsToLive);
+const expectedYearsToLive = ref(savedYearsToLive.value);
 
 const loading = ref(false);
 
@@ -123,7 +125,7 @@ const amountOfDaysLived = computed(() => {
   const start = appStore.dayjs(`${bornYear.value}-${bornMonth.value}-${bornDay.value}`);
   if (!start.isValid()) return '';
   const end = appStore.dayjs();
-  return end.diff(start, 'days') + ' / ';
+  return end.diff(start, 'days').toLocaleString('en') + ' / ';
 });
 
 const amountOfDaysInExpectedYears = computed(() => {
@@ -131,7 +133,7 @@ const amountOfDaysInExpectedYears = computed(() => {
   const start = appStore.dayjs(`${bornYear.value}-${bornMonth.value}-${bornDay.value}`);
   if (!start.isValid()) return '';
   const end = start.add(expectedYearsToLive.value, 'years');
-  return end.diff(start, 'days');
+  return end.diff(start, 'days').toLocaleString('en');
 });
 
 const percentOfLife = computed(() => {
@@ -151,8 +153,13 @@ const percentOfLife = computed(() => {
 
 const handleClick = () => {
   if (!bornDay.value || !bornMonth.value || !bornYear.value || !expectedYearsToLive.value) return;
-  appStore.wasBornDate = `${bornYear.value}-${bornMonth.value}-${bornDay.value}`;
+  const date = `${bornYear.value}-${bornMonth.value}-${bornDay.value}`;
+  appStore.wasBornDate = date;
   appStore.yearsToLive = expectedYearsToLive.value;
+
+  savedWasBornDate.value = date;
+  savedYearsToLive.value = expectedYearsToLive.value;
+
   loading.value = true;
   appStore.calculate();
   setTimeout(() => {
