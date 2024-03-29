@@ -30,7 +30,9 @@
               :x="day.x"
               :width="cellSize"
               :height="cellSize"
-              :fill="day.color"
+              :fill="highlightedDates.includes(day.dayId) ? '#ff4242' : day.color"
+              :stroke="highlightedDates.includes(day.dayId) ? '#ff4242' : 'transparent'"
+              :stroke-width="highlightedDates.includes(day.dayId) ? 2 : 1"
               class="day"
             />
           </g>
@@ -76,6 +78,7 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
 });
 
 const appStore = useAppStore();
+const { highlightedDates } = storeToRefs(appStore);
 
 const weekendDays = [0, 6];
 
@@ -235,9 +238,7 @@ const getDayColor = (event: EventsObject | null, isInThePast: boolean): string =
   }
 
   .day {
-    stroke: transparent;
     outline: none;
-    stroke-width: 1;
   }
 
   .day:hover {

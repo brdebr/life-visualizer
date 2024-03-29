@@ -71,10 +71,12 @@ export const useAppStore = defineStore('app-store', () => {
       expectedDaysToLive,
     ];
   });
-  
-  const dynamicDataset = computed(() => {
+
+  const highlightedDates = ref<string[]>([]);
+
+  const arrayDataset = computed(() => {
     if(!isConfigured.value) {
-      return {};
+      return [];
     }
     const wasBorn = dayjs(wasBornForCalc.value);
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
@@ -109,11 +111,20 @@ export const useAppStore = defineStore('app-store', () => {
       ...personalEvents,
       ...staticDataset,
     ];
-    const finalRecord = finalDataset.reduce((acc, event) => {
-      const events = acc[event.date] || [];
-      events.push({ title: event.title, description: event.description, type: event.type, eventDate: event.date });
 
-      acc[event.date] = events;
+    return finalDataset;
+  });
+  
+  const dynamicDataset = computed(() => {
+    if(!isConfigured.value) {
+      return {};
+    }
+    
+    const finalRecord = arrayDataset.value.reduce((acc, { title, description, date, type }) => {
+      const events = acc[date] || [];
+      events.push({ title, description, type, eventDate: date });
+
+      acc[date] = events;
       return acc;
     }, {} as Record<string, EventObject[]>);
     // console.log(finalRecord);
@@ -161,5 +172,7 @@ export const useAppStore = defineStore('app-store', () => {
     selectEvent,
     isConfigured,
     amountOfDaysLivedStr,
+    arrayDataset,
+    highlightedDates,
   }
 })

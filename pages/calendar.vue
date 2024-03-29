@@ -24,6 +24,16 @@
       </template>
     </UMeter> 
   </div>
+  <div class="mb-12">
+    <UFormGroup label="Search for events" class="max-w-[420px] mx-auto">
+      <UInput
+        color="white"
+        variant="outline"
+        placeholder="Search for events"
+        v-model="searchValue"
+      />
+    </UFormGroup>
+  </div>
   <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
     <Heatmap
       v-for="year in appStore.arrayOfLifeYears"
@@ -38,11 +48,33 @@
   </div>
 </template>
 <script setup lang="ts">
+import Fuse from 'fuse.js';
 useHead({
   title: 'Calendar'
 })
 const appStore = useAppStore();
+const { highlightedDates } = storeToRefs(appStore);
 const router = useRouter();
+
+const fuse = new Fuse(appStore.arrayDataset, {
+  isCaseSensitive: false,
+  includeScore: true,
+  minMatchCharLength: 2,
+  ignoreLocation: true,
+  keys: ['date', 'title', 'description'],
+})
+
+const searchValue = ref('');
+const searchResults = ref<typeof appStore.arrayDataset>([]);
+
+watchDebounced([searchValue], () => {
+  const results = fuse.search(searchValue.value);
+  // console.log(results);
+  const tenResults = results.slice(0, 10).map((result) => result.item);
+  searchResults.value = tenResults;
+  highlightedDates.value = tenResults.map((result) => result.date);
+}, { debounce: 650 });
+
 
 if (!appStore.isConfigured) {
   router.push('/setup');
