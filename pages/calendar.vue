@@ -29,7 +29,7 @@
       <UInput
         color="white"
         variant="outline"
-        placeholder="Search for events"
+        placeholder="Name, title, or description of the event"
         v-model="searchValue"
       />
     </UFormGroup>
