@@ -20,6 +20,7 @@ export const useAppStore = defineStore('app-store', () => {
 
   const wasBornForCalc = ref(wasBornDate.value);
   const yearsToLiveForCalc = ref(yearsToLive.value);
+  const age = computed(() => dayjs().diff(wasBornForCalc.value, 'year'));
 
   const calculate = () => {
     wasBornForCalc.value = wasBornDate.value;
@@ -79,6 +80,7 @@ export const useAppStore = defineStore('app-store', () => {
       return [];
     }
     const wasBorn = dayjs(wasBornForCalc.value);
+    const expectedEnd = wasBorn.clone().add(yearsToLiveForCalc.value, 'year');
     const wasBornDate = wasBorn.format('YYYY-MM-DD');
     const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD');
     const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD');
@@ -109,7 +111,7 @@ export const useAppStore = defineStore('app-store', () => {
       type?: string;
     }[] = [
       ...personalEvents,
-      ...staticDataset,
+      ...staticDataset.filter((item) => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]'))
     ];
 
     return finalDataset;
@@ -174,5 +176,6 @@ export const useAppStore = defineStore('app-store', () => {
     amountOfDaysLivedStr,
     arrayDataset,
     highlightedDates,
+    age,
   }
 })

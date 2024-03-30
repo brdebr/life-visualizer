@@ -4,86 +4,166 @@
     <h1 class="mb-3 mt-3 prose">
       What was the first day of your life?
     </h1>
-    <div class="flex gap-3 mb-3">
-      <UFormGroup label="Day" class="max-w-[100px]">
-        <UInput
-          color="white"
-          type="number"
-          variant="outline"
-          placeholder="01-31"
-          max="31"
-          min="1"
-          v-model="bornDay"
-        />
-      </UFormGroup>
-      <UFormGroup label="Month" class="max-w-[100px]">
-        <UInput
-          color="white"
-          type="number"
-          variant="outline"
-          placeholder="01-12"
-          max="12"
-          min="1"
-          v-model="bornMonth"
-        />
-      </UFormGroup>
-      <UFormGroup label="Year" class="max-w-[100px]">
-        <UInput
-          color="white"
-          type="number"
-          variant="outline"
-          :max="$dayjs().year()"
-          min="1900"
-          :placeholder="'1900-'+$dayjs().year()"
-          v-model="bornYear"
-        />
-      </UFormGroup>
-      <UFormGroup label="Full date" class="w-5/12 ml-auto">
-        <UInput
-          color="white"
-          disabled
-          variant="outline"
-          :model-value="computedDate"
-        >
-          <template #trailing>
-            <span class="text-xs prose">{{ currentAge }} years</span>
+    <form @submit.prevent="handleClick" autocomplete="off">
+      <div class="flex gap-3 mb-3">
+        <UFormGroup label="Day" class="max-w-[100px]">
+          <ClientOnly>
+            <UInput
+              color="white"
+              type="number"
+              variant="outline"
+              placeholder="01-31"
+              max="31"
+              min="1"
+              v-model="bornDay"
+            />
+            <template #fallback>
+              <UInput
+                color="white"
+                type="number"
+                variant="outline"
+                placeholder="01-31"
+                max="31"
+                min="1"
+                model-value="1"
+              />
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+        <UFormGroup label="Month" class="max-w-[100px]">
+          <ClientOnly>
+            <UInput
+              color="white"
+              type="number"
+              variant="outline"
+              placeholder="01-12"
+              max="12"
+              min="1"
+              v-model="bornMonth"
+            />
+            <template #fallback>
+              <UInput
+                color="white"
+                type="number"
+                variant="outline"
+                placeholder="01-12"
+                max="12"
+                min="1"
+                model-value="1"
+              />
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+        <UFormGroup label="Year" class="max-w-[100px]">
+          <ClientOnly>
+            <UInput
+              color="white"
+              type="number"
+              variant="outline"
+              placeholder="YYYY"
+              max="2022"
+              min="1900"
+              v-model="bornYear"
+            />
+            <template #fallback>
+              <UInput
+                color="white"
+                type="number"
+                variant="outline"
+                placeholder="YYYY"
+                max="2022"
+                min="1900"
+                model-value="1970"
+              />
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+        <UFormGroup label="Full date" class="w-5/12 ml-auto">
+          <ClientOnly>
+            <UInput
+              color="white"
+              disabled
+              variant="outline"
+              :model-value="computedDate"
+            >
+              <template #trailing>
+                <span class="text-xs prose">{{ currentAge }} years</span>
+              </template>
+            </UInput>
+            <template #fallback>
+              <UInput
+                color="white"
+                disabled
+                variant="outline"
+                model-value="Monday, 01/01/1970"
+              >
+                <template #trailing>
+                  <span class="text-xs prose">0 years</span>
+                </template>
+              </UInput>
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <UFormGroup label="How many years do you expect to live?" class="min-w-[272px]">
+          <ClientOnly>
+            <UInput
+              color="white"
+              type="number"
+              variant="outline"
+              placeholder="Amount of years"
+              v-model="expectedYearsToLive"
+            />
+            <template #fallback>
+              <UInput
+                color="white"
+                type="number"
+                variant="outline"
+                placeholder="Amount of years"
+                model-value="105"
+              />
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+        <UFormGroup label="Days lived / Days to live" class="w-5/12 ml-auto">
+          <ClientOnly>
+            <UInput
+              color="white"
+              disabled
+              variant="outline"
+              :model-value="`${amountOfDaysLived}${amountOfDaysInExpectedYears}`"
+            >
+              <template #trailing>
+                <span class="text-xs prose">{{ percentOfLife }}</span>
+              </template>
+            </UInput>
+            <template #fallback>
+              <UInput
+                color="white"
+                disabled
+                variant="outline"
+                model-value="0 / 0"
+              >
+                <template #trailing>
+                  <span class="text-xs prose">0%</span>
+                </template>
+              </UInput>
+            </template>
+          </ClientOnly>
+        </UFormGroup>
+      </div>
+      <div class="mt-9">
+        <UButton :loading block type="submit" color="primary">
+          <template #default>
+            Calculate
           </template>
-        </UInput>
-      </UFormGroup>
-    </div>
-    <div class="flex gap-3 mt-6">
-      <UFormGroup label="How many years do you expect to live?" class="min-w-[272px]">
-        <UInput
-          color="white"
-          type="number"
-          variant="outline"
-          placeholder="Amount of years"
-          v-model="expectedYearsToLive"
-        />
-      </UFormGroup>
-      <UFormGroup label="Days lived / Days to live" class="w-5/12 ml-auto">
-        <UInput
-          color="white"
-          disabled
-          variant="outline"
-          :model-value="`${amountOfDaysLived}${amountOfDaysInExpectedYears}`"
-        >
           <template #trailing>
-            <span class="text-xs prose">{{ percentOfLife }}</span>
+            <UIcon name="material-symbols:event-upcoming-rounded" dynamic class="size-5" />
           </template>
-        </UInput>
-      </UFormGroup>
-    </div>
-    <div class="mt-9">
-      <UButton :loading block @click="handleClick" color="primary">
-        <template #default>
-          Calculate
-        </template>
-        <template #trailing>
-          <UIcon name="material-symbols:event-upcoming-rounded" dynamic class="size-5" />
-        </template>
-      </UButton>
-    </div>
+        </UButton>
+      </div>
+    </form>
   </div>
 </template>
 <script setup lang="ts">
