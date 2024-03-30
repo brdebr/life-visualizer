@@ -25,6 +25,7 @@
                 placeholder="01-31"
                 max="31"
                 min="1"
+                disabled
                 model-value="1"
               />
             </template>
@@ -49,6 +50,7 @@
                 placeholder="01-12"
                 max="12"
                 min="1"
+                disabled
                 model-value="1"
               />
             </template>
@@ -73,6 +75,7 @@
                 placeholder="YYYY"
                 max="2022"
                 min="1900"
+                disabled
                 model-value="1970"
               />
             </template>
@@ -121,6 +124,7 @@
                 type="number"
                 variant="outline"
                 placeholder="Amount of years"
+                disabled
                 model-value="105"
               />
             </template>
