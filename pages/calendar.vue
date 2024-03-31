@@ -26,16 +26,6 @@
       </template>
     </UMeter>
   </div>
-  <form @submit.prevent="false" autocomplete="off" class="mb-12">
-    <UFormGroup label="Search for events" class="max-w-[420px] mx-auto">
-      <UInput
-        color="white"
-        variant="outline"
-        placeholder="Name, title, or description of the event"
-        v-model="searchValue"
-      />
-    </UFormGroup>
-  </form>
   <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
     <Heatmap
       v-for="year in appStore.arrayOfLifeYears"
@@ -50,44 +40,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import Fuse from 'fuse.js';
 useHead({
   title: 'Calendar'
 })
 const appStore = useAppStore();
-const { highlightedDates } = storeToRefs(appStore);
 const router = useRouter();
-
-const fuse = new Fuse(appStore.arrayDataset, {
-  isCaseSensitive: false,
-  includeScore: true,
-  minMatchCharLength: 3,
-  ignoreLocation: true,
-  keys: ['date', 'title', 'description'],
-})
-
-const searchValue = ref('');
-const searchResults = ref<typeof appStore.arrayDataset>([]);
-
-watchDebounced([searchValue], () => {
-  if (!searchValue.value) {
-    searchResults.value = [];
-    highlightedDates.value = [];
-    return;
-  }
-  // Check if the value is YYYY-MM-DD
-  if (searchValue.value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    searchResults.value = [];
-    highlightedDates.value = [searchValue.value];
-    return;
-  }
-  const results = fuse.search(searchValue.value);
-  // console.log(results);
-  const tenResults = results.filter(el => (el.score || 1) < 0.3).slice(0, 10).map((result) => result.item);
-  // console.log(tenResults);
-  searchResults.value = tenResults;
-  highlightedDates.value = tenResults.map((result) => result.date);
-}, { debounce: 650 });
 
 if (!appStore.isConfigured) {
   router.push('/setup');

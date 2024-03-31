@@ -175,6 +175,7 @@ useHead({
 })
 const appStore = useAppStore();
 const setupStore = useSetupStore();
+const searchStore = useSearchStore();
 const { savedWasBornDate, savedYearsToLive } = storeToRefs(setupStore);
 const router = useRouter();
 
@@ -245,6 +246,7 @@ const handleClick = () => {
 
   loading.value = true;
   appStore.calculate();
+  searchStore.indexDataset();
   setTimeout(() => {
     router.push('/calendar');
   }, 350);

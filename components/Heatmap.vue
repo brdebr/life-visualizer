@@ -82,7 +82,8 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
 });
 
 const appStore = useAppStore();
-const { highlightedDates } = storeToRefs(appStore);
+const searchStore = useSearchStore();
+const { highlightedDates } = storeToRefs(searchStore);
 
 const weekendDays = [0, 6];
 
