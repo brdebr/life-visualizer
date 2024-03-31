@@ -1,7 +1,8 @@
 <template>
-  <div class="mx-auto min-h-[100dvh] pt-2 pb-10">
-    <Tooltip />
+  <div class="mx-auto min-h-[100dvh] pb-10">
+    <LayoutHeader />
     <NuxtPage />
+    <LayoutTooltip />
   </div>
 </template>
 <script setup lang="ts">

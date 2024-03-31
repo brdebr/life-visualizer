@@ -3,7 +3,11 @@
     <ClientOnly>
       <h3 :style="{
         fontSize: `${props.zoomLevel * 10}px`,
-      }">{{ header }}</h3>
+      }">
+        <slot name="header">
+          {{ header }}
+        </slot>
+      </h3>
       <svg class="calendar-heatmap" :width="computedSizes.width" :height="computedSizes.height" :viewBox="computedViewBox">
         <g :transform="transformMonthsLabel" class="month-labels">
           <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"

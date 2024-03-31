@@ -1,15 +1,19 @@
 <template>
-  <Heading />
-  <div class="flex flex-col items-center gap-4 mt-5">
+  <div class="flex flex-col items-center gap-4">
     <div class="">
       <Heatmap
         v-bind="{
           startDate: startOfYear,
           endDate: endOfYear,
           zoomLevel: 1.5,
-          header: `${year} is at ${appStore.percentOfCurrentYear}`
         }"
-      />
+      >
+        <template #header>
+          <div class="text-center text-slate-600 dark:text-slate-400 mb-2">
+            {{ year }} is at {{ appStore.percentOfCurrentYear }}
+          </div>
+        </template>
+      </Heatmap>
     </div>
     <div class="prose text-sm text-center">
       See your whole life visualized as a this calendar of boxes. <br> Marked with historical and personal events.

@@ -1,5 +1,4 @@
 <template>
-  <Heading />
   <div class="my-3">
     <Heatmap
       v-bind="{
@@ -13,8 +12,8 @@
   <div class="container mx-auto my-7 px-5 pb-6" v-if="appStore.isConfigured">
     <UMeter color="teal" :value="appStore.percentOfLife" indicator>
       <template #label>
-        <p class="text-sm flex items-baseline gap-8">
-          <span class="text-teal-500 dark:text-teal-400">
+        <div class="text-sm flex items-baseline gap-8">
+          <span class="text-teal-500 dark:text-teal-400 mr-3">
             Percent of your life
           </span>
           <span class="prose text-[11px]">
@@ -23,11 +22,11 @@
           <span class="prose text-[11px]">
             {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
           </span>
-        </p>
+        </div>
       </template>
     </UMeter>
   </div>
-  <form autocomplete="off" class="mb-12">
+  <form @submit.prevent="false" autocomplete="off" class="mb-12">
     <UFormGroup label="Search for events" class="max-w-[420px] mx-auto">
       <UInput
         color="white"
@@ -73,6 +72,7 @@ const searchResults = ref<typeof appStore.arrayDataset>([]);
 watchDebounced([searchValue], () => {
   if (!searchValue.value) {
     searchResults.value = [];
+    highlightedDates.value = [];
     return;
   }
   // Check if the value is YYYY-MM-DD
@@ -83,12 +83,11 @@ watchDebounced([searchValue], () => {
   }
   const results = fuse.search(searchValue.value);
   // console.log(results);
-  const tenResults = results.filter(el => (el.score || 1) < 0.44).slice(0, 10).map((result) => result.item);
+  const tenResults = results.filter(el => (el.score || 1) < 0.3).slice(0, 10).map((result) => result.item);
   // console.log(tenResults);
   searchResults.value = tenResults;
   highlightedDates.value = tenResults.map((result) => result.date);
 }, { debounce: 650 });
-
 
 if (!appStore.isConfigured) {
   router.push('/setup');
