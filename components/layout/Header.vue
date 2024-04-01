@@ -1,6 +1,6 @@
 <template>
   <div class="header-container">
-    <header ref="headerElement" class="header">
+    <header class="header">
       <div class="w-full flex justify-start gap-2 px-2">
         <UDropdown :items :popper="{ placement: 'bottom-start' }">
           <UButton square color="primary" size="xs" variant="outline" icon="i-heroicons-bars-3-16-solid" />
@@ -15,29 +15,59 @@
         </h1>
       </div>
       <div class="w-full flex justify-end gap-2 px-2">
-        <UButtonGroup v-if="isCalendarPage" size="xs" :ui="buttonGroupUI">
+        <UDropdown :items="searchItems" :popper="{ placement: 'bottom-end' }" v-model:open="isShowingDropdown" v-if="isCalendarPage">
+          <UButtonGroup size="xs" :ui="buttonGroupUI">
           <transition name="grow-shrink" mode="out-in">
-            <UInput v-if="showingSearchInput" v-model="searchValue" placeholder="Search for events..." />
-          </transition>
-          <UButton @click="showingSearchInput = !showingSearchInput" class="transition-all z-10" icon="i-heroicons-magnifying-glass-16-solid" />
-        </UButtonGroup>
+              <UInput v-if="showingSearchInput" @click="handleSearchInputClick" @keydown.space.prevent="() => searchValue = searchValue + ' '" v-model="searchValue" placeholder="Search for events..." />
+            </transition>
+            <UButton @click="handleSearchButtonClick" class="transition-all z-10" icon="i-heroicons-magnifying-glass-16-solid" />
+          </UButtonGroup>
+        </UDropdown>
         <UButton square color="primary" size="xs" variant="outline" icon="i-heroicons-moon-16-solid" />
       </div>
     </header>
-    <div ref="headerSpacerHolderElement" class="header-space-holder" style="height: 36px;">
+    <div class="header-space-holder" style="height: 36px;">
     </div>
   </div>
 </template>
 <script setup lang="ts">
-const headerElement = ref<HTMLElement | null>(null);
-const headerSpacerHolderElement = ref<HTMLElement | null>(null);
 
 const showingSearchInput = ref(false);
 const searchStore = useSearchStore();
-const { searchValue } = storeToRefs(searchStore);
+const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore);
+
+const searchItems = computed(() => {
+  return [searchResults.value.map((result) => ({
+    label: result.title,
+    // icon: 'i-heroicons-calendar-16-solid',
+    click: () => {
+      highlightedDates.value = [result.date];
+      document.querySelector(`[data-test-calendar-year="${result.date.split('-')[0]}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }))].filter((items) => items.length);
+});
+
+const isShowingDropdown = ref(false);
+watch(() => searchResults.value.length, () => {
+  isShowingDropdown.value = !!searchResults.value.length;
+});
+
+const handleSearchButtonClick = (e: MouseEvent) => {
+  e.preventDefault();
+  showingSearchInput.value = !showingSearchInput.value;
+};
+
+const handleSearchInputClick = (e: MouseEvent) => {
+  e.preventDefault();
+  if (!searchValue.value) {
+    return;
+  }
+  isShowingDropdown.value = true;
+  searchStore.computeHighlightedDates();
+};
 
 watchEffect(() => {
-  if (showingSearchInput.value) {
+  if (!showingSearchInput.value) {
     searchValue.value = '';
   }
 });
@@ -74,14 +104,6 @@ const buttonGroupUI = {
 const route = useRoute();
 const isCalendarPage = computed(() => route.name === 'calendar');
 
-const resetHeaderSpacerHeight = () => {
-  if (!headerSpacerHolderElement.value || !headerElement.value) {
-    return;
-  }
-  headerSpacerHolderElement.value.style.height = `${headerElement.value.clientHeight}px`;
-};
-onMounted(resetHeaderSpacerHeight);
-onUpdated(resetHeaderSpacerHeight);
 </script>
 <style lang="scss">
 .header-container {

@@ -20,12 +20,24 @@ export const useSearchStore = defineStore('search-store', () => {
       includeScore: true,
       minMatchCharLength: 3,
       ignoreLocation: true,
-      keys: ['date', 'title', 'description'],
+      threshold: 0.4,
+      keys: [
+        {
+          name: 'title',
+          weight: 2,
+        },
+        'description',
+        'date',
+      ],
     });
   };
 
   const searchValue = ref('');
   const searchResults = ref<typeof arrayDataset.value>([]);
+
+  const computeHighlightedDates = () => {
+    highlightedDates.value = searchResults.value.map((result) => result.date);
+  };
   
   watchDebounced([searchValue], () => {
     if (!searchValue.value || fuseRef.value === null) {
@@ -45,13 +57,14 @@ export const useSearchStore = defineStore('search-store', () => {
     const tenResults = results.filter(el => (el.score || 1) < 0.3).slice(0, 10).map((result) => result.item);
     // console.log('tenResults', JSON.parse(JSON.stringify(tenResults)));
     searchResults.value = tenResults;
-    highlightedDates.value = tenResults.map((result) => result.date);
+    computeHighlightedDates();
   }, { debounce: 650 });
 
   return {
     searchValue,
     searchResults,
-    highlightedDates,
     indexDataset,
+    highlightedDates,
+    computeHighlightedDates,
   }
 });
