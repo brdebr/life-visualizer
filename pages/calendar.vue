@@ -5,9 +5,14 @@
         startDate: startOfYear,
         endDate: endOfYear,
         zoomLevel: 1.5,
-        header: `${year} is at ${appStore.percentOfCurrentYear}`
       }"
-    />
+    >
+      <template #header>
+        <div class="prose text-sm mb-1">
+          {{ year }} is at {{ appStore.percentOfCurrentYear }}
+        </div>
+      </template>
+    </Heatmap>
   </div>
   <div class="container mx-auto my-7 px-5 pb-6" v-if="appStore.isConfigured">
     <UMeter color="teal" :value="appStore.percentOfLife" indicator>

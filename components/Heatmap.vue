@@ -8,7 +8,7 @@
           {{ header }}
         </slot>
       </h3>
-      <svg class="calendar-heatmap" :width="computedSizes.width" :height="computedSizes.height" :viewBox="computedViewBox">
+      <svg class="calendar-heatmap" :data-test-calendar-year="startDate.split('-')[0]" :width="computedSizes.width" :height="computedSizes.height" :viewBox="computedViewBox">
         <g :transform="transformMonthsLabel" class="month-labels">
           <g v-for="month in monthsLabels" :key="month.label" :data-key="month.label"
             :transform="`translate(${month.translateX}, 2)`">
