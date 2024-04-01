@@ -1,9 +1,8 @@
 <template>
   <div class="max-w-[600px] mx-auto">
-    <Heading />
-    <h1 class="mb-3 mt-3 prose">
+    <h2 class="mb-3 mt-3 prose">
       What was the first day of your life?
-    </h1>
+    </h2>
     <form @submit.prevent="handleClick" autocomplete="off">
       <div class="flex gap-3 mb-3">
         <UFormGroup label="Day" class="max-w-[100px]">
@@ -176,6 +175,7 @@ useHead({
 })
 const appStore = useAppStore();
 const setupStore = useSetupStore();
+const searchStore = useSearchStore();
 const { savedWasBornDate, savedYearsToLive } = storeToRefs(setupStore);
 const router = useRouter();
 
@@ -246,6 +246,7 @@ const handleClick = () => {
 
   loading.value = true;
   appStore.calculate();
+  searchStore.indexDataset();
   setTimeout(() => {
     router.push('/calendar');
   }, 350);

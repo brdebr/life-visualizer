@@ -73,8 +73,6 @@ export const useAppStore = defineStore('app-store', () => {
     ];
   });
 
-  const highlightedDates = ref<string[]>([]);
-
   const arrayDataset = computed(() => {
     if(!isConfigured.value) {
       return [];
@@ -175,7 +173,6 @@ export const useAppStore = defineStore('app-store', () => {
     isConfigured,
     amountOfDaysLivedStr,
     arrayDataset,
-    highlightedDates,
     age,
   }
 })
