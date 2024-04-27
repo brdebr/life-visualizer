@@ -16,18 +16,6 @@
               min="1"
               v-model="bornDay"
             />
-            <template #fallback>
-              <UInput
-                color="white"
-                type="number"
-                variant="outline"
-                placeholder="01-31"
-                max="31"
-                min="1"
-                disabled
-                model-value="1"
-              />
-            </template>
           </ClientOnly>
         </UFormGroup>
         <UFormGroup label="Month" class="max-w-[100px]">
@@ -41,18 +29,6 @@
               min="1"
               v-model="bornMonth"
             />
-            <template #fallback>
-              <UInput
-                color="white"
-                type="number"
-                variant="outline"
-                placeholder="01-12"
-                max="12"
-                min="1"
-                disabled
-                model-value="1"
-              />
-            </template>
           </ClientOnly>
         </UFormGroup>
         <UFormGroup label="Year" class="max-w-[100px]">
@@ -66,18 +42,6 @@
               min="1900"
               v-model="bornYear"
             />
-            <template #fallback>
-              <UInput
-                color="white"
-                type="number"
-                variant="outline"
-                placeholder="YYYY"
-                max="2022"
-                min="1900"
-                disabled
-                model-value="1970"
-              />
-            </template>
           </ClientOnly>
         </UFormGroup>
         <UFormGroup label="Full date" class="w-5/12 ml-auto">
@@ -92,18 +56,6 @@
                 <span class="text-xs prose">{{ currentAge }} years</span>
               </template>
             </UInput>
-            <template #fallback>
-              <UInput
-                color="white"
-                disabled
-                variant="outline"
-                model-value="Monday, 01/01/1970"
-              >
-                <template #trailing>
-                  <span class="text-xs prose">0 years</span>
-                </template>
-              </UInput>
-            </template>
           </ClientOnly>
         </UFormGroup>
       </div>
@@ -117,16 +69,6 @@
               placeholder="Amount of years"
               v-model="expectedYearsToLive"
             />
-            <template #fallback>
-              <UInput
-                color="white"
-                type="number"
-                variant="outline"
-                placeholder="Amount of years"
-                disabled
-                model-value="105"
-              />
-            </template>
           </ClientOnly>
         </UFormGroup>
         <UFormGroup label="Days lived / Days to live" class="w-5/12 ml-auto">
@@ -141,18 +83,6 @@
                 <span class="text-xs prose">{{ percentOfLife }}</span>
               </template>
             </UInput>
-            <template #fallback>
-              <UInput
-                color="white"
-                disabled
-                variant="outline"
-                model-value="0 / 0"
-              >
-                <template #trailing>
-                  <span class="text-xs prose">0%</span>
-                </template>
-              </UInput>
-            </template>
           </ClientOnly>
         </UFormGroup>
       </div>
