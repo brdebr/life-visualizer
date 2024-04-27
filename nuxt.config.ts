@@ -21,5 +21,6 @@ export default defineNuxtConfig({
     plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear', 'isBetween', 'isoWeek', 'dayOfYear'],
     defaultLocale: 'en',
     defaultTimezone: 'UTC',
-  }
+  },
+  ssr: false,
 })
