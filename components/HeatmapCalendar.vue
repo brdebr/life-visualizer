@@ -228,7 +228,7 @@ const { isDark } = useIsDarkRef()
 const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
 const debouncedColorMap = useDebounce(dayColorMap, 350)
 
-const getDayColor = (event: EventsObject | null, isInThePast: boolean): string => {
+const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
   if (event?.events?.some(event => event.type === 'personal')) {
     return debouncedColorMap.value.PERSONAL
   }

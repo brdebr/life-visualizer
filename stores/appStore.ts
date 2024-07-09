@@ -1,12 +1,13 @@
 export type EventObject = {
   title?: string
   description?: string
-  eventDate?: string
+  startDate?: string
+  endDate?: string
   type?: string
 }
 
-export type EventsObject = {
-  eventDate: string
+export type DateEventsObject = {
+  dateId: string
   events?: EventObject[]
 }
 
@@ -15,11 +16,12 @@ export const useAppStore = defineStore('app-store', () => {
 
   const wasBornDate = ref('1970-01-01')
   const yearsToLive = ref(105)
-  const isConfigured = ref(false)
 
   const wasBornForCalc = ref(wasBornDate.value)
   const yearsToLiveForCalc = ref(yearsToLive.value)
   const age = computed(() => dayjs().diff(wasBornForCalc.value, 'year'))
+
+  const isConfigured = ref(false)
 
   const calculate = () => {
     wasBornForCalc.value = wasBornDate.value
@@ -121,7 +123,7 @@ export const useAppStore = defineStore('app-store', () => {
 
     const finalRecord = arrayDataset.value.reduce((acc, { title, description, date, type }) => {
       const events = acc[date] || []
-      events.push({ title, description, type, eventDate: date })
+      events.push({ title, description, type, startDate: date })
 
       acc[date] = events
       return acc
@@ -131,7 +133,7 @@ export const useAppStore = defineStore('app-store', () => {
     return finalRecord
   })
 
-  const selectedEvent = ref<EventsObject | null>(null)
+  const selectedEvent = ref<DateEventsObject | null>(null)
   const selectEvent = useDebounceFn((date: string) => {
     if (!date) {
       selectedEvent.value = null
@@ -140,17 +142,17 @@ export const useAppStore = defineStore('app-store', () => {
     selectedEvent.value = getDayContent(date)
   }, 250)
 
-  const getDayContent = (date: string): EventsObject => {
+  const getDayContent = (date: string): DateEventsObject => {
     const events = dynamicDataset.value?.[date]
-    const eventDate = dayjs(date).format('dddd - YYYY-MM-DD')
+    const dateId = dayjs(date).format('dddd - YYYY-MM-DD')
     if (!events?.length) {
       return {
-        eventDate,
+        dateId,
         events: [{ title: 'No events for this day.', description: '' }],
       }
     }
     return {
-      eventDate,
+      dateId,
       events: events,
     }
   }
