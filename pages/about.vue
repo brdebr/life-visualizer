@@ -8,38 +8,46 @@
         It's built with:
       </p>
       <ul>
-        <li v-for="tech in techList" :key="tech.label">
-          <a :href="tech.url" target="_blank" rel="noopener noreferrer">{{ tech.label }}</a>
+        <li
+          v-for="tech in techList"
+          :key="tech.label"
+        >
+          <a
+            :href="tech.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ tech.label }}</a>
         </li>
       </ul>
     </div>
   </UCard>
 </template>
+
 <script setup lang="ts">
 const techList = [
   {
     label: 'Nuxt 3',
-    url: 'https://v3.nuxtjs.org/'
+    url: 'https://v3.nuxtjs.org/',
   },
   {
     label: 'Tailwind CSS',
-    url: 'https://tailwindcss.com/'
+    url: 'https://tailwindcss.com/',
   },
   {
     label: 'Nuxt UI components',
-    url: 'https://ui.nuxt.com/'
+    url: 'https://ui.nuxt.com/',
   },
   {
     label: 'DayJs',
-    url: 'https://day.js.org/'
+    url: 'https://day.js.org/',
   },
   {
     label: 'Pinia',
-    url: 'https://pinia.vuejs.org/'
+    url: 'https://pinia.vuejs.org/',
   },
   {
     label: 'VueTippy',
-    url: 'https://vue-tippy.netlify.app/'
-  }
+    url: 'https://vue-tippy.netlify.app/',
+  },
 ]
 </script>

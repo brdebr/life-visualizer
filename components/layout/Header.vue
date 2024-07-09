@@ -2,8 +2,17 @@
   <div class="header-container">
     <header class="header">
       <div class="w-full flex justify-start gap-2 px-2">
-        <UDropdown :items :popper="{ placement: 'bottom-start' }">
-          <UButton square color="primary" size="xs" variant="outline" icon="i-heroicons-bars-3-16-solid" />
+        <UDropdown
+          :items
+          :popper="{ placement: 'bottom-start' }"
+        >
+          <UButton
+            square
+            color="primary"
+            size="xs"
+            variant="outline"
+            icon="i-heroicons-bars-3-16-solid"
+          />
         </UDropdown>
       </div>
       <div class="w-fit">
@@ -11,66 +20,101 @@
           <span>
             Life Visualizer
           </span>
-          <img class="logo" src="/logo-icon-bg.png" alt="logo" width="12" height="12" />
+          <img
+            class="logo"
+            src="/logo-icon-bg.png"
+            alt="logo"
+            width="12"
+            height="12"
+          >
         </h1>
       </div>
       <div class="w-full flex justify-end gap-2 px-2">
-        <UDropdown :items="searchItems" :popper="{ placement: 'bottom-end' }" v-model:open="isShowingDropdown" v-if="isCalendarPage">
-          <UButtonGroup size="xs" :ui="buttonGroupUI">
-          <transition name="grow-shrink" mode="out-in">
-              <UInput v-if="showingSearchInput" @click="handleSearchInputClick" @keydown.space.prevent="() => searchValue = searchValue + ' '" v-model="searchValue" placeholder="Search for events..." />
+        <UDropdown
+          v-if="isCalendarPage"
+          v-model:open="isShowingDropdown"
+          :items="searchItems"
+          :popper="{ placement: 'bottom-end' }"
+        >
+          <UButtonGroup
+            size="xs"
+            :ui="buttonGroupUI"
+          >
+            <transition
+              name="grow-shrink"
+              mode="out-in"
+            >
+              <UInput
+                v-if="showingSearchInput"
+                v-model="searchValue"
+                placeholder="Search for events..."
+                @click="handleSearchInputClick"
+                @keydown.space.prevent="() => searchValue = searchValue + ' '"
+              />
             </transition>
-            <UButton @click="handleSearchButtonClick" class="transition-all z-10" icon="i-heroicons-magnifying-glass-16-solid" />
+            <UButton
+              class="transition-all z-10"
+              icon="i-heroicons-magnifying-glass-16-solid"
+              @click="handleSearchButtonClick"
+            />
           </UButtonGroup>
         </UDropdown>
-        <UButton square color="primary" size="xs" variant="outline" icon="i-heroicons-moon-16-solid" />
+        <UButton
+          square
+          color="primary"
+          size="xs"
+          variant="outline"
+          icon="i-heroicons-moon-16-solid"
+        />
       </div>
     </header>
-    <div class="header-space-holder" style="height: 36px;">
-    </div>
+    <div
+      class="header-space-holder"
+      style="height: 36px;"
+    />
   </div>
 </template>
-<script setup lang="ts">
 
-const showingSearchInput = ref(false);
-const searchStore = useSearchStore();
-const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore);
+<script setup lang="ts">
+const showingSearchInput = ref(false)
+const searchStore = useSearchStore()
+const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore)
 
 const searchItems = computed(() => {
-  return [searchResults.value.map((result) => ({
+  return [searchResults.value.map(result => ({
     label: result.title,
     // icon: 'i-heroicons-calendar-16-solid',
     click: () => {
-      highlightedDates.value = [result.date];
-      document.querySelector(`[data-test-calendar-year="${result.date.split('-')[0]}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }))].filter((items) => items.length);
-});
+      highlightedDates.value = [result.date]
+      document.querySelector(`[data-test-calendar-year="${result.date.split('-')[0]}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    },
+  }))].filter(items => items.length)
+})
 
-const isShowingDropdown = ref(false);
+const isShowingDropdown = ref(false)
 watch(() => searchResults.value.length, () => {
-  isShowingDropdown.value = !!searchResults.value.length;
-});
+  isShowingDropdown.value = !!searchResults.value.length
+})
 
 const handleSearchButtonClick = (e: MouseEvent) => {
-  e.preventDefault();
-  showingSearchInput.value = !showingSearchInput.value;
-};
+  e.preventDefault()
+  showingSearchInput.value = !showingSearchInput.value
+}
 
 const handleSearchInputClick = (e: MouseEvent) => {
-  e.preventDefault();
+  e.preventDefault()
   if (!searchValue.value) {
-    return;
+    return
   }
-  isShowingDropdown.value = true;
-  searchStore.computeHighlightedDates();
-};
+  isShowingDropdown.value = true
+  searchStore.computeHighlightedDates()
+}
 
 watchEffect(() => {
   if (!showingSearchInput.value) {
-    searchValue.value = '';
+    searchValue.value = ''
   }
-});
+})
 
 const items = [[
   {
@@ -88,23 +132,23 @@ const items = [[
     to: '/about',
     icon: 'i-heroicons-information-circle-16-solid',
   },
-]];
+]]
 
 const buttonGroupUI = {
   orientation: {
     'rounded-md': {
       horizontal: {
         start: 'rounded-e-md rounded-s-none',
-        end: 'rounded-s-md rounded-e-none'
-      }
-    }
-  }
-};
+        end: 'rounded-s-md rounded-e-none',
+      },
+    },
+  },
+}
 
-const route = useRoute();
-const isCalendarPage = computed(() => route.name === 'calendar');
-
+const route = useRoute()
+const isCalendarPage = computed(() => route.name === 'calendar')
 </script>
+
 <style lang="scss">
 .header-container {
   @apply
