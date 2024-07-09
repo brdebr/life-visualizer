@@ -19,7 +19,7 @@ export const defaultHeatmapLightColorsMap: ColorsMapType = {
 }
 
 export const defaultHeatmapDarkColorsMap: ColorsMapType = {
-  NO_DATA: '#f3f3f3',
+  NO_DATA: '#d1d1d1',
   PERSONAL: '#2563eb',
   HISTORICAL: '#2dd4bf',
   PAST: '#374151',
