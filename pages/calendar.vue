@@ -9,7 +9,7 @@
         }"
       >
         <template #header>
-          <div class="prose text-sm mb-1">
+          <div class="prose text-sm mb-1 mx-auto">
             {{ year }} is at {{ appStore.percentOfCurrentYear }}
           </div>
         </template>

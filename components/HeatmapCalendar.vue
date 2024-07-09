@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-center items-center">
     <h3
-      class="w-full"
+      class="w-full text-center"
       :style="{
         fontSize: `${props.zoomLevel * 10}px`,
       }"
