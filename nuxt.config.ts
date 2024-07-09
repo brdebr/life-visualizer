@@ -3,11 +3,11 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
     timeline: {
-      enabled: false
-    }
+      enabled: false,
+    },
   },
   imports: {
-    dirs: ['data']
+    dirs: ['data'],
   },
   modules: [
     '@pinia/nuxt',
@@ -15,12 +15,19 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/ui',
     'dayjs-nuxt',
+    '@nuxt/eslint',
   ],
   dayjs: {
     locales: ['es', 'en'],
     plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear', 'isBetween', 'isoWeek', 'dayOfYear'],
     defaultLocale: 'en',
     defaultTimezone: 'UTC',
+  },
+  eslint: {
+    config: {
+      stylistic: true,
+    },
+    checker: true,
   },
   ssr: false,
 })
