@@ -9,7 +9,7 @@
         }"
       >
         <template #header>
-          <div class="prose text-sm mb-1 mx-auto">
+          <div class="prose app-text text-sm mb-1 mx-auto">
             {{ year }} is at {{ appStore.percentOfCurrentYear }}
           </div>
         </template>
@@ -26,13 +26,13 @@
       >
         <template #label>
           <div class="text-sm flex items-baseline gap-8">
-            <span class="text-teal-500 dark:text-teal-400 mr-3">
+            <span class="text-teal-500 dark:text-teal-400 lg:mr-3 mr-auto">
               Percent of your life
             </span>
-            <span class="prose text-[11px]">
+            <span class="prose app-text text-[11px]">
               {{ appStore.age }} years / {{ appStore.yearsToLiveForCalc }} years
             </span>
-            <span class="prose text-[11px]">
+            <span class="prose app-text text-[11px]">
               {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
             </span>
           </div>

@@ -1,6 +1,6 @@
 <template>
   <UCard class="container mx-auto">
-    <div class="prose mx-auto text-center">
+    <div class="prose app-text mx-auto text-center">
       <p>
         This is a simple application to visualize your whole life like a Github contributions heatmap.
       </p>

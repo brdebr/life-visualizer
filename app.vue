@@ -25,6 +25,12 @@ useSeoMeta({
 </script>
 
 <style lang="scss">
+// App colors
+.app-text {
+  @apply text-cool-700 dark:text-cool-50;
+}
+
+// Tippy box
 .tippy-box {
   @apply bg-white dark:bg-slate-950;
 }

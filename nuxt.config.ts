@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     },
   },
   imports: {
-    dirs: ['data'],
+    dirs: ['data', 'constants'],
   },
   modules: [
     '@pinia/nuxt',

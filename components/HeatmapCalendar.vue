@@ -54,6 +54,7 @@
             :stroke="highlightedDates.includes(day.dayId) ? '#ff4242' : 'transparent'"
             :stroke-width="highlightedDates.includes(day.dayId) ? 2 : 1"
             class="day"
+            :class="{ today: day.dayId === appStore.dayjs().format('YYYY-MM-DD') }"
             @click="() => appStore.selectEvent(day.dayId)"
             @mouseenter="() => appStore.selectEvent(day.dayId)"
             @mouseleave="() => appStore.selectEvent('')"
@@ -222,17 +223,22 @@ const monthsLabels = computed(() => {
   })
 })
 
+const { isDark } = useIsDarkRef()
+
+const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
+const debouncedColorMap = useDebounce(dayColorMap, 350)
+
 const getDayColor = (event: EventsObject | null, isInThePast: boolean): string => {
   if (event?.events?.some(event => event.type === 'personal')) {
-    return defaultHeatmapColorsMap.PERSONAL
+    return debouncedColorMap.value.PERSONAL
   }
   if (event?.events?.every(event => !!event.description)) {
-    return defaultHeatmapColorsMap.HISTORICAL
+    return debouncedColorMap.value.HISTORICAL
   }
   if (isInThePast) {
-    return defaultHeatmapColorsMap.PAST
+    return debouncedColorMap.value.PAST
   }
-  return defaultHeatmapColorsMap.NO_DATA
+  return debouncedColorMap.value.NO_DATA
 }
 </script>
 
@@ -261,6 +267,9 @@ const getDayColor = (event: EventsObject | null, isInThePast: boolean): string =
 
   .day:hover {
     stroke: #000;
+  }
+  .day.today {
+    @apply stroke-water-500 dark:stroke-blue-500;
   }
 }
 </style>

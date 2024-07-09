@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-[600px] mx-auto">
-    <h2 class="mb-3 mt-3 prose">
+    <h2 class="mb-3 mt-3 prose app-text">
       What was the first day of your life?
     </h2>
     <form
@@ -61,7 +61,7 @@
             :model-value="computedDate"
           >
             <template #trailing>
-              <span class="text-xs prose">{{ currentAge }} years</span>
+              <span class="text-xs prose app-text">{{ currentAge }} years</span>
             </template>
           </UInput>
         </UFormGroup>
@@ -90,7 +90,7 @@
             :model-value="`${amountOfDaysLived}${amountOfDaysInExpectedYears}`"
           >
             <template #trailing>
-              <span class="text-xs prose">{{ percentOfLife }}</span>
+              <span class="text-xs app-text prose">{{ percentOfLife }}</span>
             </template>
           </UInput>
         </UFormGroup>
@@ -99,6 +99,7 @@
         <UButton
           :loading
           block
+          class="dark:text-white"
           type="submit"
           color="primary"
         >
