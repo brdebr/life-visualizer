@@ -64,7 +64,8 @@
           color="primary"
           size="xs"
           variant="outline"
-          icon="i-heroicons-moon-16-solid"
+          :icon="isDark ? 'i-heroicons-moon-16-solid' : 'i-heroicons-sun-16-solid'"
+          @click="toggleTheme"
         />
       </div>
     </header>
@@ -79,6 +80,8 @@
 const showingSearchInput = ref(false)
 const searchStore = useSearchStore()
 const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore)
+
+const { isDark, toggle: toggleTheme } = useIsDarkRef()
 
 const searchItems = computed(() => {
   return [searchResults.value.map(result => ({
@@ -176,6 +179,7 @@ const isCalendarPage = computed(() => route.name === 'calendar')
       text-lg
       font-semibold
       text-slate-800
+      dark:text-slate-200
       tracking-wide
       text-center
       justify-self-center
