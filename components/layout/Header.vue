@@ -126,6 +126,11 @@ const items = [[
     icon: 'i-heroicons-home-16-solid',
   },
   {
+    label: 'Events',
+    to: '/events',
+    icon: 'i-heroicons-cog-16-solid',
+  },
+  {
     label: 'Config data',
     to: '/setup',
     icon: 'i-heroicons-cog-16-solid',

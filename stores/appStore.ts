@@ -98,6 +98,35 @@ export const useAppStore = defineStore('app-store', () => {
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
 
+  // Store for custom events
+  const customEvents = ref<EventObject[]>([])
+
+  // Add a new custom event
+  const addCustomEvent = (event: EventObject) => {
+    customEvents.value.push(event)
+    // Save to localStorage for persistence
+    localStorage.setItem('customEvents', JSON.stringify(customEvents.value))
+  }
+
+  // Delete a custom event
+  const deleteCustomEvent = (index: number) => {
+    customEvents.value.splice(index, 1)
+    localStorage.setItem('customEvents', JSON.stringify(customEvents.value))
+  }
+
+  // Load custom events from localStorage
+  const loadCustomEvents = () => {
+    const savedEvents = localStorage.getItem('customEvents')
+    if (savedEvents) {
+      customEvents.value = JSON.parse(savedEvents)
+    }
+  }
+
+  // Call loadCustomEvents when the store is initialized
+  onMounted(() => {
+    loadCustomEvents()
+  })
+
   const arrayDataset = computed(() => {
     if (!isConfigured.value) {
       return []
@@ -160,6 +189,14 @@ export const useAppStore = defineStore('app-store', () => {
     }[] = [
       ...personalEvents,
       ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')),
+      ...customEvents.value.map(event => ({
+        date: event.startDate || '',
+        endDate: event.endDate,
+        title: event.title || '',
+        description: event.description || '',
+        type: event.type || 'custom',
+        category: event.category || 'default',
+      })),
     ]
 
     return finalDataset
@@ -263,5 +300,9 @@ export const useAppStore = defineStore('app-store', () => {
     age,
     eventCategories,
     getCategoryByName,
+    customEvents,
+    addCustomEvent,
+    deleteCustomEvent,
+    loadCustomEvents,
   }
 })
