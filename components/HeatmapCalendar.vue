@@ -167,16 +167,38 @@ const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : 
 const debouncedColorMap = useDebounce(dayColorMap, 350)
 
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
-  if (event?.events?.some(event => event.type === 'personal')) {
+  if (!event?.events?.length || event.events[0].title === 'No events for this day.') {
+    return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+  }
+
+  // Sort events by category priority
+  const sortedEvents = [...event.events].sort((a, b) => {
+    const catA = appStore.getCategoryByName(a.category)
+    const catB = appStore.getCategoryByName(b.category)
+    return catB.priority - catA.priority // Higher priority first
+  })
+
+  // Get the highest priority event
+  const topEvent = sortedEvents[0]
+
+  // Return color based on the event category
+  if (topEvent.type === 'personal' && !topEvent.category) {
     return debouncedColorMap.value.PERSONAL
   }
-  if (event?.events?.every(event => !!event.description)) {
+
+  // If there's a specific category, use its color
+  if (topEvent.category) {
+    const category = appStore.getCategoryByName(topEvent.category)
+    return category.color
+  }
+
+  // Fallback to historical events check
+  if (event.events.every(event => !!event.description)) {
     return debouncedColorMap.value.HISTORICAL
   }
-  if (isInThePast) {
-    return debouncedColorMap.value.PAST
-  }
-  return debouncedColorMap.value.NO_DATA
+
+  // Default past/future coloring
+  return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
 }
 
 // Canvas drawing functions

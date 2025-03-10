@@ -3,12 +3,19 @@ export type EventObject = {
   description?: string
   startDate?: string
   endDate?: string
+  category?: string
   type?: string
 }
 
 export type DateEventsObject = {
   dateId: string
   events?: EventObject[]
+}
+
+export type EventCategory = {
+  title: string
+  color: string
+  priority: number
 }
 
 export const useAppStore = defineStore('app-store', () => {
@@ -74,6 +81,23 @@ export const useAppStore = defineStore('app-store', () => {
     ]
   })
 
+  // Define event categories with priorities
+  const eventCategories = ref<EventCategory[]>([
+    { title: 'school', color: '#2563eb', priority: 10 },
+    { title: 'work', color: '#65a30d', priority: 9 },
+    { title: 'personal', color: '#db2777', priority: 15 },
+    { title: 'vacation', color: '#0891b2', priority: 12 },
+    { title: 'historical', color: '#9333ea', priority: 5 },
+    { title: 'default', color: '#6b7280', priority: 0 },
+  ])
+
+  // Get category by name with fallback to default
+  const getCategoryByName = (categoryName?: string) => {
+    if (!categoryName) return eventCategories.value.find(cat => cat.title === 'default')!
+    return eventCategories.value.find(cat => cat.title === categoryName.toLowerCase())
+      || eventCategories.value.find(cat => cat.title === 'default')!
+  }
+
   const arrayDataset = computed(() => {
     if (!isConfigured.value) {
       return []
@@ -82,32 +106,57 @@ export const useAppStore = defineStore('app-store', () => {
     const expectedEnd = wasBorn.clone().add(yearsToLiveForCalc.value, 'year')
     const wasBornDate = wasBorn.format('YYYY-MM-DD')
     const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD')
+    const endSchoolDate = wasBorn.clone().add(18, 'year').month(5).day(31).format('YYYY-MM-DD')
     const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD')
+    const startCollegeDate = wasBorn.clone().add(18, 'year').month(8).day(15).format('YYYY-MM-DD')
     const endCollegeDate = wasBorn.clone().add(22, 'year').month(5).day(15).format('YYYY-MM-DD')
     const startWorkDate = wasBorn.clone().add(22, 'year').add(6, 'month').format('YYYY-MM-DD')
     const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD')
 
     const birthdays = Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => {
-      if (i === 0) return { date: wasBornDate, title: 'Birth', description: 'You were born.', type: 'personal' }
-      if (i === 1) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'First Birthday', description: 'It\'s your first birthday.', type: 'personal' }
-      if (i === 100) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Hundredth Birthday', description: 'You are a hundred years old!!', type: 'personal' }
-      return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Birthday', description: `It's your ${i} birthday !!`, type: 'personal' }
+      if (i === 0) return { date: wasBornDate, title: 'Birth', description: 'You were born.', type: 'personal', category: 'personal' }
+      if (i === 1) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'First Birthday', description: 'It\'s your first birthday.', type: 'personal', category: 'personal' }
+      if (i === 100) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Hundredth Birthday', description: 'You are a hundred years old!!', type: 'personal', category: 'personal' }
+      return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Birthday', description: `It's your ${i} birthday !!`, type: 'personal', category: 'personal' }
     })
 
     const personalEvents = [
       ...birthdays,
-      { date: startSchoolDate, title: 'Start of School', description: 'You started school.', type: 'personal' },
-      { date: legalAgeDate, title: 'Legal Age', description: 'You reached the legal age.', type: 'personal' },
-      { date: endCollegeDate, title: 'End of College', description: 'You finished college.', type: 'personal' },
-      { date: startWorkDate, title: 'Start of Work', description: 'You started working.', type: 'personal' },
-      { date: startRetirementDate, title: 'Start of Retirement', description: 'You started retirement.', type: 'personal' },
+      {
+        date: startSchoolDate,
+        endDate: endSchoolDate,
+        title: 'School Education',
+        description: 'K-12 education period.',
+        type: 'personal',
+        category: 'school',
+      },
+      { date: legalAgeDate, title: 'Legal Age', description: 'You reached the legal age.', type: 'personal', category: 'personal' },
+      {
+        date: startCollegeDate,
+        endDate: endCollegeDate,
+        title: 'College',
+        description: 'College education period.',
+        type: 'personal',
+        category: 'school',
+      },
+      {
+        date: startWorkDate,
+        endDate: startRetirementDate,
+        title: 'Career',
+        description: 'Your working career.',
+        type: 'personal',
+        category: 'work',
+      },
+      { date: startRetirementDate, title: 'Start of Retirement', description: 'You started retirement.', type: 'personal', category: 'personal' },
     ]
 
     const finalDataset: {
       date: string
+      endDate?: string
       title: string
       description: string
       type?: string
+      category?: string
     }[] = [
       ...personalEvents,
       ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')),
@@ -121,15 +170,22 @@ export const useAppStore = defineStore('app-store', () => {
       return {}
     }
 
-    const finalRecord = arrayDataset.value.reduce((acc, { title, description, date, type }) => {
-      const events = acc[date] || []
-      events.push({ title, description, type, startDate: date })
+    const finalRecord: Record<string, EventObject[]> = {}
 
-      acc[date] = events
-      return acc
-    }, {} as Record<string, EventObject[]>)
-    // console.log(finalRecord);
-    // console.log('duplikates', Object.values(finalRecord).filter((item) => item.length > 1));
+    // Process each event - store only at their start date
+    arrayDataset.value.forEach(({ title, description, date, endDate, type, category }) => {
+      const events = finalRecord[date] || []
+      events.push({
+        title,
+        description,
+        type,
+        startDate: date,
+        endDate,
+        category,
+      })
+      finalRecord[date] = events
+    })
+
     return finalRecord
   })
 
@@ -143,17 +199,47 @@ export const useAppStore = defineStore('app-store', () => {
   }, 250)
 
   const getDayContent = (date: string): DateEventsObject => {
-    const events = dynamicDataset.value?.[date]
-    const dateId = dayjs(date).format('dddd - YYYY-MM-DD')
-    if (!events?.length) {
+    const dateObj = dayjs(date)
+    const dateId = dateObj.format('dddd - YYYY-MM-DD')
+
+    // Get events starting on this specific day
+    const directEvents = dynamicDataset.value?.[date] || []
+
+    // Find multi-day events that span this day
+    const spanningEvents: EventObject[] = []
+
+    // Look through all events to find spanning ones
+    Object.values(dynamicDataset.value || {}).forEach((events) => {
+      events.forEach((event) => {
+        // Skip if no endDate or it's a single-day event
+        if (!event.endDate || event.startDate === event.endDate) return
+
+        // Skip events that already start on this day (they're in directEvents)
+        if (event.startDate === date) return
+
+        const eventStart = dayjs(event.startDate)
+        const eventEnd = dayjs(event.endDate)
+
+        // Check if this date falls within the event's range
+        if ((dateObj.isAfter(eventStart) && dateObj.isBefore(eventEnd)) || dateObj.isSame(eventEnd)) {
+          spanningEvents.push(event)
+        }
+      })
+    })
+
+    // Combine direct and spanning events
+    const allEvents = [...directEvents, ...spanningEvents]
+
+    if (!allEvents.length) {
       return {
         dateId,
         events: [{ title: 'No events for this day.', description: '' }],
       }
     }
+
     return {
       dateId,
-      events: events,
+      events: allEvents,
     }
   }
 
@@ -175,5 +261,7 @@ export const useAppStore = defineStore('app-store', () => {
     amountOfDaysLivedStr,
     arrayDataset,
     age,
+    eventCategories,
+    getCategoryByName,
   }
 })
