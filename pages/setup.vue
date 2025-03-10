@@ -99,7 +99,6 @@
         <UButton
           :loading
           block
-          class="dark:text-white"
           type="submit"
           color="primary"
         >

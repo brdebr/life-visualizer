@@ -41,7 +41,7 @@
     <div>
       <UButton
         color="primary"
-        class="mb-3 dark:text-white"
+        class="mb-3"
         @click="$router.push('/setup')"
       >
         <template #default>

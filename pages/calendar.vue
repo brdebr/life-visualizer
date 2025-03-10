@@ -51,6 +51,7 @@
           endDate: yearItem.endDate,
           dataset: appStore.dynamicDataset,
           header: yearItem.header,
+          zoomLevel: 1.2,
         }"
       />
     </div>
