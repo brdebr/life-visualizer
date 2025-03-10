@@ -10,74 +10,20 @@
         {{ header }}
       </slot>
     </h3>
-    <svg
-      class="calendar-heatmap"
-      :data-test-calendar-year="startDate.split('-')[0]"
-      :width="computedSizes.width"
-      :height="computedSizes.height"
-      :viewBox="computedViewBox"
+    <div
+      ref="containerRef"
+      class="calendar-heatmap-container"
     >
-      <g
-        :transform="transformMonthsLabel"
-        class="month-labels"
-      >
-        <g
-          v-for="month in monthsLabels"
-          :key="month.label"
-          :data-key="month.label"
-          :transform="`translate(${month.translateX}, 2)`"
-        >
-          <text
-            x="0"
-            y="0"
-            class="month-label"
-          >
-            {{ month.labelMonth }}
-          </text>
-        </g>
-      </g>
-      <g :transform="transformWeeks">
-        <g
-          v-for="week in weeks"
-          :key="week.label"
-          :data-key="week.label"
-          :transform="`translate(${week.translateX}, 0)`"
-        >
-          <rect
-            v-for="day in week.days"
-            :key="day.dayId"
-            :y="day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)"
-            :x="day.x"
-            :width="cellSize"
-            :height="cellSize"
-            :fill="highlightedDates.includes(day.dayId) ? '#ff4242' : day.color"
-            :stroke="highlightedDates.includes(day.dayId) ? '#ff4242' : 'transparent'"
-            :stroke-width="highlightedDates.includes(day.dayId) ? 2 : 1"
-            class="day"
-            :class="{ today: day.dayId === appStore.dayjs().format('YYYY-MM-DD') }"
-            @click="() => appStore.selectEvent(day.dayId)"
-            @mouseenter="() => appStore.selectEvent(day.dayId)"
-            @mouseleave="() => appStore.selectEvent('')"
-          />
-        </g>
-      </g>
-      <g :transform="transformDaysLabel">
-        <text
-          x="0"
-          y="0"
-          class="day-label"
-          text-anchor="end"
-        >
-          <tspan
-            v-for="day in weekdayLegend"
-            :key="day.label"
-            :x="day.x"
-            :dy="day.dy"
-            :dx="day.dx"
-          >{{ day.label }}</tspan>
-        </text>
-      </g>
-    </svg>
+      <canvas
+        ref="canvasRef"
+        class="calendar-heatmap"
+        :width="computedSizes.width"
+        :height="computedSizes.height"
+        @click="handleCanvasClick"
+        @mousemove="handleCanvasMove"
+        @mouseleave="handleCanvasLeave"
+      />
+    </div>
     <slot name="footer" />
   </div>
 </template>
@@ -115,9 +61,28 @@ const spaceTop = 6
 
 const space = 1
 
-const transformMonthsLabel = `translate(${spaceLeft}, ${spaceTop})`
-const transformWeeks = `translate(${spaceLeft}, ${spaceTop + 5})`
-const transformDaysLabel = `translate(${spaceLeft - 1}, ${spaceTop + 15})`
+// Canvas refs
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const containerRef = ref<HTMLDivElement | null>(null)
+const ctx = ref<CanvasRenderingContext2D | null>(null)
+const hoveredDayId = ref<string | null>(null)
+
+const { isDark } = useIsDarkRef()
+
+// Initialize canvas context after mount
+onMounted(() => {
+  if (canvasRef.value) {
+    ctx.value = canvasRef.value.getContext('2d')
+    draw()
+  }
+})
+
+// Watch for changes that require redrawing
+watch(() => [props.startDate, props.endDate, props.zoomLevel, highlightedDates.value, hoveredDayId.value, isDark.value], () => {
+  nextTick(() => {
+    draw()
+  })
+})
 
 const computedSizes = computed(() => {
   return {
@@ -126,36 +91,11 @@ const computedSizes = computed(() => {
   }
 })
 
-const computedViewBox = computed(() => {
-  if (props.zoomLevel === 1) return undefined
-  return `${0} ${0} ${props.width} ${props.height}`
-})
-
 const weekdayLegend = [
-  {
-    label: 'Mon',
-    x: -3,
-    dy: -4,
-    dx: 0,
-  },
-  {
-    label: 'Wed',
-    x: -3,
-    dy: 11,
-    dx: 0,
-  },
-  {
-    label: 'Fri',
-    x: -3,
-    dy: 12,
-    dx: 0,
-  },
-  {
-    label: 'Sun',
-    x: -3,
-    dy: 12,
-    dx: 0,
-  },
+  { label: 'Mon', x: -3, dy: -4, dx: 0 },
+  { label: 'Wed', x: -3, dy: 11, dx: 0 },
+  { label: 'Fri', x: -3, dy: 12, dx: 0 },
+  { label: 'Sun', x: -3, dy: 12, dx: 0 },
 ]
 
 // Array of each week in a period, starting on firstDayOfWeek
@@ -223,8 +163,6 @@ const monthsLabels = computed(() => {
   })
 })
 
-const { isDark } = useIsDarkRef()
-
 const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
 const debouncedColorMap = useDebounce(dayColorMap, 350)
 
@@ -240,36 +178,165 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
   }
   return debouncedColorMap.value.NO_DATA
 }
+
+// Canvas drawing functions
+const draw = () => {
+  if (!ctx.value || !canvasRef.value) return
+
+  const canvas = canvasRef.value
+  ctx.value.clearRect(0, 0, canvas.width, canvas.height)
+
+  // Apply scaling for zoom level if not using viewBox
+  if (props.zoomLevel !== 1) {
+    ctx.value.save()
+    ctx.value.scale(props.zoomLevel, props.zoomLevel)
+  }
+
+  // Draw border
+  ctx.value.strokeStyle = isDark.value ? '#333' : '#ddd'
+  ctx.value.strokeRect(0, 0, props.width, props.height)
+
+  drawMonthLabels()
+  drawDayLabels()
+  drawDayCells()
+
+  if (props.zoomLevel !== 1) {
+    ctx.value.restore()
+  }
+}
+
+const drawMonthLabels = () => {
+  if (!ctx.value) return
+
+  ctx.value.font = '8px sans-serif'
+  ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
+  ctx.value.textAlign = 'left'
+
+  monthsLabels.value.forEach((month) => {
+    ctx.value!.fillText(month.labelMonth, spaceLeft + month.translateX, spaceTop + 2)
+  })
+}
+
+const drawDayLabels = () => {
+  if (!ctx.value) return
+
+  ctx.value.font = '8px sans-serif'
+  ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
+  ctx.value.textAlign = 'right'
+
+  let y = spaceTop + 15
+  weekdayLegend.forEach((day) => {
+    ctx.value!.fillText(day.label, spaceLeft - 1 + day.x, y + day.dy)
+    y += day.dy
+  })
+}
+
+const drawDayCells = () => {
+  if (!ctx.value) return
+
+  const today = appStore.dayjs().format('YYYY-MM-DD')
+
+  weeks.value.forEach((week) => {
+    week.days.forEach((day) => {
+      const x = spaceLeft + week.translateX + day.x
+      const y = spaceTop + 5 + day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
+
+      // Fill rectangle
+      ctx.value!.fillStyle = highlightedDates.value.includes(day.dayId) ? '#ff4242' : day.color
+      ctx.value!.fillRect(x, y, cellSize, cellSize)
+
+      // Stroke for highlighted or today
+      if (highlightedDates.value.includes(day.dayId)) {
+        ctx.value!.strokeStyle = '#ff4242'
+        ctx.value!.lineWidth = 2
+        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+      }
+      else if (day.dayId === today) {
+        ctx.value!.strokeStyle = isDark.value ? '#3b82f6' : '#0ea5e9' // blue-500 or water-500
+        ctx.value!.lineWidth = 1
+        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+      }
+
+      // Hover effect
+      if (day.dayId === hoveredDayId.value) {
+        ctx.value!.strokeStyle = '#000'
+        ctx.value!.lineWidth = 1
+        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+      }
+    })
+  })
+}
+
+// Hit detection for mouse events
+const getDayFromPosition = (x: number, y: number): { dayId: string } | null => {
+  const scale = props.zoomLevel
+  x = x / scale
+  y = y / scale
+
+  for (const week of weeks.value) {
+    const weekX = spaceLeft + week.translateX
+
+    for (const day of week.days) {
+      const cellX = weekX + day.x
+      const cellY = spaceTop + 5 + day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
+
+      if (
+        x >= cellX
+        && x <= cellX + cellSize
+        && y >= cellY
+        && y <= cellY + cellSize
+      ) {
+        return { dayId: day.dayId }
+      }
+    }
+  }
+
+  return null
+}
+
+// Event handlers
+const handleCanvasClick = (event: MouseEvent) => {
+  if (!canvasRef.value) return
+
+  const rect = canvasRef.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+
+  const day = getDayFromPosition(x, y)
+  if (day) {
+    appStore.selectEvent(day.dayId)
+  }
+}
+
+const handleCanvasMove = (event: MouseEvent) => {
+  if (!canvasRef.value) return
+
+  const rect = canvasRef.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+
+  const day = getDayFromPosition(x, y)
+  if (day) {
+    hoveredDayId.value = day.dayId
+    appStore.selectEvent(day.dayId)
+  }
+  else {
+    hoveredDayId.value = null
+  }
+}
+
+const handleCanvasLeave = () => {
+  hoveredDayId.value = null
+  appStore.selectEvent('')
+}
 </script>
 
 <style lang="scss">
 .calendar-heatmap {
   @apply border overflow-hidden;
+}
 
-  .month-label {
-    @apply text-[8px] pointer-events-none select-none;
-    @apply fill-slate-950 dark:fill-white;
-  }
-
-  .year-label {
-    @apply text-[8px] pointer-events-none select-none;
-    @apply fill-slate-950 dark:fill-white;
-  }
-
-  .day-label {
-    @apply text-[8px] pointer-events-none select-none;
-    @apply fill-slate-950 dark:fill-white;
-  }
-
-  .day {
-    outline: none;
-  }
-
-  .day:hover {
-    stroke: #000;
-  }
-  .day.today {
-    @apply stroke-water-500 dark:stroke-blue-500;
-  }
+.calendar-heatmap-container {
+  position: relative;
 }
 </style>
