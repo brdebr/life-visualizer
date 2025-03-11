@@ -153,51 +153,113 @@ export const useAppStore = defineStore('app-store', () => {
     }
     const wasBorn = dayjs(wasBornForCalc.value)
     const expectedEnd = wasBorn.clone().add(yearsToLiveForCalc.value, 'year')
-    const wasBornDate = wasBorn.format('YYYY-MM-DD')
-    const startSchoolDate = wasBorn.clone().add(5, 'year').month(9).day(15).format('YYYY-MM-DD')
-    const endSchoolDate = wasBorn.clone().add(18, 'year').month(5).day(31).format('YYYY-MM-DD')
-    const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD')
-    const startCollegeDate = wasBorn.clone().add(18, 'year').month(8).day(15).format('YYYY-MM-DD')
-    const endCollegeDate = wasBorn.clone().add(22, 'year').month(5).day(15).format('YYYY-MM-DD')
-    const startWorkDate = wasBorn.clone().add(22, 'year').add(6, 'month').format('YYYY-MM-DD')
-    const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD')
+    // const wasBornDate = wasBorn.format('YYYY-MM-DD')
 
-    const birthdays = Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => {
-      if (i === 0) return { date: wasBornDate, title: 'Birth', description: 'You were born.', type: 'personal', category: 'personal' }
-      if (i === 1) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'First Birthday', description: 'It\'s your first birthday.', type: 'personal', category: 'personal' }
-      if (i === 100) return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Hundredth Birthday', description: 'You are a hundred years old!!', type: 'personal', category: 'personal' }
-      return { date: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i}${wasBornDate.slice(4)}`, title: 'Birthday', description: `It's your ${i} birthday !!`, type: 'personal', category: 'personal' }
+    const events = []
+
+    // Guardería (1-3 años)
+    events.push({
+      date: wasBorn.clone().add(1, 'year').month(8).day(1).format('YYYY-MM-DD'),
+      endDate: wasBorn.clone().add(3, 'year').month(5).day(30).format('YYYY-MM-DD'),
+      title: 'Guardería',
+      description: 'Periodo de guardería infantil.',
+      type: 'personal',
+      category: 'school',
     })
 
-    const personalEvents = [
-      ...birthdays,
-      {
-        date: startSchoolDate,
-        endDate: endSchoolDate,
-        title: 'School Education',
-        description: 'K-12 education period.',
+    // Educación Infantil (3-5 años)
+    for (let i = 3; i <= 5; i++) {
+      events.push({
+        date: wasBorn.clone().add(i, 'year').month(8).day(10).format('YYYY-MM-DD'),
+        endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
+        title: `${i - 2}º Infantil`,
+        description: `Curso ${i - 2}º de Educación Infantil.`,
         type: 'personal',
         category: 'school',
-      },
-      { date: legalAgeDate, title: 'Legal Age', description: 'You reached the legal age.', type: 'personal', category: 'personal' },
-      {
-        date: startCollegeDate,
-        endDate: endCollegeDate,
-        title: 'College',
-        description: 'College education period.',
+      })
+    }
+
+    // Educación Primaria (6-11 años)
+    for (let i = 6; i <= 11; i++) {
+      events.push({
+        date: wasBorn.clone().add(i, 'year').month(8).day(10).format('YYYY-MM-DD'),
+        endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
+        title: `${i - 5}º Primaria`,
+        description: `Curso ${i - 5}º de Educación Primaria.`,
         type: 'personal',
         category: 'school',
-      },
+      })
+    }
+
+    // ESO (12-15 años)
+    for (let i = 12; i <= 15; i++) {
+      events.push({
+        date: wasBorn.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
+        endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
+        title: `${i - 11}º ESO`,
+        description: `Curso ${i - 11}º de Educación Secundaria Obligatoria (ESO).`,
+        type: 'personal',
+        category: 'school',
+      })
+    }
+
+    // Bachillerato (16-17 años)
+    for (let i = 16; i <= 17; i++) {
+      events.push({
+        date: wasBorn.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
+        endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
+        title: `${i - 15}º Bachillerato`,
+        description: `Curso ${i - 15}º de Bachillerato.`,
+        type: 'personal',
+        category: 'school',
+      })
+    }
+
+    // Universidad (18-21 años)
+    for (let i = 18; i <= 21; i++) {
+      events.push({
+        date: wasBorn.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
+        endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
+        title: `Curso ${i - 17}º Universidad`,
+        description: `Curso ${i - 17}º de la universidad.`,
+        type: 'personal',
+        category: 'school',
+      })
+    }
+
+    // Majority Age, Career, and Retirement
+    const legalAgeDate = wasBorn.clone().add(18, 'year').format('YYYY-MM-DD')
+    const startWorkDate = wasBorn.clone().add(22, 'year').month(8).day(1).format('YYYY-MM-DD')
+    const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD')
+
+    events.push(
+      { date: legalAgeDate, title: 'Mayoría de Edad', description: 'Has alcanzado la mayoría de edad.', type: 'personal', category: 'personal' },
       {
         date: startWorkDate,
         endDate: startRetirementDate,
-        title: 'Career',
-        description: 'Your working career.',
+        title: 'Carrera Profesional',
+        description: 'Periodo de vida laboral activa.',
         type: 'personal',
         category: 'work',
       },
-      { date: startRetirementDate, title: 'Start of Retirement', description: 'You started retirement.', type: 'personal', category: 'personal' },
-    ]
+      {
+        date: startRetirementDate,
+        title: 'Jubilación',
+        description: 'Comienzo del periodo de jubilación.',
+        type: 'personal',
+        category: 'personal',
+      },
+    )
+
+    const birthdays = Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => ({
+      date: wasBorn.clone().add(i, 'year').format('YYYY-MM-DD'),
+      title: i === 0 ? 'Nacimiento' : `${i}º Cumpleaños`,
+      description: i === 0 ? 'Fecha de nacimiento.' : `Has cumplido ${i} años.`,
+      type: 'personal',
+      category: 'personal',
+    }))
+
+    const personalEvents = [...birthdays, ...events]
 
     const finalDataset: {
       date: string
