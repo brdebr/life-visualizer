@@ -15,13 +15,13 @@
         class="flex flex-col gap-1"
       >
         <h4 class="font-semibold text-sm">
-          {{ event?.title ? '· '+ event.title : 'No events this day' }} {{ event.endDate ? `- lasts for ${$dayjs(event.startDate).to($dayjs(event.endDate), true)}` : '' }}
+          {{ event?.title ? '· '+ event.title : 'No events this day' }} {{ event.endDate ? `- Day ${$dayjs(debouncedEvent?.dateId).diff($dayjs(event.startDate), 'day')} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day')}` : '' }}
         </h4>
         <p
           v-if="event.endDate"
-          class="px-2 pb-2 text-xs"
+          class="px-2 pb-2 text-[10px]"
         >
-          {{ event.endDate ? `Start: ${$dayjs(event.startDate).fromNow()} - End: ${$dayjs(event.endDate).fromNow()}` : '' }}
+          {{ event.endDate ? `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` : '' }}
         </p>
         <p class="px-2 pb-2 text-xs">
           {{ event?.description || '' }}
