@@ -91,6 +91,49 @@ export const useAppStore = defineStore('app-store', () => {
     { title: 'default', color: '#6b7280', priority: 0 },
   ])
 
+  // Add a new category
+  const addCategory = (category: EventCategory) => {
+    eventCategories.value.push(category)
+    saveCategories()
+  }
+
+  // Update an existing category
+  const updateCategory = (index: number, category: EventCategory) => {
+    eventCategories.value[index] = category
+    saveCategories()
+  }
+
+  // Delete a category
+  const deleteCategory = (index: number) => {
+    // Don't allow deleting the default category
+    if (eventCategories.value[index].title === 'default') return
+    eventCategories.value.splice(index, 1)
+    saveCategories()
+  }
+
+  // Update categories after reordering
+  const updateCategoriesOrder = (newOrder: EventCategory[]) => {
+    // Update priorities based on new order (higher index = higher priority)
+    eventCategories.value = newOrder.map((cat, idx) => ({
+      ...cat,
+      priority: newOrder.length - idx,
+    }))
+    saveCategories()
+  }
+
+  // Save categories to localStorage
+  const saveCategories = () => {
+    localStorage.setItem('eventCategories', JSON.stringify(eventCategories.value))
+  }
+
+  // Load categories from localStorage
+  const loadCategories = () => {
+    const savedCategories = localStorage.getItem('eventCategories')
+    if (savedCategories) {
+      eventCategories.value = JSON.parse(savedCategories)
+    }
+  }
+
   // Get category by name with fallback to default
   const getCategoryByName = (categoryName?: string) => {
     if (!categoryName) return eventCategories.value.find(cat => cat.title === 'default')!
@@ -122,9 +165,10 @@ export const useAppStore = defineStore('app-store', () => {
     }
   }
 
-  // Call loadCustomEvents when the store is initialized
+  // Call loadCustomEvents and loadCategories when the store is initialized
   onMounted(() => {
     loadCustomEvents()
+    loadCategories()
   })
 
   const arrayDataset = computed(() => {
@@ -300,6 +344,10 @@ export const useAppStore = defineStore('app-store', () => {
     age,
     eventCategories,
     getCategoryByName,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    updateCategoriesOrder,
     customEvents,
     addCustomEvent,
     deleteCustomEvent,

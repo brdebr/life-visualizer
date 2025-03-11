@@ -128,7 +128,12 @@ const items = [[
   {
     label: 'Events',
     to: '/events',
-    icon: 'i-heroicons-cog-16-solid',
+    icon: 'i-heroicons-calendar-16-solid',
+  },
+  {
+    label: 'Categories',
+    to: '/categories',
+    icon: 'i-heroicons-tag-16-solid',
   },
   {
     label: 'Config data',
