@@ -1,3 +1,5 @@
+import { useLocalStorage } from '@vueuse/core'
+
 export type EventObject = {
   title?: string
   description?: string
@@ -81,8 +83,8 @@ export const useAppStore = defineStore('app-store', () => {
     ]
   })
 
-  // Define event categories with priorities
-  const eventCategories = ref<EventCategory[]>([
+  // Define event categories with priorities using useLocalStorage
+  const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
     { title: 'school', color: '#2563eb', priority: 10 },
     { title: 'work', color: '#65a30d', priority: 9 },
     { title: 'personal', color: '#db2777', priority: 15 },
@@ -94,13 +96,11 @@ export const useAppStore = defineStore('app-store', () => {
   // Add a new category
   const addCategory = (category: EventCategory) => {
     eventCategories.value.push(category)
-    saveCategories()
   }
 
   // Update an existing category
   const updateCategory = (index: number, category: EventCategory) => {
     eventCategories.value[index] = category
-    saveCategories()
   }
 
   // Delete a category
@@ -108,7 +108,6 @@ export const useAppStore = defineStore('app-store', () => {
     // Don't allow deleting the default category
     if (eventCategories.value[index].title === 'default') return
     eventCategories.value.splice(index, 1)
-    saveCategories()
   }
 
   // Update categories after reordering
@@ -118,20 +117,6 @@ export const useAppStore = defineStore('app-store', () => {
       ...cat,
       priority: newOrder.length - idx,
     }))
-    saveCategories()
-  }
-
-  // Save categories to localStorage
-  const saveCategories = () => {
-    localStorage.setItem('eventCategories', JSON.stringify(eventCategories.value))
-  }
-
-  // Load categories from localStorage
-  const loadCategories = () => {
-    const savedCategories = localStorage.getItem('eventCategories')
-    if (savedCategories) {
-      eventCategories.value = JSON.parse(savedCategories)
-    }
   }
 
   // Get category by name with fallback to default
@@ -141,35 +126,18 @@ export const useAppStore = defineStore('app-store', () => {
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
 
-  // Store for custom events
-  const customEvents = ref<EventObject[]>([])
+  // Store for custom events using useLocalStorage
+  const customEvents = useLocalStorage<EventObject[]>('customEvents', [])
 
   // Add a new custom event
   const addCustomEvent = (event: EventObject) => {
     customEvents.value.push(event)
-    // Save to localStorage for persistence
-    localStorage.setItem('customEvents', JSON.stringify(customEvents.value))
   }
 
   // Delete a custom event
   const deleteCustomEvent = (index: number) => {
     customEvents.value.splice(index, 1)
-    localStorage.setItem('customEvents', JSON.stringify(customEvents.value))
   }
-
-  // Load custom events from localStorage
-  const loadCustomEvents = () => {
-    const savedEvents = localStorage.getItem('customEvents')
-    if (savedEvents) {
-      customEvents.value = JSON.parse(savedEvents)
-    }
-  }
-
-  // Call loadCustomEvents and loadCategories when the store is initialized
-  onMounted(() => {
-    loadCustomEvents()
-    loadCategories()
-  })
 
   const arrayDataset = computed(() => {
     if (!isConfigured.value) {
@@ -351,6 +319,5 @@ export const useAppStore = defineStore('app-store', () => {
     customEvents,
     addCustomEvent,
     deleteCustomEvent,
-    loadCustomEvents,
   }
 })

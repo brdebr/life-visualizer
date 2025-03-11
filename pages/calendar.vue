@@ -64,10 +64,11 @@ useHead({
 })
 const appStore = useAppStore()
 const router = useRouter()
-
-if (!appStore.isConfigured) {
-  router.push('/setup')
-}
+onBeforeMount(() => {
+  if (!appStore.isConfigured) {
+    router.push('/setup')
+  }
+})
 
 const today = appStore.dayjs().format('YYYY-MM-DD')
 const year = today.slice(0, 4)

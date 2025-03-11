@@ -269,16 +269,5 @@ const categoriesContainer = useTemplateRef<HTMLElement>('categoriesContainer')
 useSortable(categoriesContainer, eventCategories, {
   handle: '.handle',
   animation: 150,
-  onUpdate: () => {
-    nextTick(() => {
-      eventCategories.value.forEach((category, index) => {
-        store.updateCategory(index, {
-          ...category,
-          priority: eventCategories.value.length - index - 1,
-        })
-      })
-      console.log('onUpdate', eventCategories.value)
-    })
-  },
 })
 </script>
