@@ -30,4 +30,10 @@ export default defineNuxtConfig({
     checker: true,
   },
   ssr: false,
+  colorMode: {
+    preference: 'light',
+    fallback: 'light',
+    classSuffix: '',
+    dataValue: 'light',
+  },
 })

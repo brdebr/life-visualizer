@@ -6,6 +6,7 @@
           startDate: startOfYear,
           endDate: endOfYear,
           zoomLevel: 1.5,
+          showEvents: false,
         }"
       >
         <template #header>
@@ -20,13 +21,18 @@
       class="container mx-auto my-7 px-5 pb-6"
     >
       <UMeter
-        color="teal"
+        color="water"
         :value="appStore.percentOfLife"
+        :ui="{
+          indicator: {
+            text: 'text-water-700 dark:text-water-200 -mb-1',
+          },
+        }"
         indicator
       >
         <template #label>
           <div class="text-sm flex items-baseline gap-8">
-            <span class="text-teal-500 dark:text-teal-400 lg:mr-3 mr-auto">
+            <span class="text-water-700 dark:text-water-200 lg:mr-3 mr-auto">
               Percent of your life
             </span>
             <span class="prose app-text text-[11px]">

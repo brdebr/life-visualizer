@@ -6,6 +6,7 @@
           startDate: startOfYear,
           endDate: endOfYear,
           zoomLevel: 1.5,
+          showEvents: false,
         }"
       >
         <template #header>

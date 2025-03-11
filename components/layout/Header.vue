@@ -60,6 +60,7 @@
           </UButtonGroup>
         </UDropdown>
         <UButton
+          v-if="false"
           square
           color="primary"
           size="xs"
@@ -81,7 +82,13 @@ const showingSearchInput = ref(false)
 const searchStore = useSearchStore()
 const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore)
 
-const { isDark, toggle: toggleTheme } = useIsDarkRef()
+const { isDark, toggle: toggleThemeMethod } = useIsDarkRef()
+const toggleTheme = () => {
+  if (Date.now() > 1) {
+    return
+  }
+  toggleThemeMethod()
+}
 
 const searchItems = computed(() => {
   return [searchResults.value.map(result => ({

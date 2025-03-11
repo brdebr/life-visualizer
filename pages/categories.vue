@@ -40,6 +40,7 @@
             <div
               class="w-5 h-5 rounded-full"
               :style="{ backgroundColor: category.color }"
+              :data-color="category.color"
             />
             <span class="font-medium">{{ category.title }}</span>
             <UBadge

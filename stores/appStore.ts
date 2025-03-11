@@ -88,12 +88,12 @@ export const useAppStore = defineStore('app-store', () => {
 
   // Define event categories using useLocalStorage - order determines priority (higher index = higher priority)
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
-    { title: 'historical', color: '#9333ea' },
-    { title: 'personal', color: '#db2777' },
-    { title: 'vacation', color: '#0891b2' },
-    { title: 'work', color: '#65a30d' },
-    { title: 'school', color: '#2563eb' },
-    { title: 'default', color: '#6b7280' },
+    { title: 'historical', color: '#8b75e1' },
+    { title: 'personal', color: '#c6e6e4' },
+    { title: 'vacation', color: '#a6f2bf' },
+    { title: 'work', color: '#e3ddc0' },
+    { title: 'school', color: '#d0e4fb' },
+    { title: 'default', color: '#e5e7eb' },
   ])
 
   const eventCategoriesWithPriority = computed(() => {

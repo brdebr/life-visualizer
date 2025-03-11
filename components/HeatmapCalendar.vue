@@ -17,6 +17,9 @@
       <canvas
         ref="canvasRef"
         class="calendar-heatmap"
+        :class="{
+          'current-year': isCurrentYear,
+        }"
         :width="computedSizes.width"
         :height="computedSizes.height"
         @click="handleCanvasClick"
@@ -33,24 +36,27 @@ export type HeatmapProps = {
   startDate: string
   endDate: string
   header?: string
-  dataset?: {
-    [key: string]: EventObject[]
-  }
   width?: number
   height?: number
   zoomLevel?: number
+  showEvents?: boolean
 }
 
 const props = withDefaults(defineProps<HeatmapProps>(), {
   width: 420,
   height: 57,
   zoomLevel: 1,
+  showEvents: true,
 })
 
 const appStore = useAppStore()
 const { eventCategoriesWithPriority } = storeToRefs(appStore)
 const searchStore = useSearchStore()
 const { highlightedDates } = storeToRefs(searchStore)
+
+const isCurrentYear = computed(() => {
+  return appStore.dayjs(props.startDate).year() === appStore.dayjs().year()
+})
 
 const weekendDays = [0, 6]
 
@@ -93,10 +99,10 @@ const computedSizes = computed(() => {
 })
 
 const weekdayLegend = [
-  { label: 'Mon', x: -3, dy: -4, dx: 0 },
-  { label: 'Wed', x: -3, dy: 11, dx: 0 },
+  { label: 'Mon', x: -3, dy: -5.5, dx: 0 },
+  { label: 'Wed', x: -3, dy: 12, dx: 0 },
   { label: 'Fri', x: -3, dy: 12, dx: 0 },
-  { label: 'Sun', x: -3, dy: 12, dx: 0 },
+  { label: 'Sun', x: -3, dy: 12.5, dx: 0 },
 ]
 
 // Array of each week in a period, starting on firstDayOfWeek
@@ -175,7 +181,7 @@ const categoryPriorityMap = computed(() => {
 })
 
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
-  if (!event?.events?.length || event.events[0].title === 'No events for this day.') {
+  if (!event?.events?.length || event.events[0].title === 'No events for this day.' || props.showEvents === false) {
     return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
   }
 
@@ -229,8 +235,8 @@ const draw = () => {
   }
 
   // Draw border
-  ctx.value.strokeStyle = isDark.value ? '#333' : '#ddd'
-  ctx.value.strokeRect(0, 0, props.width, props.height)
+  // ctx.value.strokeStyle = isCurrentYear.value ? '#74b5ff' : '#ddd'
+  // ctx.value.strokeRect(0, 0, props.width, props.height)
 
   drawMonthLabels()
   drawDayLabels()
@@ -245,10 +251,12 @@ const drawMonthLabels = () => {
   if (!ctx.value) return
 
   ctx.value.font = '8px sans-serif'
-  ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
   ctx.value.textAlign = 'left'
 
   monthsLabels.value.forEach((month) => {
+    if (!ctx.value) return
+    const isCurrentMonth = isCurrentYear.value && month.index === appStore.dayjs().month()
+    ctx.value.fillStyle = isCurrentMonth ? '#4a7ab1' : '#000'
     ctx.value!.fillText(month.labelMonth, spaceLeft + month.translateX, spaceTop + 2)
   })
 }
@@ -370,6 +378,11 @@ const handleCanvasLeave = () => {
 <style lang="scss">
 .calendar-heatmap {
   @apply border overflow-hidden;
+  &.current-year {
+    // @apply border-[#74b5ff];
+    // @apply border-[#4a7ab1];
+    @apply border-water-500;
+  }
 }
 
 .calendar-heatmap-container {

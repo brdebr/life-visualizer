@@ -2,7 +2,7 @@ export const useIsDarkRef = () => {
   const colorMode = useColorMode()
   const isDark = computed({
     get() {
-      return colorMode.value === 'dark'
+      return Date.now() <= 1 || colorMode.value === 'dark'
     },
     set() {
       colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
