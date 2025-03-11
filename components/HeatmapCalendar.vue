@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col justify-center items-center">
+  <div class="w-fit flex flex-col justify-center items-center relative calendar-heatmap--root">
     <h3
       class="w-full text-center pb-0.5"
       :style="{
@@ -9,6 +9,10 @@
       <slot name="header">
         {{ header }}
       </slot>
+      <span class="absolute right-0 top-0">
+        <slot name="header-append">
+        </slot>
+      </span>
     </h3>
     <div
       ref="containerRef"

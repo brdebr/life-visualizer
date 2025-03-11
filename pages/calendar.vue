@@ -2,6 +2,7 @@
   <div>
     <div class="my-3">
       <HeatmapCalendar
+        class="mx-auto"
         v-bind="{
           startDate: startOfYear,
           endDate: endOfYear,
@@ -13,6 +14,11 @@
           <div class="prose app-text text-sm mb-1 mx-auto">
             {{ year }} is at {{ appStore.percentOfCurrentYearString }}
           </div>
+        </template>
+        <template #header-append>
+          <span class="prose app-text text-[11px]">
+            {{ $dayjs().dayOfYear() }} days / {{ $dayjs().endOf('year').dayOfYear() }} days
+          </span>
         </template>
       </HeatmapCalendar>
     </div>

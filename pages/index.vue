@@ -2,6 +2,7 @@
   <div class="flex flex-col items-center gap-4">
     <div class="">
       <HeatmapCalendar
+        class="mx-auto"
         v-bind="{
           startDate: startOfYear,
           endDate: endOfYear,
