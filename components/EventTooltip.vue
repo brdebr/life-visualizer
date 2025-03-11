@@ -10,7 +10,7 @@
     </h3>
     <div class="flex flex-col gap-2">
       <div
-        v-for="event in debouncedEvent?.events || []"
+        v-for="event in visibleEvents"
         :key="event.title"
         class="flex flex-col gap-1"
       >
@@ -40,5 +40,22 @@ watch(selectedEvent, (newVal) => {
     debouncedEvent.value = newVal
   }
 })
+
+const visibleEvents = computed(() => {
+  if (!debouncedEvent.value?.events) return []
+
+  // If the first event has this title, there are no events
+  if (debouncedEvent.value.events[0]?.title === 'No events for this day.') {
+    return debouncedEvent.value.events
+  }
+
+  // Filter events by visible categories
+  return debouncedEvent.value.events.filter((event) => {
+    if (!event.category) return true
+    const category = appStore.eventCategories.find(cat => cat.title === event.category)
+    return category?.visible !== false
+  })
+})
+
 const fromNow = computed(() => selectedEvent.value?.dateId ? appStore.dayjs(selectedEvent.value.dateId).fromNow() : '')
 </script>

@@ -173,10 +173,14 @@ const monthsLabels = computed(() => {
 const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
 const debouncedColorMap = useDebounce(dayColorMap, 350)
 
-// Add this new computed property
+// Update categoryPriorityMap to include visibility
 const categoryPriorityMap = computed(() => {
   return Object.fromEntries(
-    eventCategoriesWithPriority.value.map(cat => [cat.title, { priority: cat.priority, color: cat.color }]),
+    eventCategoriesWithPriority.value.map(cat => [cat.title, {
+      priority: cat.priority,
+      color: cat.color,
+      visible: cat.visible !== false,
+    }]),
   )
 })
 
@@ -186,7 +190,19 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
   }
 
   // Find the event with highest priority category using the priority map
-  const topEvent = event.events.reduce((highest, current) => {
+  // Only consider visible categories
+  const visibleEvents = event.events.filter((e) => {
+    if (!e.category) return true
+    const cat = categoryPriorityMap.value[e.category]
+    return cat && cat.visible !== false
+  })
+
+  // If no visible events after filtering
+  if (!visibleEvents.length) {
+    return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+  }
+
+  const topEvent = visibleEvents.reduce((highest, current) => {
     const currentCat = current.category && categoryPriorityMap.value[current.category]
     const highestCat = highest.category && categoryPriorityMap.value[highest.category]
 
@@ -194,28 +210,22 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
     const highestPriority = highestCat ? highestCat.priority : 0
 
     return currentPriority > highestPriority ? current : highest
-  }, event.events[0])
+  }, visibleEvents[0])
 
   // Return color based on the event category
-  // if (topEvent.type === 'personal' && !topEvent.category) {
-  //   return debouncedColorMap.value.PERSONAL
-  // }
-
   if (event.events.some(event => event.type === 'historical')) {
-    return appStore.getCategoryByName('historical').color
+    const historicalCat = appStore.getCategoryByName('historical')
+    return historicalCat.visible !== false ? historicalCat.color : (isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA)
   }
 
   // If there's a specific category, use its color
   if (topEvent.category) {
     // Get color directly from the map if available, otherwise fallback to getCategoryByName
-    return categoryPriorityMap.value[topEvent.category]?.color
-      || appStore.getCategoryByName(topEvent.category).color
-  }
+    const category = categoryPriorityMap.value[topEvent.category]
+      || appStore.getCategoryByName(topEvent.category)
 
-  // Fallback to historical events check
-  // if (event.events.every(event => !!event.description)) {
-  //   return appStore.getCategoryByName('historical').color
-  // }
+    return category.visible !== false ? category.color : (isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA)
+  }
 
   // Default past/future coloring
   return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
@@ -360,7 +370,7 @@ const handleCanvasMove = (event: MouseEvent) => {
   const y = event.clientY - rect.top
 
   const day = getDayFromPosition(x, y)
-  if (day) {
+  if (day && props.showEvents) {
     hoveredDayId.value = day.dayId
     appStore.selectEvent(day.dayId)
   }

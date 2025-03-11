@@ -31,6 +31,7 @@
           :key="category.title"
           :data-id="index"
           class="py-3 px-2 flex items-center justify-between bg-white"
+          :class="{ 'opacity-60': category.visible === false }"
         >
           <div class="flex items-center gap-3">
             <UIcon
@@ -52,7 +53,12 @@
             <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
           </div>
 
-          <div class="flex gap-2">
+          <div class="flex gap-2 items-center">
+            <UToggle
+              v-model="category.visible"
+              :disabled="category.title === 'default'"
+              @change="toggleVisibility(index)"
+            />
             <UButton
               icon="i-heroicons-pencil-square"
               color="gray"
@@ -117,6 +123,13 @@
               v-model="formData.color"
               type="color"
             />
+          </UFormGroup>
+
+          <UFormGroup
+            v-if="formData.title !== 'default'"
+            label="Visible"
+          >
+            <UToggle v-model="formData.visible" />
           </UFormGroup>
 
           <div class="flex justify-end gap-2">
@@ -194,6 +207,7 @@ const editIndex = ref(-1)
 const formData = reactive({
   title: '',
   color: '#3b82f6',
+  visible: true,
 })
 
 watch(showAddModal, (val) => {
@@ -211,6 +225,7 @@ const deleteIndex = ref(-1)
 const resetForm = () => {
   formData.title = ''
   formData.color = '#3b82f6'
+  formData.visible = true
 }
 
 const editCategory = (index: number) => {
@@ -219,7 +234,12 @@ const editCategory = (index: number) => {
   const category = store.eventCategories[index]
   formData.title = category.title
   formData.color = category.color
+  formData.visible = category.visible !== false
   showModal.value = true
+}
+
+const toggleVisibility = (index: number) => {
+  store.toggleCategoryVisibility(index)
 }
 
 const saveCategory = () => {
@@ -228,6 +248,7 @@ const saveCategory = () => {
   const categoryData: EventCategory = {
     title: formData.title.toLowerCase().trim(),
     color: formData.color,
+    visible: formData.visible,
   }
 
   if (isEditing.value) {

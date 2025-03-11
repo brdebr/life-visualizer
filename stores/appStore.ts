@@ -17,6 +17,7 @@ export type DateEventsObject = {
 export type EventCategory = {
   title: string
   color: string
+  visible?: boolean
 }
 
 export const useAppStore = defineStore('app-store', () => {
@@ -88,12 +89,12 @@ export const useAppStore = defineStore('app-store', () => {
 
   // Define event categories using useLocalStorage - order determines priority (higher index = higher priority)
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
-    { title: 'historical', color: '#8b75e1' },
-    { title: 'personal', color: '#c6e6e4' },
-    { title: 'vacation', color: '#a6f2bf' },
-    { title: 'work', color: '#e3ddc0' },
-    { title: 'school', color: '#d0e4fb' },
-    { title: 'default', color: '#e5e7eb' },
+    { title: 'historical', color: '#8b75e1', visible: true },
+    { title: 'personal', color: '#c6e6e4', visible: true },
+    { title: 'vacation', color: '#a6f2bf', visible: true },
+    { title: 'work', color: '#e3ddc0', visible: true },
+    { title: 'school', color: '#d0e4fb', visible: true },
+    { title: 'default', color: '#e5e7eb', visible: true },
   ])
 
   const eventCategoriesWithPriority = computed(() => {
@@ -103,9 +104,17 @@ export const useAppStore = defineStore('app-store', () => {
     }))
   })
 
+  // Get visible categories
+  const visibleCategories = computed(() => {
+    return eventCategories.value.filter(cat => cat.visible !== false)
+  })
+
   // Add a new category
   const addCategory = (category: EventCategory) => {
-    eventCategories.value.push(category)
+    eventCategories.value.push({
+      ...category,
+      visible: true,
+    })
   }
 
   // Update an existing category
@@ -123,6 +132,14 @@ export const useAppStore = defineStore('app-store', () => {
   // Update categories after reordering - no need to set priorities
   const updateCategoriesOrder = (newOrder: EventCategory[]) => {
     eventCategories.value = newOrder
+  }
+
+  // Update category visibility
+  const toggleCategoryVisibility = (index: number) => {
+    eventCategories.value[index] = {
+      ...eventCategories.value[index],
+      visible: !eventCategories.value[index].visible,
+    }
   }
 
   // Get category by name with fallback to default
@@ -361,9 +378,26 @@ export const useAppStore = defineStore('app-store', () => {
       }
     }
 
+    // Filter out events from hidden categories
+    const visibleEvents = allEvents.filter((event) => {
+      // If no category or category doesn't exist in our list, show it
+      if (!event.category) return true
+
+      const category = eventCategories.value.find(cat => cat.title === event.category)
+      return category?.visible !== false
+    })
+
+    // If all events are filtered out
+    if (!visibleEvents.length) {
+      return {
+        dateId,
+        events: [{ title: 'No events for this day.', description: '' }],
+      }
+    }
+
     return {
       dateId,
-      events: allEvents,
+      events: visibleEvents,
     }
   }
 
@@ -388,11 +422,13 @@ export const useAppStore = defineStore('app-store', () => {
     arrayDataset,
     age,
     eventCategories,
+    visibleCategories,
     getCategoryByName,
     addCategory,
     updateCategory,
     deleteCategory,
     updateCategoriesOrder,
+    toggleCategoryVisibility,
     customEvents,
     addCustomEvent,
     deleteCustomEvent,
