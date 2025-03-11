@@ -1,7 +1,7 @@
 import VueTippy from 'vue-tippy'
 import 'tippy.js/dist/tippy.css' // optional for styling
 
-export default defineNuxtPlugin(nuxtApp => {
+export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(VueTippy, {
     directive: 'tippy', // => v-tippy
     component: 'tippy', // => <tippy/>
@@ -13,5 +13,5 @@ export default defineNuxtPlugin(nuxtApp => {
       delay: 50,
       allowHTML: true,
     },
-  });
-});
+  })
+})
