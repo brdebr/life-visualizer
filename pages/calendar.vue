@@ -1,62 +1,95 @@
 <template>
-  <div class="my-3">
-    <Heatmap
-      v-bind="{
-        startDate: startOfYear,
-        endDate: endOfYear,
-        zoomLevel: 1.5,
-      }"
+  <div>
+    <div class="my-3">
+      <HeatmapCalendar
+        class="mx-auto"
+        v-bind="{
+          startDate: startOfYear,
+          endDate: endOfYear,
+          zoomLevel: 1.5,
+          showEvents: false,
+        }"
+      >
+        <template #header>
+          <div class="prose app-text text-sm mb-1 mx-auto">
+            {{ year }} is at {{ appStore.percentOfCurrentYearString }}
+          </div>
+        </template>
+        <template #header-append>
+          <span class="prose app-text text-[11px]">
+            {{ $dayjs().dayOfYear() }} days / {{ $dayjs().endOf('year').dayOfYear() }} days
+          </span>
+        </template>
+      </HeatmapCalendar>
+    </div>
+    <div
+      v-if="appStore.isConfigured"
+      class="container mx-auto my-7 px-5 pb-6"
     >
-      <template #header>
-        <div class="prose text-sm mb-1">
-          {{ year }} is at {{ appStore.percentOfCurrentYear }}
-        </div>
-      </template>
-    </Heatmap>
-  </div>
-  <div class="container mx-auto my-7 px-5 pb-6" v-if="appStore.isConfigured">
-    <UMeter color="teal" :value="appStore.percentOfLife" indicator>
-      <template #label>
-        <div class="text-sm flex items-baseline gap-8">
-          <span class="text-teal-500 dark:text-teal-400 mr-3">
-            Percent of your life
+      <UMeter
+        color="water"
+        :value="appStore.percentOfLife"
+        :ui="{
+          indicator: {
+            text: 'text-water-700 dark:text-water-200 -mb-1',
+          },
+        }"
+        indicator
+      >
+        <template #label>
+          <div class="text-sm flex items-baseline gap-8">
+            <span class="text-water-700 dark:text-water-200 lg:mr-3 mr-auto">
+              Percent of your life
+            </span>
+            <span class="prose app-text text-[11px]">
+              {{ appStore.age }} years / {{ appStore.yearsToLiveForCalc }} years
+            </span>
+            <span class="prose app-text text-[11px]">
+              {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
+            </span>
+          </div>
+        </template>
+      </UMeter>
+    </div>
+    <div
+      v-if="appStore.isConfigured"
+      class="flex flex-wrap justify-center gap-2 max-w-[100vw]"
+    >
+      <HeatmapCalendar
+        v-for="yearItem in appStore.arrayOfLifeYears"
+        :key="yearItem.startDate"
+        v-bind="{
+          startDate: yearItem.startDate,
+          endDate: yearItem.endDate,
+          zoomLevel: 1.2,
+        }"
+      >
+        <template #header>
+          <span :class="{
+            'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
+          }">
+            {{ yearItem.header }}
           </span>
-          <span class="prose text-[11px]">
-            {{ appStore.age }} years / {{ appStore.yearsToLiveForCalc }} years
-          </span>
-          <span class="prose text-[11px]">
-            {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
-          </span>
-        </div>
-      </template>
-    </UMeter>
-  </div>
-  <div class="flex flex-wrap justify-center gap-2 max-w-[100vw]" v-if="appStore.isConfigured">
-    <Heatmap
-      v-for="year in appStore.arrayOfLifeYears"
-      :key="year.startDate"
-      v-bind="{
-        startDate: year.startDate,
-        endDate: year.endDate,
-        dataset: appStore.dynamicDataset,
-        header: year.header,
-      }"
-    />
+        </template>
+      </HeatmapCalendar>
+    </div>
   </div>
 </template>
+
 <script setup lang="ts">
 useHead({
-  title: 'Calendar'
+  title: 'Calendar',
 })
-const appStore = useAppStore();
-const router = useRouter();
+const appStore = useAppStore()
+const router = useRouter()
+onBeforeMount(() => {
+  if (!appStore.isConfigured) {
+    router.push('/setup')
+  }
+})
 
-if (!appStore.isConfigured) {
-  router.push('/setup');
-}
-
-const today = appStore.dayjs().format('YYYY-MM-DD');
-const year = today.slice(0, 4);
-const startOfYear = `${year}-01-01`;
-const endOfYear = `${year}-12-31`;
+const today = appStore.dayjs().format('YYYY-MM-DD')
+const year = today.slice(0, 4)
+const startOfYear = `${year}-01-01`
+const endOfYear = `${year}-12-31`
 </script>

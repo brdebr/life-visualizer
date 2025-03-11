@@ -3,6 +3,12 @@
     <span>
       Life Visualizer
     </span>
-    <img class="inline-block mt-1 ml-3" src="/logo-icon-bg.png" alt="logo" width="18" height="18" />
+    <img
+      class="inline-block mt-1 ml-3"
+      src="/logo-icon-bg.png"
+      alt="logo"
+      width="18"
+      height="18"
+    >
   </h1>
 </template>

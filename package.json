@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "life-visualizer",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "clean": "nuxt cleanup",
+    "lintf": "eslint . --fix",
     "prod": "nuxt generate && nuxt preview",
     "postinstall": "nuxt prepare"
   },
@@ -18,14 +19,17 @@
     "@vueuse/nuxt": "^10.9.0",
     "fuse.js": "^7.0.0",
     "pinia": "^2.1.7",
-    "vue": "^3.4.21",
+    "sortablejs": "^1.15.6",
+    "vue": "^3.5.13",
     "vue-router": "^4.3.0",
     "vue-tippy": "^6.4.1"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^0.3.13",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "dayjs-nuxt": "^2.1.9",
     "nuxt": "^3.11.1",
-    "sass": "^1.72.0"
+    "sass": "^1.72.0",
+    "vite-plugin-eslint2": "^4.4.0"
   }
 }
