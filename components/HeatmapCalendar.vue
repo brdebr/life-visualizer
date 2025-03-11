@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-center items-center">
     <h3
-      class="w-full text-center"
+      class="w-full text-center pb-0.5"
       :style="{
         fontSize: `${props.zoomLevel * 10}px`,
       }"
@@ -63,7 +63,7 @@ const weekendDays = [0, 6]
 const cellSize = 5
 const cellMargin = 1
 
-const spaceLeft = 22
+const spaceLeft = 23
 const spaceTop = 6
 
 const space = 1
@@ -370,7 +370,7 @@ const handleCanvasMove = (event: MouseEvent) => {
   const y = event.clientY - rect.top
 
   const day = getDayFromPosition(x, y)
-  if (day && props.showEvents) {
+  if (day) {
     hoveredDayId.value = day.dayId
     appStore.selectEvent(day.dayId)
   }

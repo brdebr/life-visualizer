@@ -55,10 +55,17 @@
         v-bind="{
           startDate: yearItem.startDate,
           endDate: yearItem.endDate,
-          header: yearItem.header,
           zoomLevel: 1.2,
         }"
-      />
+      >
+        <template #header>
+          <span :class="{
+            'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
+          }">
+            {{ yearItem.header }}
+          </span>
+        </template>
+      </HeatmapCalendar>
     </div>
   </div>
 </template>
