@@ -15,8 +15,14 @@
         class="flex flex-col gap-1"
       >
         <h4 class="font-semibold text-sm">
-          {{ event?.title ? '· '+ event.title : 'No events this day' }}
+          {{ event?.title ? '· '+ event.title : 'No events this day' }} {{ event.endDate ? `- lasts for ${$dayjs(event.startDate).to($dayjs(event.endDate), true)}` : '' }}
         </h4>
+        <p
+          v-if="event.endDate"
+          class="px-2 pb-2 text-xs"
+        >
+          {{ event.endDate ? `Start: ${$dayjs(event.startDate).fromNow()} - End: ${$dayjs(event.endDate).fromNow()}` : '' }}
+        </p>
         <p class="px-2 pb-2 text-xs">
           {{ event?.description || '' }}
         </p>

@@ -11,13 +11,13 @@
         <template #header>
           <div class="text-center text-slate-600 dark:text-slate-400 mb-2">
             <div class="app-text">
-              {{ year }} is at {{ appStore.percentOfCurrentYear }}
+              {{ year }} is at {{ appStore.percentOfCurrentYearString }}
             </div>
             <div class="mt-2 mb-5 w-full">
               <UMeter
                 color="water"
                 class="w-full"
-                :value="appStore.percentOfLife"
+                :value="appStore.percentOfCurrentYear"
               >
                 <template #label>
                   <div class="text-sm flex items-baseline justify-between -mt-1.5">

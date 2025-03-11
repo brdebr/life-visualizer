@@ -48,6 +48,7 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
 })
 
 const appStore = useAppStore()
+const { eventCategoriesWithPriority } = storeToRefs(appStore)
 const searchStore = useSearchStore()
 const { highlightedDates } = storeToRefs(searchStore)
 
@@ -166,36 +167,49 @@ const monthsLabels = computed(() => {
 const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
 const debouncedColorMap = useDebounce(dayColorMap, 350)
 
+// Add this new computed property
+const categoryPriorityMap = computed(() => {
+  return Object.fromEntries(
+    eventCategoriesWithPriority.value.map(cat => [cat.title, { priority: cat.priority, color: cat.color }]),
+  )
+})
+
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
   if (!event?.events?.length || event.events[0].title === 'No events for this day.') {
     return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
   }
 
-  // Sort events by category priority
-  const sortedEvents = [...event.events].sort((a, b) => {
-    const catA = appStore.getCategoryByName(a.category)
-    const catB = appStore.getCategoryByName(b.category)
-    return catB.priority - catA.priority // Higher priority first
-  })
+  // Find the event with highest priority category using the priority map
+  const topEvent = event.events.reduce((highest, current) => {
+    const currentCat = current.category && categoryPriorityMap.value[current.category]
+    const highestCat = highest.category && categoryPriorityMap.value[highest.category]
 
-  // Get the highest priority event
-  const topEvent = sortedEvents[0]
+    const currentPriority = currentCat ? currentCat.priority : 0
+    const highestPriority = highestCat ? highestCat.priority : 0
+
+    return currentPriority > highestPriority ? current : highest
+  }, event.events[0])
 
   // Return color based on the event category
-  if (topEvent.type === 'personal' && !topEvent.category) {
-    return debouncedColorMap.value.PERSONAL
+  // if (topEvent.type === 'personal' && !topEvent.category) {
+  //   return debouncedColorMap.value.PERSONAL
+  // }
+
+  if (event.events.some(event => event.type === 'historical')) {
+    return appStore.getCategoryByName('historical').color
   }
 
   // If there's a specific category, use its color
   if (topEvent.category) {
-    const category = appStore.getCategoryByName(topEvent.category)
-    return category.color
+    // Get color directly from the map if available, otherwise fallback to getCategoryByName
+    return categoryPriorityMap.value[topEvent.category]?.color
+      || appStore.getCategoryByName(topEvent.category).color
   }
 
   // Fallback to historical events check
-  if (event.events.every(event => !!event.description)) {
-    return debouncedColorMap.value.HISTORICAL
-  }
+  // if (event.events.every(event => !!event.description)) {
+  //   return appStore.getCategoryByName('historical').color
+  // }
 
   // Default past/future coloring
   return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA

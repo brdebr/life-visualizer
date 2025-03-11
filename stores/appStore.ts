@@ -17,7 +17,6 @@ export type DateEventsObject = {
 export type EventCategory = {
   title: string
   color: string
-  priority: number
 }
 
 export const useAppStore = defineStore('app-store', () => {
@@ -44,7 +43,11 @@ export const useAppStore = defineStore('app-store', () => {
     const endDate = currentDate.endOf('year')
     const diff = endDate.diff(startDate, 'day')
     const currentDay = currentDate.dayOfYear()
-    return `${((currentDay / diff) * 100).toFixed(2)}%`
+    // return `${((currentDay / diff) * 100).toFixed(2)}%`
+    return ((currentDay / diff) * 100)
+  })
+  const percentOfCurrentYearString = computed(() => {
+    return `${percentOfCurrentYear.value.toFixed(2)}%`
   })
 
   const arrayOfLifeYears = computed(() => {
@@ -83,15 +86,22 @@ export const useAppStore = defineStore('app-store', () => {
     ]
   })
 
-  // Define event categories with priorities using useLocalStorage
+  // Define event categories using useLocalStorage - order determines priority (higher index = higher priority)
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
-    { title: 'school', color: '#2563eb', priority: 10 },
-    { title: 'work', color: '#65a30d', priority: 9 },
-    { title: 'personal', color: '#db2777', priority: 15 },
-    { title: 'vacation', color: '#0891b2', priority: 12 },
-    { title: 'historical', color: '#9333ea', priority: 5 },
-    { title: 'default', color: '#6b7280', priority: 0 },
+    { title: 'historical', color: '#9333ea' },
+    { title: 'personal', color: '#db2777' },
+    { title: 'vacation', color: '#0891b2' },
+    { title: 'work', color: '#65a30d' },
+    { title: 'school', color: '#2563eb' },
+    { title: 'default', color: '#6b7280' },
   ])
+
+  const eventCategoriesWithPriority = computed(() => {
+    return eventCategories.value.map((category, index) => ({
+      ...category,
+      priority: eventCategories.value.length - index,
+    }))
+  })
 
   // Add a new category
   const addCategory = (category: EventCategory) => {
@@ -110,18 +120,16 @@ export const useAppStore = defineStore('app-store', () => {
     eventCategories.value.splice(index, 1)
   }
 
-  // Update categories after reordering
+  // Update categories after reordering - no need to set priorities
   const updateCategoriesOrder = (newOrder: EventCategory[]) => {
-    // Update priorities based on new order (higher index = higher priority)
-    eventCategories.value = newOrder.map((cat, idx) => ({
-      ...cat,
-      priority: newOrder.length - idx,
-    }))
+    eventCategories.value = newOrder
   }
 
   // Get category by name with fallback to default
+  // Higher index in array = higher priority
   const getCategoryByName = (categoryName?: string) => {
     if (!categoryName) return eventCategories.value.find(cat => cat.title === 'default')!
+
     return eventCategories.value.find(cat => cat.title === categoryName.toLowerCase())
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
@@ -200,14 +208,19 @@ export const useAppStore = defineStore('app-store', () => {
       category?: string
     }[] = [
       ...personalEvents,
-      ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')),
+      ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')).map((event) => {
+        return {
+          ...event,
+          type: 'historical',
+        }
+      }),
       ...customEvents.value.map(event => ({
         date: event.startDate || '',
         endDate: event.endDate,
         title: event.title || '',
         description: event.description || '',
         type: event.type || 'custom',
-        category: event.category || 'default',
+        category: event.category || 'historical',
       })),
     ]
 
@@ -296,6 +309,7 @@ export const useAppStore = defineStore('app-store', () => {
     dayjs,
     wasBornDate,
     yearsToLive,
+    percentOfCurrentYearString,
     percentOfCurrentYear,
     percentOfLife,
     wasBornForCalc,
@@ -304,6 +318,7 @@ export const useAppStore = defineStore('app-store', () => {
     dynamicDataset,
     arrayOfLifeYears,
     getDayContent,
+    eventCategoriesWithPriority,
     selectedEvent,
     selectEvent,
     isConfigured,

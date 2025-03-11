@@ -22,12 +22,12 @@
       </template>
 
       <div
-        v-if="sortedCategories.length"
+        v-if="eventCategories.length"
         ref="categoriesContainer"
         class="divide-y"
       >
         <div
-          v-for="(category, index) in sortedCategories"
+          v-for="(category, index) in eventCategories"
           :key="category.title"
           :data-id="index"
           class="py-3 px-2 flex items-center justify-between bg-white"
@@ -48,7 +48,7 @@
             >
               Default
             </UBadge>
-            <UBadge>Priority: {{ category.priority }}</UBadge>
+            <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
           </div>
 
           <div class="flex gap-2">
@@ -185,11 +185,6 @@ import { useAppStore, type EventCategory } from '~/stores/appStore'
 const store = useAppStore()
 const { eventCategories } = storeToRefs(store)
 
-// // Sort categories by priority (higher priority first)
-const sortedCategories = computed(() => {
-  return eventCategories.value.toSorted((a, b) => b.priority - a.priority)
-})
-
 // Form state
 const showModal = ref(false)
 const showAddModal = ref(false)
@@ -198,7 +193,6 @@ const editIndex = ref(-1)
 const formData = reactive({
   title: '',
   color: '#3b82f6',
-  priority: 0,
 })
 
 watch(showAddModal, (val) => {
@@ -216,7 +210,6 @@ const deleteIndex = ref(-1)
 const resetForm = () => {
   formData.title = ''
   formData.color = '#3b82f6'
-  formData.priority = 0
 }
 
 const editCategory = (index: number) => {
@@ -225,7 +218,6 @@ const editCategory = (index: number) => {
   const category = store.eventCategories[index]
   formData.title = category.title
   formData.color = category.color
-  formData.priority = category.priority
   showModal.value = true
 }
 
@@ -235,15 +227,13 @@ const saveCategory = () => {
   const categoryData: EventCategory = {
     title: formData.title.toLowerCase().trim(),
     color: formData.color,
-    priority: formData.priority || 0,
   }
 
   if (isEditing.value) {
     store.updateCategory(editIndex.value, categoryData)
   }
   else {
-    // Set initial priority higher than existing ones
-    categoryData.priority = Math.max(0, ...store.eventCategories.map(c => c.priority)) + 1
+    // Add to the end of the array (highest priority)
     store.addCategory(categoryData)
   }
 

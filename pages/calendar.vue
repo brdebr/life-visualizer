@@ -10,7 +10,7 @@
       >
         <template #header>
           <div class="prose app-text text-sm mb-1 mx-auto">
-            {{ year }} is at {{ appStore.percentOfCurrentYear }}
+            {{ year }} is at {{ appStore.percentOfCurrentYearString }}
           </div>
         </template>
       </HeatmapCalendar>
