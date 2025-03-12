@@ -92,7 +92,7 @@ export const useAppStore = defineStore('app-store', () => {
     { title: 'historical', color: '#8b75e1', visible: true },
     { title: 'personal', color: '#c6e6e4', visible: true },
     { title: 'vacation', color: '#a6f2bf', visible: true },
-    { title: 'work', color: '#e3ddc0', visible: true },
+    { title: 'work', color: '#e3ddc0', visible: false },
     { title: 'school', color: '#d0e4fb', visible: true },
     { title: 'default', color: '#e5e7eb', visible: true },
   ])
