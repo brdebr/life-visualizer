@@ -43,4 +43,7 @@ export default defineNuxtConfig({
     classSuffix: '',
     dataValue: 'light',
   },
+  nitro: {
+    preset: 'netlify-static',
+  },
 })
