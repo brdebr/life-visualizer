@@ -25,11 +25,11 @@
     "vue-tippy": "^6.4.1"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^0.3.13",
+    "@nuxt/eslint": "^1.2.0",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "dayjs-nuxt": "^2.1.9",
     "nuxt": "^3.11.1",
     "sass": "^1.72.0",
-    "vite-plugin-eslint2": "^4.4.0"
+    "vite-plugin-eslint2": "^5.0.3"
   }
 }
