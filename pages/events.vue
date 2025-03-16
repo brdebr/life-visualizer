@@ -7,7 +7,7 @@
     <!-- Add new event form -->
     <div class="bg-gray-100 p-4 rounded-lg mb-8">
       <h2 class="text-lg font-semibold mb-4">
-        Add New Event
+        {{ isEditing ? 'Edit Event' : 'Add New Event' }}
       </h2>
       <form
         class="space-y-4"
@@ -67,12 +67,20 @@
           />
         </div>
 
-        <div>
+        <div class="flex">
           <button
             type="submit"
             class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
           >
-            Add Event
+            {{ isEditing ? 'Update Event' : 'Add Event' }}
+          </button>
+          <button
+            v-if="isEditing"
+            type="button"
+            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ml-2"
+            @click="cancelEdit"
+          >
+            Cancel
           </button>
         </div>
       </form>
@@ -122,12 +130,20 @@
                 </span>
               </div>
             </div>
-            <button
-              class="text-red-500 hover:text-red-700"
-              @click="deleteEvent(index)"
-            >
-              Delete
-            </button>
+            <div class="flex space-x-2">
+              <button
+                class="text-blue-500 hover:text-blue-700"
+                @click="editEvent(index)"
+              >
+                Edit
+              </button>
+              <button
+                class="text-red-500 hover:text-red-700"
+                @click="deleteEvent(index)"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -140,6 +156,10 @@ import { ref } from 'vue'
 import { useAppStore, type EventObject } from '~/stores/appStore'
 
 const store = useAppStore()
+
+// Add state variables for editing mode
+const isEditing = ref(false)
+const editingIndex = ref(-1)
 
 const newEvent = ref<EventObject>({
   title: '',
@@ -157,10 +177,21 @@ const addEvent = () => {
     return
   }
 
-  // Add the event
-  store.addCustomEvent({ ...newEvent.value })
+  if (isEditing.value) {
+    // Update existing event
+    store.updateCustomEvent(editingIndex.value, { ...newEvent.value })
+    isEditing.value = false
+    editingIndex.value = -1
+  } else {
+    // Add new event
+    store.addCustomEvent({ ...newEvent.value })
+  }
 
   // Reset the form
+  resetForm()
+}
+
+const resetForm = () => {
   newEvent.value = {
     title: '',
     description: '',
@@ -169,6 +200,22 @@ const addEvent = () => {
     category: 'default',
     type: 'custom',
   }
+}
+
+const editEvent = (index: number) => {
+  // Set editing state and populate form with event data
+  isEditing.value = true
+  editingIndex.value = index
+  newEvent.value = { ...store.customEvents[index] }
+  
+  // Scroll to the form
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+  editingIndex.value = -1
+  resetForm()
 }
 
 const deleteEvent = (index: number) => {

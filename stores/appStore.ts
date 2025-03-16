@@ -159,6 +159,11 @@ export const useAppStore = defineStore('app-store', () => {
     customEvents.value.push(event)
   }
 
+  // Update an existing custom event
+  const updateCustomEvent = (index: number, event: EventObject) => {
+    customEvents.value[index] = event
+  }
+
   // Delete a custom event
   const deleteCustomEvent = (index: number) => {
     customEvents.value.splice(index, 1)
@@ -443,6 +448,7 @@ export const useAppStore = defineStore('app-store', () => {
     // Custom events management
     customEvents,
     addCustomEvent,
+    updateCustomEvent,
     deleteCustomEvent,
   }
 })
