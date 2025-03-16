@@ -32,7 +32,7 @@
             </span>
           </div>
           <span
-            v-if="event.endDate"
+            v-if="event.endDate && dayjs(event.endDate).diff(dayjs(event.startDate), 'day') > 0"
             class="ml-auto"
           >
             {{ daysCount(event) }}
