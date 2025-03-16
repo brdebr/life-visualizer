@@ -182,7 +182,8 @@ const addEvent = () => {
     store.updateCustomEvent(editingIndex.value, { ...newEvent.value })
     isEditing.value = false
     editingIndex.value = -1
-  } else {
+  }
+  else {
     // Add new event
     store.addCustomEvent({ ...newEvent.value })
   }
@@ -207,7 +208,7 @@ const editEvent = (index: number) => {
   isEditing.value = true
   editingIndex.value = index
   newEvent.value = { ...store.customEvents[index] }
-  
+
   // Scroll to the form
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }

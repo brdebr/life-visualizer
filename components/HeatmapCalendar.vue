@@ -14,7 +14,6 @@
       </span>
     </h3>
     <div
-      ref="containerRef"
       class="calendar-heatmap-container"
     >
       <canvas
@@ -54,11 +53,13 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
 
 const appStore = useAppStore()
 const { eventCategoriesWithPriority } = storeToRefs(appStore)
+const { dayjs } = appStore
+
 const searchStore = useSearchStore()
 const { highlightedDates } = storeToRefs(searchStore)
 
 const isCurrentYear = computed(() => {
-  return appStore.dayjs(props.startDate).year() === appStore.dayjs().year()
+  return dayjs(props.startDate).year() === dayjs().year()
 })
 
 const weekendDays = [0, 6]
@@ -71,24 +72,29 @@ const spaceTop = 6
 
 const space = 1
 
-// Canvas refs
-const canvasRef = ref<HTMLCanvasElement | null>(null)
-const containerRef = ref<HTMLDivElement | null>(null)
+const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
 const ctx = ref<CanvasRenderingContext2D | null>(null)
 const hoveredDayId = ref<string | null>(null)
 
 const { isDark } = useIsDarkRef()
 
-// Initialize canvas context after mount
 onMounted(() => {
-  if (canvasRef.value) {
-    ctx.value = canvasRef.value.getContext('2d')
-    draw()
+  if (!canvasRef.value) {
+    return
   }
+  ctx.value = canvasRef.value.getContext('2d')
+  draw()
 })
 
 // Watch for changes that require redrawing
-watch(() => [props.startDate, props.endDate, props.zoomLevel, highlightedDates.value, hoveredDayId.value, isDark.value], () => {
+watch(() => [
+  props.startDate,
+  props.endDate,
+  props.zoomLevel,
+  highlightedDates.value,
+  hoveredDayId.value,
+  isDark.value,
+], () => {
   nextTick(() => {
     draw()
   })
@@ -110,10 +116,10 @@ const weekdayLegend = [
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
-  const year = appStore.dayjs(props.startDate).year()
-  const startDateComputed = appStore.dayjs(props.startDate).startOf('day')
+  const year = dayjs(props.startDate).year()
+  const startDateComputed = dayjs(props.startDate).startOf('day')
 
-  const end = appStore.dayjs(props.endDate).endOf('day')
+  const end = dayjs(props.endDate).endOf('day')
   const maxEnd = startDateComputed.add(11, 'month').endOf('month')
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd
   const weeksCount = endDateComputed.diff(startDateComputed, 'week') + 1
@@ -126,7 +132,7 @@ const weeks = computed(() => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day')
       const dayId = day.format('YYYY-MM-DD')
       const event = appStore.getDayContent(dayId)
-      const isInThePast = day.isBefore(appStore.dayjs())
+      const isInThePast = day.isBefore(dayjs())
       return {
         num: dayIndex,
         dayId,
@@ -150,8 +156,8 @@ const weeks = computed(() => {
 })
 
 const monthsLabels = computed(() => {
-  const startDateComputed = appStore.dayjs(props.startDate).startOf('day')
-  const end = appStore.dayjs(props.endDate).endOf('day')
+  const startDateComputed = dayjs(props.startDate).startOf('day')
+  const end = dayjs(props.endDate).endOf('day')
   const maxEnd = startDateComputed.add(11, 'month').endOf('month')
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd
   const months = endDateComputed.diff(startDateComputed, 'month') + 1
@@ -241,15 +247,10 @@ const draw = () => {
   const canvas = canvasRef.value
   ctx.value.clearRect(0, 0, canvas.width, canvas.height)
 
-  // Apply scaling for zoom level if not using viewBox
   if (props.zoomLevel !== 1) {
     ctx.value.save()
     ctx.value.scale(props.zoomLevel, props.zoomLevel)
   }
-
-  // Draw border
-  // ctx.value.strokeStyle = isCurrentYear.value ? '#74b5ff' : '#ddd'
-  // ctx.value.strokeRect(0, 0, props.width, props.height)
 
   drawMonthLabels()
   drawDayLabels()
@@ -268,7 +269,7 @@ const drawMonthLabels = () => {
 
   monthsLabels.value.forEach((month) => {
     if (!ctx.value) return
-    const isCurrentMonth = isCurrentYear.value && month.index === appStore.dayjs().month()
+    const isCurrentMonth = isCurrentYear.value && month.index === dayjs().month()
     ctx.value.fillStyle = isCurrentMonth ? '#4a7ab1' : '#000'
     ctx.value!.fillText(month.labelMonth, spaceLeft + month.translateX, spaceTop + 2)
   })
@@ -291,34 +292,35 @@ const drawDayLabels = () => {
 const drawDayCells = () => {
   if (!ctx.value) return
 
-  const today = appStore.dayjs().format('YYYY-MM-DD')
+  const today = dayjs().format('YYYY-MM-DD')
 
   weeks.value.forEach((week) => {
     week.days.forEach((day) => {
+      if (!ctx.value) return
       const x = spaceLeft + week.translateX + day.x
       const y = spaceTop + 5 + day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
 
       // Fill rectangle
-      ctx.value!.fillStyle = highlightedDates.value.includes(day.dayId) ? '#ff4242' : day.color
-      ctx.value!.fillRect(x, y, cellSize, cellSize)
+      ctx.value.fillStyle = highlightedDates.value.includes(day.dayId) ? '#ff4242' : day.color
+      ctx.value.fillRect(x, y, cellSize, cellSize)
 
       // Stroke for highlighted or today
       if (highlightedDates.value.includes(day.dayId)) {
-        ctx.value!.strokeStyle = '#ff4242'
-        ctx.value!.lineWidth = 2
-        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeStyle = '#ff4242'
+        ctx.value.lineWidth = 2
+        ctx.value.strokeRect(x, y, cellSize, cellSize)
       }
       else if (day.dayId === today) {
-        ctx.value!.strokeStyle = isDark.value ? '#3b82f6' : '#0ea5e9' // blue-500 or water-500
-        ctx.value!.lineWidth = 1
-        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeStyle = isDark.value ? '#3b82f6' : '#0ea5e9' // blue-500 or water-500
+        ctx.value.lineWidth = 1
+        ctx.value.strokeRect(x, y, cellSize, cellSize)
       }
 
       // Hover effect
       if (day.dayId === hoveredDayId.value) {
-        ctx.value!.strokeStyle = '#000'
-        ctx.value!.lineWidth = 1
-        ctx.value!.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeStyle = '#000'
+        ctx.value.lineWidth = 1
+        ctx.value.strokeRect(x, y, cellSize, cellSize)
       }
     })
   })
@@ -392,8 +394,6 @@ const handleCanvasLeave = () => {
 .calendar-heatmap {
   @apply border overflow-hidden;
   &.current-year {
-    // @apply border-[#74b5ff];
-    // @apply border-[#4a7ab1];
     @apply border-water-500;
   }
 }
