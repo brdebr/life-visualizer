@@ -42,7 +42,7 @@
           v-if="event.endDate"
           class="px-2 pb-1 text-[10px]"
         >
-          {{ event.endDate ? `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` : '' }}
+          {{ `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` }}
         </p>
         <p class="px-2 pb-2 text-xs">
           {{ event?.description || '' }}
@@ -66,9 +66,9 @@ watch(selectedEvent, (newVal) => {
 
 const daysCount = (event: EventObject) => {
   if (event.noWeekend) {
-    return `Day ${dayjs(selectedEvent.value?.dateId).businessDiff(dayjs(event.startDate))} of ${dayjs(event.endDate).businessDiff(dayjs(event.startDate))}`
+    return `Day ${dayjs(selectedEvent.value?.dateId).businessDiff(dayjs(event.startDate)) + 1} of ${dayjs(event.endDate).businessDiff(dayjs(event.startDate)) + 1}`
   }
-  return `Day ${dayjs(selectedEvent.value?.dateId).diff(dayjs(event.startDate), 'day')} of ${dayjs(event.endDate).diff(dayjs(event.startDate), 'day')}`
+  return `Day ${dayjs(selectedEvent.value?.dateId).diff(dayjs(event.startDate), 'day') + 1} of ${dayjs(event.endDate).diff(dayjs(event.startDate), 'day') + 1}`
 }
 
 const noEventsData = [{

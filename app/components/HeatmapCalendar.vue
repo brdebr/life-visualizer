@@ -216,7 +216,7 @@ const adjustColorLuminosity = (color: string, amount: number): string => {
 }
 
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
-  const defaultColor = isInThePast ? cellColors.pastEmpty : cellColors.futureEmpty
+  const defaultColor = isInThePast ? cellColors.pastEmpty : adjustColorLuminosity(cellColors.pastEmpty, 0.6)
 
   if (!event?.events?.length || props.showEvents === false) {
     return defaultColor
@@ -253,9 +253,12 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
     return defaultColor
   }
 
+  const isLongEvent = topEvent.endDate && dayjs(topEvent.endDate).diff(dayjs(topEvent.startDate), 'day') > 0
+
   // Apply luminosity adjustment to future cells
   const categoryColor = category.color
-  return isInThePast ? categoryColor : adjustColorLuminosity(categoryColor, 0.65)
+  const categoryColorForLongEvent = isLongEvent ? adjustColorLuminosity(categoryColor, 0.4) : categoryColor
+  return isInThePast ? categoryColorForLongEvent : adjustColorLuminosity(categoryColor, 0.7)
 }
 
 // Canvas drawing functions
@@ -289,7 +292,8 @@ const drawMonthLabels = () => {
     if (!ctx.value) return
     const isCurrentMonth = isCurrentYear.value && month.index === dayjs().month()
     ctx.value.fillStyle = isCurrentMonth ? monthsLabelsConstants.color.currentMonth : monthsLabelsConstants.color.default
-    ctx.value!.fillText(month.labelMonth, spacings.spaceLeft + month.translateX, spacings.spaceTop + 2)
+    ctx.value.textRendering = 'optimizeSpeed'
+    ctx.value.fillText(month.labelMonth, spacings.spaceLeft + month.translateX, spacings.spaceTop + 2)
   })
 }
 
@@ -300,6 +304,7 @@ const drawWeekdaysLabels = () => {
   ctx.value.letterSpacing = weekdaysLabels.letterSpacing
   ctx.value.fillStyle = weekdaysLabels.color
   ctx.value.textAlign = weekdaysLabels.textAlign
+  ctx.value.textRendering = 'optimizeSpeed'
 
   let y = spacings.spaceTop + weekdaysLabels.spaceTop
   weekdayLegend.forEach((day) => {
