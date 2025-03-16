@@ -101,20 +101,21 @@ export const useAppStore = defineStore('app-store', () => {
     const personalEvents: EventObject[] = eventsStore.buildDynamicEvents(wasBorn, yearsToLiveForCalc)
 
     const customEventsMapped: EventObject[] = customEvents.value.map(event => ({
-      date: event.startDate || '',
+      startDate: event.startDate || '',
       endDate: event.endDate,
       title: event.title || '',
       description: event.description || '',
       category: event.category || 'default',
-    }))
+    } satisfies EventObject))
 
     const staticDatasetMapped: EventObject[] = staticDataset.filter(item =>
       dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[)'),
     ).map((event) => {
       return {
         ...event,
+        startDate: event.date,
         category: 'historical',
-      }
+      } satisfies EventObject
     })
 
     const finalEvents: EventObject[] = []
@@ -129,9 +130,8 @@ export const useAppStore = defineStore('app-store', () => {
 
     const finalRecord: Record<string, EventObject[]> = {}
 
-    // Process each event - store only at their start date
-    arrayDataset.value.forEach(({ title, description, date, endDate, category }) => {
-      const events = finalRecord[date] || []
+    arrayDataset.value.forEach(({ title, description, startDate: date, endDate, category }) => {
+      const events = finalRecord[date!] || []
       events.push({
         title,
         description,
@@ -139,7 +139,7 @@ export const useAppStore = defineStore('app-store', () => {
         endDate,
         category,
       })
-      finalRecord[date] = events
+      finalRecord[date!] = events
     })
 
     return finalRecord
