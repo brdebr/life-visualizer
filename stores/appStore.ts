@@ -193,33 +193,28 @@ export const useAppStore = defineStore('app-store', () => {
       category: 'personal',
     }))
 
-    const personalEvents = [...birthdays, ...events]
+    const personalEvents = birthdays.concat(events)
 
-    const finalDataset: {
-      date: string
-      endDate?: string
-      title: string
-      description: string
-      type?: string
-      category?: string
-    }[] = [
-      ...personalEvents,
-      ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')).map((event) => {
-        return {
-          ...event,
-          category: 'historical',
-        }
-      }),
-      ...customEvents.value.map(event => ({
-        date: event.startDate || '',
-        endDate: event.endDate,
-        title: event.title || '',
-        description: event.description || '',
-        category: event.category || 'historical',
-      })),
-    ]
+    const customEventsMapped: EventObject[] = customEvents.value.map(event => ({
+      date: event.startDate || '',
+      endDate: event.endDate,
+      title: event.title || '',
+      description: event.description || '',
+      category: event.category || 'default',
+    }))
 
-    return finalDataset
+    const staticDatasetMapped: EventObject[] = staticDataset.filter(item =>
+      dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[)'),
+    ).map((event) => {
+      return {
+        ...event,
+        category: 'historical',
+      }
+    })
+
+    const finalEvents: EventObject[] = []
+
+    return finalEvents.concat(personalEvents, customEventsMapped, staticDatasetMapped)
   })
 
   const dynamicDataset = computed(() => {
