@@ -298,6 +298,9 @@ export const useEventsStore = defineStore('events-store', () => {
     }
 
     periodTemplates.value.forEach((template) => {
+      // Skip disabled templates
+      if (template.disabled) return
+
       if (template.id === 'birthdays') {
         for (let i = 0; i <= yearsToLiveForCalc.value; i++) {
           const eventTitle = buildEventTitle(template, 'yearlyTitleFormat', { yearIndex: i + 1 }, template.title)
@@ -452,4 +455,5 @@ export type PeriodTemplate = {
   yearlyTitleFormat?: string
   yearlyDescriptionFormat?: string
   yearStartOffset?: number
+  disabled?: boolean
 }

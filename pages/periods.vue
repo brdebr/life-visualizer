@@ -35,6 +35,9 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Period Type
               </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -44,6 +47,7 @@
             <tr
               v-for="template in eventsStore.periodTemplates"
               :key="template.id"
+              :class="{ 'opacity-50': template.disabled }"
             >
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="font-medium text-gray-900">
@@ -67,6 +71,14 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 {{ template.generateYearly ? 'Yearly Events' : 'Single Period' }}
               </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="px-2 py-1 text-xs font-semibold rounded-full"
+                  :class="template.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
+                >
+                  {{ template.disabled ? 'Disabled' : 'Active' }}
+                </span>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
                   class="text-indigo-600 hover:text-indigo-900 mr-2"
@@ -80,11 +92,17 @@
                 >
                   Delete
                 </button>
+                <button
+                  class="ml-2 text-gray-600 hover:text-gray-900"
+                  @click="toggleTemplateStatus(template)"
+                >
+                  {{ template.disabled ? 'Enable' : 'Disable' }}
+                </button>
               </td>
             </tr>
             <tr v-if="eventsStore.periodTemplates.length === 0">
               <td
-                colspan="5"
+                colspan="6"
                 class="px-6 py-4 text-center text-gray-500"
               >
                 No period templates found. Add one to get started.
@@ -142,6 +160,17 @@
                     {{ category.title }}
                   </option>
                 </select>
+              </div>
+
+              <div>
+                <div class="flex items-center">
+                  <input
+                    v-model="formData.disabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  >
+                  <label class="ml-2 block text-sm text-gray-700">Disable this template</label>
+                </div>
               </div>
             </div>
 
@@ -384,6 +413,7 @@ const defaultFormData = {
   generateYearly: false,
   yearlyTitleFormat: '',
   yearlyDescriptionFormat: '',
+  disabled: false,
 }
 
 const formData = reactive({ ...defaultFormData })
@@ -401,6 +431,7 @@ const editTemplate = (template: PeriodTemplate) => {
   Object.assign(formData, {
     ...template,
     dateEnd: template.dateEnd || { month: null, day: null },
+    disabled: template.disabled || false,
   })
 
   isEditing.value = true
@@ -430,6 +461,7 @@ const saveTemplate = () => {
     generateYearly: formData.generateYearly || undefined,
     yearlyTitleFormat: formData.yearlyTitleFormat || undefined,
     yearlyDescriptionFormat: formData.yearlyDescriptionFormat || undefined,
+    disabled: formData.disabled || undefined,
   }
 
   if (isEditing.value) {
@@ -450,5 +482,12 @@ const confirmDelete = (id: string) => {
 const deleteTemplate = () => {
   eventsStore.deletePeriodTemplate(templateToDeleteId.value)
   showDeleteConfirm.value = false
+}
+
+const toggleTemplateStatus = (template: PeriodTemplate) => {
+  eventsStore.updatePeriodTemplate(template.id, {
+    ...template,
+    disabled: !template.disabled,
+  })
 }
 </script>
