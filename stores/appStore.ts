@@ -184,7 +184,6 @@ export const useAppStore = defineStore('app-store', () => {
       endDate: wasBorn.clone().add(3, 'year').month(5).day(30).format('YYYY-MM-DD'),
       title: 'Guardería',
       description: 'Periodo de guardería infantil.',
-      type: 'personal',
       category: 'school',
     })
 
@@ -195,7 +194,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
         title: `${i - 2}º Infantil`,
         description: `Curso ${i - 2}º de Educación Infantil.`,
-        type: 'personal',
         category: 'school',
       })
     }
@@ -207,7 +205,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
         title: `${i - 5}º Primaria`,
         description: `Curso ${i - 5}º de Educación Primaria.`,
-        type: 'personal',
         category: 'school',
       })
     }
@@ -219,7 +216,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
         title: `${i - 11}º ESO`,
         description: `Curso ${i - 11}º de Educación Secundaria Obligatoria (ESO).`,
-        type: 'personal',
         category: 'school',
       })
     }
@@ -231,7 +227,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
         title: `${i - 15}º Bachillerato`,
         description: `Curso ${i - 15}º de Bachillerato.`,
-        type: 'personal',
         category: 'school',
       })
     }
@@ -243,7 +238,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: wasBorn.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
         title: `Curso ${i - 17}º Universidad`,
         description: `Curso ${i - 17}º de la universidad.`,
-        type: 'personal',
         category: 'school',
       })
     }
@@ -254,20 +248,18 @@ export const useAppStore = defineStore('app-store', () => {
     const startRetirementDate = wasBorn.clone().add(65, 'year').format('YYYY-MM-DD')
 
     events.push(
-      { date: legalAgeDate, title: 'Mayoría de Edad', description: 'Has alcanzado la mayoría de edad.', type: 'personal', category: 'personal' },
+      { date: legalAgeDate, title: 'Mayoría de Edad', description: 'Has alcanzado la mayoría de edad.', category: 'personal' },
       {
         date: startWorkDate,
         endDate: startRetirementDate,
         title: 'Carrera Profesional',
         description: 'Periodo de vida laboral activa.',
-        type: 'personal',
         category: 'work',
       },
       {
         date: startRetirementDate,
         title: 'Jubilación',
         description: 'Comienzo del periodo de jubilación.',
-        type: 'personal',
         category: 'personal',
       },
     )
@@ -276,7 +268,6 @@ export const useAppStore = defineStore('app-store', () => {
       date: wasBorn.clone().add(i, 'year').format('YYYY-MM-DD'),
       title: i === 0 ? 'Nacimiento' : `${i}º Cumpleaños`,
       description: i === 0 ? 'Fecha de nacimiento.' : `Has cumplido ${i} años.`,
-      type: 'personal',
       category: 'personal',
     }))
 
@@ -295,7 +286,6 @@ export const useAppStore = defineStore('app-store', () => {
         return {
           ...event,
           category: 'historical',
-          type: 'historical',
         }
       }),
       ...customEvents.value.map(event => ({
