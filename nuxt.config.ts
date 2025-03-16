@@ -42,9 +42,11 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-03-15',
 
-  nitro: {
-    preset: 'netlify-static',
-  },
+  nitro: isNetlify()
+    ? {
+        preset: 'netlify-static',
+      }
+    : undefined,
 
   dayjs: {
     locales: ['es', 'en'],

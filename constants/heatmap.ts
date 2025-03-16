@@ -19,7 +19,7 @@ export const MAGIC_VALUES = {
   },
   weekdaysLabels: {
     font: '8px sans-serif',
-    letterSpacing: '0.25px',
+    letterSpacing: '0.5px',
     textAlign: 'right',
     color: '#000',
     spaceTop: 15,

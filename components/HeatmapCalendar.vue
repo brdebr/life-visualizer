@@ -24,8 +24,8 @@
         }"
         :width="computedSizes.width"
         :height="computedSizes.height"
-        @click="handleCanvasClick"
-        @mousemove="handleCanvasMove"
+        @click="handleCanvasAction"
+        @mousemove="handleCanvasAction"
         @mouseleave="handleCanvasLeave"
       />
     </div>
@@ -46,6 +46,25 @@ export type HeatmapProps = {
   getDayContent: (dateId: string) => DateEventsObject
 }
 
+const { isDark } = useIsDarkRef()
+const dayjs = useDayjs()
+
+const weekendDays = [0, 6]
+const weekdayLegend = [
+  { label: 'Mon', x: -2.5, dy: -5.5, dx: 0 },
+  { label: 'Wed', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Fri', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Sun', x: -2.5, dy: 12.5, dx: 0 },
+]
+
+const {
+  spacings,
+  cellColors,
+  monthsLabels: monthsLabelsConstants,
+  weekdaysLabels,
+} = MAGIC_VALUES
+
+// PROPS
 const props = withDefaults(defineProps<HeatmapProps>(), {
   width: 420,
   height: 57,
@@ -54,39 +73,25 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
   categories: () => [],
   year: new Date().getUTCFullYear(),
 })
-
+// DATE CONSTANTS
 const startDate = computed(() => {
   return dayjs().year(props.year).startOf('year').format('YYYY-MM-DD')
 })
 const endDate = computed(() => {
   return dayjs().year(props.year).endOf('year').format('YYYY-MM-DD')
 })
-
-const dayjs = useDayjs()
-
-const searchStore = useSearchStore()
-const { highlightedDates } = storeToRefs(searchStore)
-
 const isCurrentYear = computed(() => {
   return props.year === dayjs().year()
 })
 
-const weekendDays = [0, 6]
+// STORES
+const searchStore = useSearchStore()
+const { highlightedDates } = storeToRefs(searchStore)
 
-const weekdayLegend = [
-  { label: 'Mon', x: -2.5, dy: -5.5, dx: 0 },
-  { label: 'Wed', x: -2.5, dy: 12, dx: 0 },
-  { label: 'Fri', x: -2.5, dy: 12, dx: 0 },
-  { label: 'Sun', x: -2.5, dy: 12.5, dx: 0 },
-]
-
-const { spacings, cellColors, monthsLabels: monthsLabelsConstants, weekdaysLabels } = MAGIC_VALUES
-
+// CANVAS
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
 const ctx = ref<CanvasRenderingContext2D | null>(null)
 const hoveredDayId = ref<string | null>(null)
-
-const { isDark } = useIsDarkRef()
 
 onMounted(() => {
   if (!canvasRef.value) {
@@ -98,8 +103,7 @@ onMounted(() => {
 
 // Watch for changes that require redrawing
 watch(() => [
-  startDate.value,
-  endDate.value,
+  props.year,
   props.zoomLevel,
   highlightedDates.value,
   hoveredDayId.value,
@@ -117,7 +121,6 @@ const computedSizes = computed(() => {
   }
 })
 
-// Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
   const year = dayjs(startDate.value).year()
   const startDateComputed = dayjs(startDate.value).startOf('day')
@@ -170,7 +173,8 @@ const monthsLabels = computed(() => {
     const labelMonth = month.format('MMM')
     const labelYear = month.format('YY')
     const label = `${labelMonth} ${labelYear}`
-    const translateX = (weeks.value.find(week => week.startDate.isSame(month, 'month'))?.translateX || 0) + (i * (spacings.cellSize + spacings.cellMargin + spacings.space))
+    const weekTranslateX = weeks.value.find(week => week.startDate.isSame(month, 'month'))?.translateX || 0
+    const translateX = weekTranslateX + (i * (spacings.cellSize + spacings.cellMargin + spacings.space))
 
     return {
       index: i,
@@ -182,7 +186,6 @@ const monthsLabels = computed(() => {
   })
 })
 
-// Update categoryPriorityMap to include visibility
 const categoryPriorityMap = computed(() => {
   return Object.fromEntries(
     props.categories.map(cat => [cat.title, {
@@ -291,9 +294,10 @@ const drawDayCells = () => {
       if (!ctx.value) return
       const isWeekendValue = weekendDays.includes(day.weekDay) ? 1 : 0
       const isHighlighted = highlightedDates.value.includes(day.dayId)
+      const spacingValue = spacings.cellSize + spacings.cellMargin
 
       const x = spacings.spaceLeft + week.translateX + day.x
-      const y = spacings.spaceTop + 5 + day.num * (spacings.cellSize + spacings.cellMargin) + isWeekendValue
+      const y = spacings.spaceTop + 5 + day.num * spacingValue + isWeekendValue
 
       // Fill rectangle
       ctx.value.fillStyle = isHighlighted ? cellColors.highlight : day.color
@@ -331,8 +335,11 @@ const getDayFromPosition = (x: number, y: number): { dayId: string } | null => {
     const weekX = spacings.spaceLeft + week.translateX
 
     for (const day of week.days) {
+      const isWeekendValue = weekendDays.includes(day.weekDay) ? 1 : 0
+      const spacingValue = spacings.cellSize + spacings.cellMargin
+
       const cellX = weekX + day.x
-      const cellY = spacings.spaceTop + 5 + day.num * (spacings.cellSize + spacings.cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
+      const cellY = spacings.spaceTop + 5 + day.num * spacingValue + isWeekendValue
 
       if (
         x >= cellX
@@ -348,21 +355,7 @@ const getDayFromPosition = (x: number, y: number): { dayId: string } | null => {
   return null
 }
 
-// Event handlers
-const handleCanvasClick = (event: MouseEvent) => {
-  if (!canvasRef.value) return
-
-  const rect = canvasRef.value.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-
-  const day = getDayFromPosition(x, y)
-  if (day) {
-    props.selectEvent(day.dayId)
-  }
-}
-
-const handleCanvasMove = (event: MouseEvent) => {
+const handleCanvasAction = (event: MouseEvent) => {
   if (!canvasRef.value) return
 
   const rect = canvasRef.value.getBoundingClientRect()

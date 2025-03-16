@@ -173,48 +173,38 @@ export const useAppStore = defineStore('app-store', () => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
 
-    // Get events starting on this specific day
     const directEvents = dynamicDataset.value?.[date] || []
 
-    // Find multi-day events that span this day
     const spanningEvents: EventObject[] = []
 
-    // Look through all events to find spanning ones
     Object.values(dynamicDataset.value || {}).forEach((events) => {
       events.forEach((event) => {
-        // Skip if no endDate or it's a single-day event
         if (!event.endDate || event.startDate === event.endDate) return
 
-        // Skip events that already start on this day (they're in directEvents)
         if (event.startDate === date) return
 
         const eventStart = dayjs(event.startDate)
         const eventEnd = dayjs(event.endDate)
 
-        // Check if this date falls within the event's range
         if ((dateObj.isAfter(eventStart) && dateObj.isBefore(eventEnd)) || dateObj.isSame(eventEnd)) {
           spanningEvents.push(event)
         }
       })
     })
 
-    // Combine direct and spanning events
     const allEvents = [...directEvents, ...spanningEvents]
 
     if (!allEvents.length) {
       return buildDefaultDayContent(dateId)
     }
 
-    // Filter out events from hidden categories
     const visibleEvents = allEvents.filter((event) => {
-      // If no category or category doesn't exist in our list, show it
       if (!event.category) return true
 
       const category = eventCategories.value.find(cat => cat.title === event.category)
       return category?.visible !== false
     })
 
-    // If all events are filtered out
     if (!visibleEvents.length) {
       return buildDefaultDayContent(dateId)
     }
