@@ -117,10 +117,10 @@ const computedSizes = computed(() => {
 })
 
 const weekdayLegend = [
-  { label: 'Mon', x: -3, dy: -5.5, dx: 0 },
-  { label: 'Wed', x: -3, dy: 12, dx: 0 },
-  { label: 'Fri', x: -3, dy: 12, dx: 0 },
-  { label: 'Sun', x: -3, dy: 12.5, dx: 0 },
+  { label: 'Mon', x: -2.5, dy: -5.5, dx: 0 },
+  { label: 'Wed', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Fri', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Sun', x: -2.5, dy: 12.5, dx: 0 },
 ]
 
 // Array of each week in a period, starting on firstDayOfWeek
@@ -279,6 +279,7 @@ const drawDayLabels = () => {
   if (!ctx.value) return
 
   ctx.value.font = '8px sans-serif'
+  ctx.value.letterSpacing = '0.25px'
   ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
   ctx.value.textAlign = 'right'
 
