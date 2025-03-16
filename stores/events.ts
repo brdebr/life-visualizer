@@ -147,7 +147,7 @@ export const useEventsStore = defineStore('events-store', () => {
       dateStart: { month: 8, day: 15 },
       dateEnd: { month: 5, day: 25 },
       generateYearly: true,
-      yearlyTitleFormat: 'Curso %numº Universidad',
+      yearlyTitleFormat: 'Universidad: Curso %num',
     },
     {
       id: 'majority',
@@ -185,7 +185,26 @@ export const useEventsStore = defineStore('events-store', () => {
       yearlyTitleFormat: '%numº Cumpleaños',
       yearlyDescriptionFormat: 'Has cumplido %num años.',
     },
+    {
+      id: 'template-1742081477978',
+      title: 'Vacaciones',
+      description: 'Vacaciones de verano',
+      category: 'vacation',
+      ageStart: 5,
+      ageEnd: 18,
+      dateStart: {
+        month: 5,
+        day: 21,
+      },
+      dateEnd: {
+        month: 8,
+        day: 10,
+      },
+      generateYearly: true,
+      yearlyTitleFormat: 'Verano %num',
+    },
   ])
+  // const cosa: PeriodTemplate = { id: 'template-1742081477978', title: 'Vacaciones', description: 'Vacaciones de verano', category: 'vacation', ageStart: 5, ageEnd: 18, dateStart: { month: 5, day: 21 }, dateEnd: { month: 8, day: 10 }, generateYearly: true, yearlyTitleFormat: 'Verano %num' }
 
   const addPeriodTemplate = (template: PeriodTemplate) => {
     // Generate a unique ID if none provided
@@ -217,11 +236,11 @@ export const useEventsStore = defineStore('events-store', () => {
       if (template.id === 'birthdays') {
         for (let i = 0; i <= yearsToLiveForCalc.value; i++) {
           const eventTitle = template.generateYearly && template.yearlyTitleFormat
-            ? eval('`' + template.yearlyTitleFormat + '`')
+            ? template.yearlyTitleFormat.replace('%num', (i + 1).toString())
             : template.title
 
           const eventDescription = template.generateYearly && template.yearlyDescriptionFormat
-            ? eval('`' + template.yearlyDescriptionFormat + '`')
+            ? template.yearlyDescriptionFormat.replace('%num', (i + 1).toString())
             : template.description
 
           events.push({
@@ -269,11 +288,11 @@ export const useEventsStore = defineStore('events-store', () => {
           const yearNumber = template.yearStartOffset ? i - template.yearStartOffset : i - startAge + 1
 
           const eventTitle = template.yearlyTitleFormat
-            ? eval('`' + template.yearlyTitleFormat.replace('${yearNumber}', yearNumber) + '`')
+            ? template.yearlyTitleFormat.replace('%num', yearNumber.toString())
             : `${template.title} ${yearNumber}`
 
           const eventDescription = template.yearlyDescriptionFormat
-            ? eval('`' + template.yearlyDescriptionFormat.replace('${yearNumber}', yearNumber) + '`')
+            ? template.yearlyDescriptionFormat.replace('%num', yearNumber.toString())
             : template.description
 
           const startDate = wasBornDate.clone()
@@ -358,7 +377,7 @@ export const useEventsStore = defineStore('events-store', () => {
 })
 
 // Add new type for period templates
-interface PeriodTemplate {
+export type PeriodTemplate = {
   id: string
   title: string
   description: string

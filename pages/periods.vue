@@ -364,7 +364,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useEventsStore } from '~/stores/events'
+import { useEventsStore, type PeriodTemplate } from '~/stores/events'
 
 const eventsStore = useEventsStore()
 const showForm = ref(false)
@@ -396,7 +396,7 @@ const openNewTemplateForm = () => {
   showForm.value = true
 }
 
-const editTemplate = (template: any) => {
+const editTemplate = (template: PeriodTemplate) => {
   // Copy template data to form
   Object.assign(formData, {
     ...template,

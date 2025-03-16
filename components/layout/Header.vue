@@ -143,6 +143,11 @@ const items = [[
     icon: 'i-heroicons-tag-16-solid',
   },
   {
+    label: 'Periods',
+    to: '/periods',
+    icon: 'i-heroicons-calendar-16-solid',
+  },
+  {
     label: 'Config data',
     to: '/setup',
     icon: 'i-heroicons-cog-16-solid',
