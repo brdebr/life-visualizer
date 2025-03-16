@@ -1,5 +1,5 @@
 <template>
-  <div class="border border-slate-600 rounded-md max-w-[430px] min-w-[300px] mx-auto my-3 px-3 pt-1 pb-2">
+  <div class="border border-slate-600 rounded-md max-w-[430px] min-w-[300px] mx-auto my-3 px-4 pt-1 pb-2">
     <h3 class="px-2 pt-1 pb-1 mb-2 border-b text-sm flex">
       <span>
         {{ debouncedEvent?.dateId }}
@@ -8,31 +8,44 @@
         {{ fromNow }}
       </span>
     </h3>
-    <div class="flex flex-col gap-2">
+    <div
+      v-if="visibleEvents.length"
+      class="flex flex-col gap-2"
+    >
       <div
         v-for="event in visibleEvents"
         :key="event.title"
         class="flex flex-col gap-0.5"
       >
-        <h4 class="flex gap-2 font-semibold text-sm">
-          <span>
-            · {{ event?.title }}
-          </span>
+        <h4
+          class="flex gap-2 font-semibold text-sm border-b border-b-[--category-color] mx-2"
+          :style="`--category-color: ${eventsStore.categoryColorMap[event.category || 'default']}`"
+        >
+          <div class="flex gap-1 items-center">
+            <span
+              class="size-2 rounded-none bg-[--category-color] inline-block absolute -ml-[14px]"
+            >
+              &nbsp;
+            </span>
+            <span class="">
+              {{ event.title }}
+            </span>
+          </div>
           <span
             v-if="event.endDate"
             class="ml-auto"
           >
-            {{ `Day ${$dayjs(debouncedEvent?.dateId).diff($dayjs(event.startDate), 'day') + 1} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day') + 1}` }}
+            {{ `Day ${$dayjs(selectedEvent?.dateId).diff($dayjs(event.startDate), 'day')} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day')}` }}
           </span>
         </h4>
         <p
           v-if="event.endDate"
-          class="px-2 -mt-1 pb-1 text-[10px]"
+          class="px-2 pb-1 text-[10px]"
         >
-          {{ `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` }}
+          {{ event.endDate ? `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` : '' }}
         </p>
         <p class="px-2 pb-2 text-xs">
-          {{ event?.description }}
+          {{ event?.description || '' }}
         </p>
       </div>
     </div>
