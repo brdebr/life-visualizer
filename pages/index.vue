@@ -6,7 +6,8 @@
         v-bind="{
           year: currentYear,
           zoomLevel: 1.5,
-          showEvents: false,
+          selectEvent: appStore.selectEmptyEvent,
+          getDayContent: appStore.getEmptyDayContent,
         }"
       >
         <template #header>

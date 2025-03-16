@@ -342,6 +342,21 @@ export const useAppStore = defineStore('app-store', () => {
     selectedEvent.value = getDayContent(date)
   }, 250)
 
+  const selectEmptyEvent = useDebounceFn((date: string) => {
+    if (!date) {
+      selectedEvent.value = null
+      return
+    }
+    selectedEvent.value = getEmptyDayContent(date)
+  }, 250)
+
+  const buildDefaultDayContent = (dateId: string): DateEventsObject => {
+    return {
+      dateId,
+      events: [{ title: 'No events for this day.', description: '' }],
+    }
+  }
+
   const getDayContent = (date: string): DateEventsObject => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
@@ -375,10 +390,7 @@ export const useAppStore = defineStore('app-store', () => {
     const allEvents = [...directEvents, ...spanningEvents]
 
     if (!allEvents.length) {
-      return {
-        dateId,
-        events: [{ title: 'No events for this day.', description: '' }],
-      }
+      return buildDefaultDayContent(dateId)
     }
 
     // Filter out events from hidden categories
@@ -392,16 +404,18 @@ export const useAppStore = defineStore('app-store', () => {
 
     // If all events are filtered out
     if (!visibleEvents.length) {
-      return {
-        dateId,
-        events: [{ title: 'No events for this day.', description: '' }],
-      }
+      return buildDefaultDayContent(dateId)
     }
 
     return {
       dateId,
       events: visibleEvents,
     }
+  }
+
+  const getEmptyDayContent = (date: string): DateEventsObject => {
+    const dateId = dayjs(date).format('dddd - YYYY-MM-DD')
+    return buildDefaultDayContent(dateId)
   }
 
   return {
@@ -430,6 +444,8 @@ export const useAppStore = defineStore('app-store', () => {
     dynamicDataset,
     arrayDataset,
     getDayContent,
+    getEmptyDayContent,
+    selectEmptyEvent,
     selectedEvent,
     selectEvent,
 

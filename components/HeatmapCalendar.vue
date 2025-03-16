@@ -41,6 +41,8 @@ export type HeatmapProps = {
   height?: number
   zoomLevel?: number
   showEvents?: boolean
+  selectEvent: (dateId: string) => void
+  getDayContent: (dateId: string) => DateEventsObject
 }
 
 const props = withDefaults(defineProps<HeatmapProps>(), {
@@ -138,7 +140,7 @@ const weeks = computed(() => {
     const days = Array.from({ length: 7 }, (__, dayIndex) => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day')
       const dayId = day.format('YYYY-MM-DD')
-      const event = appStore.getDayContent(dayId)
+      const event = props.getDayContent(dayId)
       const isInThePast = day.isBefore(dayjs())
       return {
         num: dayIndex,
@@ -361,7 +363,7 @@ const handleCanvasClick = (event: MouseEvent) => {
 
   const day = getDayFromPosition(x, y)
   if (day) {
-    appStore.selectEvent(day.dayId)
+    props.selectEvent(day.dayId)
   }
 }
 
@@ -375,7 +377,7 @@ const handleCanvasMove = (event: MouseEvent) => {
   const day = getDayFromPosition(x, y)
   if (day) {
     hoveredDayId.value = day.dayId
-    appStore.selectEvent(day.dayId)
+    props.selectEvent(day.dayId)
   }
   else {
     hoveredDayId.value = null
@@ -384,7 +386,7 @@ const handleCanvasMove = (event: MouseEvent) => {
 
 const handleCanvasLeave = () => {
   hoveredDayId.value = null
-  appStore.selectEvent('')
+  props.selectEvent('')
 }
 </script>
 
