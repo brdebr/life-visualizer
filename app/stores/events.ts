@@ -42,7 +42,7 @@ export const useEventsStore = defineStore('events-store', () => {
 
   const deleteCategory = (index: number) => {
     // Don't allow deleting the default category
-    if (eventCategories.value[index].title === 'default') return
+    if (eventCategories.value[index]?.default) return
     eventCategories.value.splice(index, 1)
   }
 
@@ -51,6 +51,7 @@ export const useEventsStore = defineStore('events-store', () => {
   }
 
   const toggleCategoryVisibility = (index: number) => {
+    if (!eventCategories.value[index]) return
     eventCategories.value[index] = {
       ...eventCategories.value[index],
       visible: !eventCategories.value[index].visible,

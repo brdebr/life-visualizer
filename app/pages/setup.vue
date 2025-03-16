@@ -128,9 +128,9 @@ const searchStore = useSearchStore()
 const { savedWasBornDate, savedYearsToLive } = storeToRefs(setupStore)
 const router = useRouter()
 
-const bornDay = ref(parseInt(savedWasBornDate.value?.split('-')[2]))
-const bornMonth = ref(parseInt(savedWasBornDate.value?.split('-')[1]))
-const bornYear = ref(parseInt(savedWasBornDate.value?.split('-')[0]))
+const bornDay = ref(parseInt(savedWasBornDate.value.split('-')[2]!))
+const bornMonth = ref(parseInt(savedWasBornDate.value.split('-')[1]!))
+const bornYear = ref(parseInt(savedWasBornDate.value.split('-')[0]!))
 
 const expectedYearsToLive = ref(savedYearsToLive.value)
 

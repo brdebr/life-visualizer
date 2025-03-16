@@ -46,7 +46,7 @@
               {{ appStore.age }} years / {{ appStore.yearsToLiveForCalc }} years
             </span>
             <span class="prose app-text text-[11px]">
-              {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
+              {{ appStore.amountOfDaysLivedStr?.[0]?.toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr?.[1]?.toLocaleString('en') }} days
             </span>
           </div>
         </template>

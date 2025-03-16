@@ -229,6 +229,9 @@ const editCategory = (index: number) => {
   isEditing.value = true
   editIndex.value = index
   const category = store.eventCategories[index]
+  if (!category) {
+    return
+  }
   formData.title = category.title
   formData.color = category.color
   formData.visible = category.visible !== false
