@@ -1,11 +1,6 @@
 import Fuse from 'fuse.js'
 
-type SearchFuseType = Fuse<{
-  date: string
-  title: string
-  description: string
-  type?: string | undefined
-}>
+type SearchFuseType = Fuse<EventObject>
 
 export const useSearchStore = defineStore('search-store', () => {
   const appStore = useAppStore()
@@ -27,7 +22,7 @@ export const useSearchStore = defineStore('search-store', () => {
           weight: 2,
         },
         'description',
-        'date',
+        'startDate',
       ],
     })
   }
@@ -36,7 +31,7 @@ export const useSearchStore = defineStore('search-store', () => {
   const searchResults = ref<typeof arrayDataset.value>([])
 
   const computeHighlightedDates = () => {
-    highlightedDates.value = searchResults.value.map(result => result.date)
+    highlightedDates.value = searchResults.value.map(result => result.startDate!)
   }
 
   watchDebounced([searchValue], () => {
