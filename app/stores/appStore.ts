@@ -146,7 +146,22 @@ export const useAppStore = defineStore('app-store', () => {
 
     const finalRecord: Record<string, EventObject[]> = {}
 
+    // Filter events that are not visible
     arrayDataset.value.forEach((el) => {
+      // Check if event should be shown
+      const startDateObj = dayjs(el.startDate!)
+      const isWeekend = [0, 6].includes(startDateObj.day()) // 0 is Sunday, 6 is Saturday
+
+      // Skip events with noWeekend flag on weekend days
+      if (el.noWeekend && isWeekend) return
+
+      // Skip events with categories that are not visible
+      if (!el.category) {
+        return
+      }
+      const category = eventCategories.value.find(cat => cat.title === el.category)
+      if (category?.visible === false) return
+
       // Add the event to its start date
       const startDate = el.startDate!
       const events = finalRecord[startDate] || []
@@ -155,22 +170,31 @@ export const useAppStore = defineStore('app-store', () => {
       })
       finalRecord[startDate] = events
 
-      // If event spans multiple days (has different end date), add it to all dates in between
-      if (el.endDate && el.startDate !== el.endDate) {
-        const start = dayjs(el.startDate)
-        const end = dayjs(el.endDate)
-        let current = start.add(1, 'day')
+      // Skip if no endDate or if it's the same as startDate
+      if (!el.endDate || el.startDate === el.endDate) return
 
-        // Add event to each day in the span until reaching the end date
-        while (current.isSameOrBefore(end, 'day')) {
-          const currentDateStr = current.format('YYYY-MM-DD')
-          const dateEvents = finalRecord[currentDateStr] || []
-          dateEvents.push({
-            ...el,
-          })
-          finalRecord[currentDateStr] = dateEvents
+      // If event spans multiple days (has different end date), add it to all dates in between
+      const start = dayjs(el.startDate)
+      const end = dayjs(el.endDate)
+      let current = start.add(1, 'day')
+
+      // Add event to each day in the span until reaching the end date
+      while (current.isSameOrBefore(end, 'day')) {
+        const currentDateStr = current.format('YYYY-MM-DD')
+
+        // For multi-day events, check weekend filtering for each day
+        const currentIsWeekend = [0, 6].includes(current.day())
+        if (el.noWeekend && currentIsWeekend) {
           current = current.add(1, 'day')
+          continue
         }
+
+        const dateEvents = finalRecord[currentDateStr] || []
+        dateEvents.push({
+          ...el,
+        })
+        finalRecord[currentDateStr] = dateEvents
+        current = current.add(1, 'day')
       }
     })
 
@@ -204,29 +228,15 @@ export const useAppStore = defineStore('app-store', () => {
   const getDayContent = (date: string): DateEventsObject => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
-    const isWeekend = [0, 6].includes(dateObj.day()) // 0 is Sunday, 6 is Saturday
-
     const allEvents = dynamicDataset.value?.[date] || []
 
     if (!allEvents.length) {
       return buildDefaultDayContent(dateId)
     }
 
-    const visibleEvents = allEvents.filter((event) => {
-      if (!event.category) return true
-      if (event.noWeekend && isWeekend) return false
-
-      const category = eventCategories.value.find(cat => cat.title === event.category)
-      return category?.visible !== false
-    })
-
-    if (!visibleEvents.length) {
-      return buildDefaultDayContent(dateId)
-    }
-
     return {
       dateId,
-      events: visibleEvents,
+      events: allEvents,
     }
   }
 
