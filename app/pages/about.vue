@@ -19,6 +19,14 @@
           >{{ tech.label }}</a>
         </li>
       </ul>
+      <UButton
+        color="primary"
+        size="sm"
+        variant="outline"
+        @click="clearLocalStorage"
+      >
+        Clean local storage
+      </UButton>
     </div>
   </UCard>
 </template>
@@ -50,4 +58,15 @@ const techList = [
     url: 'https://vue-tippy.netlify.app/',
   },
 ]
+
+const clearLocalStorage = () => {
+  // preserve only what is in the key 'setup-store'
+  const setupStoreData = window.localStorage.getItem('setup-store')
+  window.localStorage.clear()
+  if (setupStoreData) {
+    window.localStorage.setItem('setup-store', setupStoreData)
+  }
+  // navigate to /
+  window.location.href = '/'
+}
 </script>

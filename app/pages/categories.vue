@@ -39,23 +39,24 @@
               class="handle cursor-move text-gray-400 hover:text-gray-600"
             />
             <div
-              class="w-5 h-5 rounded-full"
+              class="w-5 h-5 rounded-none"
               :style="{ backgroundColor: category.color }"
               :data-color="category.color"
             />
-            <span class="font-medium">{{ category.title }}</span>
+            <span class="font-medium min-w-[15ch]">{{ category.title }}</span>
+            <span class="font-medium text-xs mr-4">{{ category.color }}</span>
+            <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
             <UBadge
               v-if="category.title === 'default'"
               color="gray"
             >
               Default
             </UBadge>
-            <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
           </div>
 
           <div class="flex gap-2 items-center">
             <UToggle
-              v-model="category.visible"
+              :model-value="category.visible"
               :disabled="category.title === 'default'"
               @change="toggleVisibility(index)"
             />
@@ -193,13 +194,10 @@
 
 <script setup lang="ts">
 import { useSortable } from '@vueuse/integrations/useSortable'
-import { useTemplateRef } from 'vue'
-import { useAppStore, type EventCategory } from '~/stores/appStore'
 
-const store = useAppStore()
+const store = useEventsStore()
 const { eventCategories } = storeToRefs(store)
 
-// Form state
 const showModal = ref(false)
 const showAddModal = ref(false)
 const isEditing = ref(false)
@@ -218,7 +216,6 @@ watch(showAddModal, (val) => {
   }
 })
 
-// Delete confirmation
 const showDeleteModal = ref(false)
 const deleteIndex = ref(-1)
 
@@ -232,6 +229,9 @@ const editCategory = (index: number) => {
   isEditing.value = true
   editIndex.value = index
   const category = store.eventCategories[index]
+  if (!category) {
+    return
+  }
   formData.title = category.title
   formData.color = category.color
   formData.visible = category.visible !== false
@@ -255,7 +255,6 @@ const saveCategory = () => {
     store.updateCategory(editIndex.value, categoryData)
   }
   else {
-    // Add to the end of the array (highest priority)
     store.addCategory(categoryData)
   }
 
@@ -275,7 +274,6 @@ const deleteSelectedCategory = () => {
   }
 }
 
-// Set up drag and drop
 const categoriesContainer = useTemplateRef<HTMLElement>('categoriesContainer')
 
 useSortable(categoriesContainer, eventCategories, {

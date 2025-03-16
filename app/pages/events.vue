@@ -7,7 +7,7 @@
     <!-- Add new event form -->
     <div class="bg-gray-100 p-4 rounded-lg mb-8">
       <h2 class="text-lg font-semibold mb-4">
-        Add New Event
+        {{ isEditing ? 'Edit Event' : 'Add New Event' }}
       </h2>
       <form
         class="space-y-4"
@@ -67,12 +67,20 @@
           />
         </div>
 
-        <div>
+        <div class="flex">
           <button
             type="submit"
             class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
           >
-            Add Event
+            {{ isEditing ? 'Update Event' : 'Add Event' }}
+          </button>
+          <button
+            v-if="isEditing"
+            type="button"
+            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ml-2"
+            @click="cancelEdit"
+          >
+            Cancel
           </button>
         </div>
       </form>
@@ -122,12 +130,20 @@
                 </span>
               </div>
             </div>
-            <button
-              class="text-red-500 hover:text-red-700"
-              @click="deleteEvent(index)"
-            >
-              Delete
-            </button>
+            <div class="flex space-x-2">
+              <button
+                class="text-blue-500 hover:text-blue-700"
+                @click="editEvent(index)"
+              >
+                Edit
+              </button>
+              <button
+                class="text-red-500 hover:text-red-700"
+                @click="deleteEvent(index)"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -136,10 +152,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAppStore, type EventObject } from '~/stores/appStore'
+const dayjs = useDayjs()
+const store = useEventsStore()
 
-const store = useAppStore()
+const isEditing = ref(false)
+const editingIndex = ref(-1)
 
 const newEvent = ref<EventObject>({
   title: '',
@@ -147,28 +164,48 @@ const newEvent = ref<EventObject>({
   startDate: '',
   endDate: '',
   category: 'default',
-  type: 'custom',
 })
 
 const addEvent = () => {
-  // Validation
   if (!newEvent.value.title || !newEvent.value.startDate) {
     alert('Title and Start Date are required')
     return
   }
 
-  // Add the event
-  store.addCustomEvent({ ...newEvent.value })
+  if (isEditing.value) {
+    store.updateCustomEvent(editingIndex.value, { ...newEvent.value })
+    isEditing.value = false
+    editingIndex.value = -1
+  }
+  else {
+    store.addCustomEvent({ ...newEvent.value })
+  }
 
-  // Reset the form
+  resetForm()
+}
+
+const resetForm = () => {
   newEvent.value = {
     title: '',
     description: '',
     startDate: '',
     endDate: '',
     category: 'default',
-    type: 'custom',
   }
+}
+
+const editEvent = (index: number) => {
+  isEditing.value = true
+  editingIndex.value = index
+  newEvent.value = { ...store.customEvents[index] }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+  editingIndex.value = -1
+  resetForm()
 }
 
 const deleteEvent = (index: number) => {
@@ -185,8 +222,8 @@ const getCategoryColor = (categoryName?: string) => {
 const formatDateRange = (startDate?: string, endDate?: string) => {
   if (!startDate) return ''
 
-  if (!endDate) return store.dayjs(startDate).format('MMMM D, YYYY')
+  if (!endDate) return dayjs(startDate).format('MMMM D, YYYY')
 
-  return `${store.dayjs(startDate).format('MMMM D, YYYY')} - ${store.dayjs(endDate).format('MMMM D, YYYY')}`
+  return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`
 }
 </script>

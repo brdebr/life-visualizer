@@ -4,16 +4,17 @@
       <HeatmapCalendar
         class="mx-auto"
         v-bind="{
-          startDate: startOfYear,
-          endDate: endOfYear,
+          year: currentYear,
           zoomLevel: 1.5,
-          showEvents: false,
+          categories: eventsStore.eventCategoriesWithPriority,
+          selectEvent: appStore.selectEmptyEvent,
+          getDayContent: appStore.getEmptyDayContent,
         }"
       >
         <template #header>
           <div class="text-center text-slate-600 dark:text-slate-400 mb-2">
             <div class="app-text">
-              {{ year }} is at {{ appStore.percentOfCurrentYearString }}
+              {{ currentYear }} is at {{ appStore.percentOfCurrentYearString }}
             </div>
             <div class="mt-2 mb-5 w-full">
               <UMeter
@@ -65,9 +66,7 @@
 
 <script setup lang="ts">
 const appStore = useAppStore()
+const eventsStore = useEventsStore()
 
-const today = appStore.dayjs().format('YYYY-MM-DD')
-const year = today.slice(0, 4)
-const startOfYear = `${year}-01-01`
-const endOfYear = `${year}-12-31`
+const currentYear = appStore.dayjs().year()
 </script>

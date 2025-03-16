@@ -78,6 +78,8 @@
 </template>
 
 <script setup lang="ts">
+import type { DropdownItem } from '#ui/types/dropdown'
+
 const showingSearchInput = ref(false)
 const searchStore = useSearchStore()
 const { searchValue, searchResults, highlightedDates } = storeToRefs(searchStore)
@@ -90,15 +92,15 @@ const toggleTheme = () => {
   toggleThemeMethod()
 }
 
-const searchItems = computed(() => {
-  return [searchResults.value.map(result => ({
-    label: result.title,
-    // icon: 'i-heroicons-calendar-16-solid',
+const searchItems = computed<DropdownItem[][]>(() => {
+  const items = [searchResults.value.map(result => ({
+    label: result.title || '',
     click: () => {
-      highlightedDates.value = [result.date]
-      document.querySelector(`[data-test-calendar-year="${result.date.split('-')[0]}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      highlightedDates.value = [result.startDate!]
+      document.querySelector(`[data-test-calendar-year="${result.startDate!.split('-')[0]}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     },
-  }))].filter(items => items.length)
+  } satisfies DropdownItem))].filter(items => items.length)
+  return items
 })
 
 const isShowingDropdown = ref(false)
@@ -141,6 +143,11 @@ const items = [[
     label: 'Categories',
     to: '/categories',
     icon: 'i-heroicons-tag-16-solid',
+  },
+  {
+    label: 'Periods',
+    to: '/periods',
+    icon: 'i-heroicons-calendar-16-solid',
   },
   {
     label: 'Config data',

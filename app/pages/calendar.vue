@@ -4,15 +4,16 @@
       <HeatmapCalendar
         class="mx-auto"
         v-bind="{
-          startDate: startOfYear,
-          endDate: endOfYear,
+          year: currentYear,
           zoomLevel: 1.5,
-          showEvents: false,
+          categories: eventsStore.eventCategoriesWithPriority,
+          selectEvent: appStore.selectEmptyEvent,
+          getDayContent: appStore.getEmptyDayContent,
         }"
       >
         <template #header>
           <div class="prose app-text text-sm mb-1 mx-auto">
-            {{ year }} is at {{ appStore.percentOfCurrentYearString }}
+            {{ currentYear }} is at {{ appStore.percentOfCurrentYearString }}
           </div>
         </template>
         <template #header-append>
@@ -45,7 +46,7 @@
               {{ appStore.age }} years / {{ appStore.yearsToLiveForCalc }} years
             </span>
             <span class="prose app-text text-[11px]">
-              {{ appStore.amountOfDaysLivedStr[0].toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr[1].toLocaleString('en') }} days
+              {{ appStore.amountOfDaysLivedStr?.[0]?.toLocaleString('en') }} days / {{ appStore.amountOfDaysLivedStr?.[1]?.toLocaleString('en') }} days
             </span>
           </div>
         </template>
@@ -59,15 +60,19 @@
         v-for="yearItem in appStore.arrayOfLifeYears"
         :key="yearItem.startDate"
         v-bind="{
-          startDate: yearItem.startDate,
-          endDate: yearItem.endDate,
+          year: yearItem.year,
           zoomLevel: 1.2,
+          categories: eventsStore.eventCategoriesWithPriority,
+          selectEvent: appStore.selectEvent,
+          getDayContent: appStore.getDayContent,
         }"
       >
         <template #header>
-          <span :class="{
-            'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
-          }">
+          <span
+            :class="{
+              'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
+            }"
+          >
             {{ yearItem.header }}
           </span>
         </template>
@@ -81,6 +86,7 @@ useHead({
   title: 'Calendar',
 })
 const appStore = useAppStore()
+const eventsStore = useEventsStore()
 const router = useRouter()
 onBeforeMount(() => {
   if (!appStore.isConfigured) {
@@ -88,8 +94,5 @@ onBeforeMount(() => {
   }
 })
 
-const today = appStore.dayjs().format('YYYY-MM-DD')
-const year = today.slice(0, 4)
-const startOfYear = `${year}-01-01`
-const endOfYear = `${year}-12-31`
+const currentYear = appStore.dayjs().year()
 </script>
