@@ -4,15 +4,14 @@
       <HeatmapCalendar
         class="mx-auto"
         v-bind="{
-          startDate: startOfYear,
-          endDate: endOfYear,
+          year: currentYear,
           zoomLevel: 1.5,
           showEvents: false,
         }"
       >
         <template #header>
           <div class="prose app-text text-sm mb-1 mx-auto">
-            {{ year }} is at {{ appStore.percentOfCurrentYearString }}
+            {{ currentYear }} is at {{ appStore.percentOfCurrentYearString }}
           </div>
         </template>
         <template #header-append>
@@ -59,8 +58,7 @@
         v-for="yearItem in appStore.arrayOfLifeYears"
         :key="yearItem.startDate"
         v-bind="{
-          startDate: yearItem.startDate,
-          endDate: yearItem.endDate,
+          year: yearItem.year,
           zoomLevel: 1.2,
         }"
       >
@@ -90,8 +88,5 @@ onBeforeMount(() => {
   }
 })
 
-const today = appStore.dayjs().format('YYYY-MM-DD')
-const year = today.slice(0, 4)
-const startOfYear = `${year}-01-01`
-const endOfYear = `${year}-12-31`
+const currentYear = appStore.dayjs().year()
 </script>

@@ -6,7 +6,6 @@ export type EventObject = {
   startDate?: string
   endDate?: string
   category?: string
-  type?: string
 }
 
 export type DateEventsObject = {
@@ -54,6 +53,7 @@ export const useAppStore = defineStore('app-store', () => {
     return Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => {
       const parsedYear = parseInt(wasBornForCalc.value) + i
       return {
+        year: parsedYear,
         startDate: `${parsedYear}-01-01`,
         endDate: `${parsedYear}-12-31`,
         header: `${parsedYear} - [ ${i} years old ]`,
@@ -147,7 +147,7 @@ export const useAppStore = defineStore('app-store', () => {
   const getCategoryByName = (categoryName?: string) => {
     if (!categoryName) return eventCategories.value.find(cat => cat.title === 'default')!
 
-    return eventCategories.value.find(cat => cat.title === categoryName.toLowerCase())
+    return eventCategories.value.find(cat => cat.title.toLowerCase() === categoryName.toLowerCase())
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
 
@@ -294,6 +294,7 @@ export const useAppStore = defineStore('app-store', () => {
       ...staticDataset.filter(item => dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[]')).map((event) => {
         return {
           ...event,
+          category: 'historical',
           type: 'historical',
         }
       }),
@@ -302,7 +303,6 @@ export const useAppStore = defineStore('app-store', () => {
         endDate: event.endDate,
         title: event.title || '',
         description: event.description || '',
-        type: event.type || 'custom',
         category: event.category || 'historical',
       })),
     ]
@@ -318,12 +318,11 @@ export const useAppStore = defineStore('app-store', () => {
     const finalRecord: Record<string, EventObject[]> = {}
 
     // Process each event - store only at their start date
-    arrayDataset.value.forEach(({ title, description, date, endDate, type, category }) => {
+    arrayDataset.value.forEach(({ title, description, date, endDate, category }) => {
       const events = finalRecord[date] || []
       events.push({
         title,
         description,
-        type,
         startDate: date,
         endDate,
         category,

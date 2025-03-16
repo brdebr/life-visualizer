@@ -167,7 +167,6 @@ const newEvent = ref<EventObject>({
   startDate: '',
   endDate: '',
   category: 'default',
-  type: 'custom',
 })
 
 const addEvent = () => {
@@ -199,7 +198,6 @@ const resetForm = () => {
     startDate: '',
     endDate: '',
     category: 'default',
-    type: 'custom',
   }
 }
 

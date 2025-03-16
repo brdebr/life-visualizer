@@ -35,8 +35,7 @@
 
 <script lang="ts" setup>
 export type HeatmapProps = {
-  startDate: string
-  endDate: string
+  year?: number
   header?: string
   width?: number
   height?: number
@@ -49,6 +48,14 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
   height: 57,
   zoomLevel: 1,
   showEvents: true,
+  year: new Date().getUTCFullYear(),
+})
+
+const startDate = computed(() => {
+  return dayjs().year(props.year).startOf('year').format('YYYY-MM-DD')
+})
+const endDate = computed(() => {
+  return dayjs().year(props.year).endOf('year').format('YYYY-MM-DD')
 })
 
 const appStore = useAppStore()
@@ -59,7 +66,7 @@ const searchStore = useSearchStore()
 const { highlightedDates } = storeToRefs(searchStore)
 
 const isCurrentYear = computed(() => {
-  return dayjs(props.startDate).year() === dayjs().year()
+  return props.year === dayjs().year()
 })
 
 const weekendDays = [0, 6]
@@ -88,8 +95,8 @@ onMounted(() => {
 
 // Watch for changes that require redrawing
 watch(() => [
-  props.startDate,
-  props.endDate,
+  startDate.value,
+  endDate.value,
   props.zoomLevel,
   highlightedDates.value,
   hoveredDayId.value,
@@ -116,10 +123,10 @@ const weekdayLegend = [
 
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
-  const year = dayjs(props.startDate).year()
-  const startDateComputed = dayjs(props.startDate).startOf('day')
+  const year = dayjs(startDate.value).year()
+  const startDateComputed = dayjs(startDate.value).startOf('day')
 
-  const end = dayjs(props.endDate).endOf('day')
+  const end = dayjs(endDate.value).endOf('day')
   const maxEnd = startDateComputed.add(11, 'month').endOf('month')
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd
   const weeksCount = endDateComputed.diff(startDateComputed, 'week') + 1
@@ -156,8 +163,8 @@ const weeks = computed(() => {
 })
 
 const monthsLabels = computed(() => {
-  const startDateComputed = dayjs(props.startDate).startOf('day')
-  const end = dayjs(props.endDate).endOf('day')
+  const startDateComputed = dayjs(startDate.value).startOf('day')
+  const end = dayjs(endDate.value).endOf('day')
   const maxEnd = startDateComputed.add(11, 'month').endOf('month')
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd
   const months = endDateComputed.diff(startDateComputed, 'month') + 1
@@ -194,50 +201,41 @@ const categoryPriorityMap = computed(() => {
 })
 
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
+  const defaultColor = isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+
   if (!event?.events?.length || event.events[0].title === 'No events for this day.' || props.showEvents === false) {
-    return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+    return defaultColor
   }
 
-  // Find the event with highest priority category using the priority map
-  // Only consider visible categories
   const visibleEvents = event.events.filter((e) => {
-    if (!e.category) return true
-    const cat = categoryPriorityMap.value[e.category]
-    return cat && cat.visible !== false
+    if (!e.category) return false
+    return categoryPriorityMap.value[e.category].visible
   })
 
-  // If no visible events after filtering
   if (!visibleEvents.length) {
-    return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+    return defaultColor
   }
 
   const topEvent = visibleEvents.reduce((highest, current) => {
-    const currentCat = current.category && categoryPriorityMap.value[current.category]
-    const highestCat = highest.category && categoryPriorityMap.value[highest.category]
+    if (!current.category || !highest.category) {
+      return highest
+    }
+    const currentCat = categoryPriorityMap.value[current.category]
+    const highestCat = categoryPriorityMap.value[highest.category]
 
-    const currentPriority = currentCat ? currentCat.priority : 0
-    const highestPriority = highestCat ? highestCat.priority : 0
-
-    return currentPriority > highestPriority ? current : highest
+    return currentCat.priority > highestCat.priority ? current : highest
   }, visibleEvents[0])
 
-  // Return color based on the event category
-  if (event.events.some(event => event.type === 'historical')) {
-    const historicalCat = appStore.getCategoryByName('historical')
-    return historicalCat.visible !== false ? historicalCat.color : (isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA)
+  if (!topEvent.category) {
+    return defaultColor
   }
 
-  // If there's a specific category, use its color
-  if (topEvent.category) {
-    // Get color directly from the map if available, otherwise fallback to getCategoryByName
-    const category = categoryPriorityMap.value[topEvent.category]
-      || appStore.getCategoryByName(topEvent.category)
-
-    return category.visible !== false ? category.color : (isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA)
+  const category = categoryPriorityMap.value[topEvent.category]
+  if (!category.visible) {
+    return defaultColor
   }
 
-  // Default past/future coloring
-  return isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+  return category.color
 }
 
 // Canvas drawing functions
