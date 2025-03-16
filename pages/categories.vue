@@ -193,13 +193,10 @@
 
 <script setup lang="ts">
 import { useSortable } from '@vueuse/integrations/useSortable'
-import { useTemplateRef } from 'vue'
-import { useAppStore, type EventCategory } from '~/stores/appStore'
 
-const store = useAppStore()
+const store = useEventsStore()
 const { eventCategories } = storeToRefs(store)
 
-// Form state
 const showModal = ref(false)
 const showAddModal = ref(false)
 const isEditing = ref(false)
@@ -218,7 +215,6 @@ watch(showAddModal, (val) => {
   }
 })
 
-// Delete confirmation
 const showDeleteModal = ref(false)
 const deleteIndex = ref(-1)
 
@@ -255,7 +251,6 @@ const saveCategory = () => {
     store.updateCategory(editIndex.value, categoryData)
   }
   else {
-    // Add to the end of the array (highest priority)
     store.addCategory(categoryData)
   }
 
@@ -275,7 +270,6 @@ const deleteSelectedCategory = () => {
   }
 }
 
-// Set up drag and drop
 const categoriesContainer = useTemplateRef<HTMLElement>('categoriesContainer')
 
 useSortable(categoriesContainer, eventCategories, {

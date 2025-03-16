@@ -41,6 +41,7 @@ export type HeatmapProps = {
   height?: number
   zoomLevel?: number
   showEvents?: boolean
+  categories?: EventCategoryWithPriority[]
   selectEvent: (dateId: string) => void
   getDayContent: (dateId: string) => DateEventsObject
 }
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<HeatmapProps>(), {
   height: 57,
   zoomLevel: 1,
   showEvents: true,
+  categories: () => [],
   year: new Date().getUTCFullYear(),
 })
 
@@ -60,9 +62,7 @@ const endDate = computed(() => {
   return dayjs().year(props.year).endOf('year').format('YYYY-MM-DD')
 })
 
-const appStore = useAppStore()
-const { eventCategoriesWithPriority } = storeToRefs(appStore)
-const { dayjs } = appStore
+const dayjs = useDayjs()
 
 const searchStore = useSearchStore()
 const { highlightedDates } = storeToRefs(searchStore)
@@ -194,7 +194,7 @@ const debouncedColorMap = useDebounce(dayColorMap, 350)
 // Update categoryPriorityMap to include visibility
 const categoryPriorityMap = computed(() => {
   return Object.fromEntries(
-    eventCategoriesWithPriority.value.map(cat => [cat.title, {
+    props.categories.map(cat => [cat.title, {
       priority: cat.priority,
       color: cat.color,
       visible: cat.visible !== false,

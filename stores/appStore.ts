@@ -1,5 +1,3 @@
-import { useLocalStorage } from '@vueuse/core'
-
 export type EventObject = {
   title?: string
   description?: string
@@ -19,8 +17,14 @@ export type EventCategory = {
   visible?: boolean
 }
 
+export type EventCategoryWithPriority = EventCategory & {
+  priority: number
+}
+
 export const useAppStore = defineStore('app-store', () => {
   const dayjs = useDayjs()
+  const eventsStore = useEventsStore()
+  const { eventCategories, customEvents } = storeToRefs(eventsStore)
 
   const wasBornDate = ref('1970-01-01')
   const yearsToLive = ref(105)
@@ -86,88 +90,6 @@ export const useAppStore = defineStore('app-store', () => {
       expectedDaysToLive,
     ]
   })
-
-  // Define event categories using useLocalStorage - order determines priority (higher index = higher priority)
-  const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
-    { title: 'historical', color: '#8b75e1', visible: true },
-    { title: 'personal', color: '#c6e6e4', visible: true },
-    { title: 'vacation', color: '#a6f2bf', visible: true },
-    { title: 'work', color: '#e3ddc0', visible: false },
-    { title: 'school', color: '#d0e4fb', visible: true },
-    { title: 'default', color: '#e5e7eb', visible: true },
-  ])
-
-  const eventCategoriesWithPriority = computed(() => {
-    return eventCategories.value.map((category, index) => ({
-      ...category,
-      priority: eventCategories.value.length - index,
-    }))
-  })
-
-  // Get visible categories
-  const visibleCategories = computed(() => {
-    return eventCategories.value.filter(cat => cat.visible !== false)
-  })
-
-  // Add a new category
-  const addCategory = (category: EventCategory) => {
-    eventCategories.value.push({
-      ...category,
-      visible: true,
-    })
-  }
-
-  // Update an existing category
-  const updateCategory = (index: number, category: EventCategory) => {
-    eventCategories.value[index] = category
-  }
-
-  // Delete a category
-  const deleteCategory = (index: number) => {
-    // Don't allow deleting the default category
-    if (eventCategories.value[index].title === 'default') return
-    eventCategories.value.splice(index, 1)
-  }
-
-  // Update categories after reordering - no need to set priorities
-  const updateCategoriesOrder = (newOrder: EventCategory[]) => {
-    eventCategories.value = newOrder
-  }
-
-  // Update category visibility
-  const toggleCategoryVisibility = (index: number) => {
-    eventCategories.value[index] = {
-      ...eventCategories.value[index],
-      visible: !eventCategories.value[index].visible,
-    }
-  }
-
-  // Get category by name with fallback to default
-  // Higher index in array = higher priority
-  const getCategoryByName = (categoryName?: string) => {
-    if (!categoryName) return eventCategories.value.find(cat => cat.title === 'default')!
-
-    return eventCategories.value.find(cat => cat.title.toLowerCase() === categoryName.toLowerCase())
-      || eventCategories.value.find(cat => cat.title === 'default')!
-  }
-
-  // Store for custom events using useLocalStorage
-  const customEvents = useLocalStorage<EventObject[]>('customEvents', [])
-
-  // Add a new custom event
-  const addCustomEvent = (event: EventObject) => {
-    customEvents.value.push(event)
-  }
-
-  // Update an existing custom event
-  const updateCustomEvent = (index: number, event: EventObject) => {
-    customEvents.value[index] = event
-  }
-
-  // Delete a custom event
-  const deleteCustomEvent = (index: number) => {
-    customEvents.value.splice(index, 1)
-  }
 
   const arrayDataset = computed(() => {
     if (!isConfigured.value) {
@@ -438,22 +360,5 @@ export const useAppStore = defineStore('app-store', () => {
     selectEmptyEvent,
     selectedEvent,
     selectEvent,
-
-    // Categories management
-    eventCategories,
-    eventCategoriesWithPriority,
-    visibleCategories,
-    getCategoryByName,
-    addCategory,
-    updateCategory,
-    deleteCategory,
-    updateCategoriesOrder,
-    toggleCategoryVisibility,
-
-    // Custom events management
-    customEvents,
-    addCustomEvent,
-    updateCustomEvent,
-    deleteCustomEvent,
   }
 })

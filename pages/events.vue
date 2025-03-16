@@ -152,12 +152,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAppStore, type EventObject } from '~/stores/appStore'
+const dayjs = useDayjs()
+const store = useEventsStore()
 
-const store = useAppStore()
-
-// Add state variables for editing mode
 const isEditing = ref(false)
 const editingIndex = ref(-1)
 
@@ -170,24 +167,20 @@ const newEvent = ref<EventObject>({
 })
 
 const addEvent = () => {
-  // Validation
   if (!newEvent.value.title || !newEvent.value.startDate) {
     alert('Title and Start Date are required')
     return
   }
 
   if (isEditing.value) {
-    // Update existing event
     store.updateCustomEvent(editingIndex.value, { ...newEvent.value })
     isEditing.value = false
     editingIndex.value = -1
   }
   else {
-    // Add new event
     store.addCustomEvent({ ...newEvent.value })
   }
 
-  // Reset the form
   resetForm()
 }
 
@@ -202,12 +195,10 @@ const resetForm = () => {
 }
 
 const editEvent = (index: number) => {
-  // Set editing state and populate form with event data
   isEditing.value = true
   editingIndex.value = index
   newEvent.value = { ...store.customEvents[index] }
 
-  // Scroll to the form
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -231,8 +222,8 @@ const getCategoryColor = (categoryName?: string) => {
 const formatDateRange = (startDate?: string, endDate?: string) => {
   if (!startDate) return ''
 
-  if (!endDate) return store.dayjs(startDate).format('MMMM D, YYYY')
+  if (!endDate) return dayjs(startDate).format('MMMM D, YYYY')
 
-  return `${store.dayjs(startDate).format('MMMM D, YYYY')} - ${store.dayjs(endDate).format('MMMM D, YYYY')}`
+  return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`
 }
 </script>
