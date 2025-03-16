@@ -18,7 +18,10 @@
           <span>
             {{ event?.title ? '· '+ event.title : 'No events this day' }}
           </span>
-          <span v-if="event.endDate" class="ml-auto">
+          <span
+            v-if="event.endDate"
+            class="ml-auto"
+          >
             {{ `Day ${$dayjs(debouncedEvent?.dateId).diff($dayjs(event.startDate), 'day')} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day')}` }}
           </span>
         </h4>

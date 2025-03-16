@@ -10,8 +10,7 @@
         {{ header }}
       </slot>
       <span class="absolute right-0 top-0">
-        <slot name="header-append">
-        </slot>
+        <slot name="header-append" />
       </span>
     </h3>
     <div
