@@ -3,10 +3,10 @@ import type dayjs from '#build/dayjs.imports.mjs'
 export const useEventsStore = defineStore('events-store', () => {
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
     { title: 'historical', color: '#8b75e1', visible: true },
-    { title: 'personal', color: '#c6e6e4', visible: true },
     { title: 'vacation', color: '#a6f2bf', visible: true },
-    { title: 'yearly', color: '#feffd6', visible: true },
     { title: 'work', color: '#e3ddc0', visible: false },
+    { title: 'personal', color: '#8ee1db', visible: true },
+    { title: 'yearly', color: '#feffd6', visible: true },
     { title: 'school', color: '#d0e4fb', visible: true },
     { title: 'default', color: '#e5e7eb', visible: true },
   ])
@@ -170,6 +170,7 @@ export const useEventsStore = defineStore('events-store', () => {
       description: 'Periodo de vida laboral activa.',
       category: 'work',
       noWeekend: true,
+      disabled: true,
       ageStart: 22,
       ageEnd: 65,
       dateStart: { month: 8, day: 1 },
