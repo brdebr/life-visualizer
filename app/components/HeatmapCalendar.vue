@@ -98,7 +98,7 @@ onMounted(() => {
     return
   }
   ctx.value = canvasRef.value.getContext('2d')
-  draw()
+  requestAnimationFrame(draw)
 })
 
 // Watch for changes that require redrawing
@@ -109,9 +109,7 @@ watch(() => [
   hoveredDayId.value,
   isDark.value,
 ], () => {
-  nextTick(() => {
-    draw()
-  })
+  requestAnimationFrame(draw)
 })
 
 const computedSizes = computed(() => {
