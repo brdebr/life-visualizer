@@ -29,7 +29,8 @@ export const MAGIC_VALUES = {
     highlight: '#ff4242',
     today: '#0ea5e9',
     hover: '#000',
-    pastEmpty: '#dadada',
+    pastEmpty: '#e3e3e3',
+    // pastEmpty: '#dadada',
     futureEmpty: '#e5e7eb',
   },
 } as const

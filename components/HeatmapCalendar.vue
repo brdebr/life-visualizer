@@ -196,8 +196,27 @@ const categoryPriorityMap = computed(() => {
   )
 })
 
+// Add this utility function for color luminosity adjustment
+const adjustColorLuminosity = (color: string, amount: number): string => {
+  // Handle if the color is not a hex color
+  if (!color.startsWith('#')) return color
+
+  // Convert hex to RGB
+  let r = parseInt(color.slice(1, 3), 16)
+  let g = parseInt(color.slice(3, 5), 16)
+  let b = parseInt(color.slice(5, 7), 16)
+
+  // Increase the luminosity (this is a simple HSL-like luminosity adjustment)
+  r = Math.min(255, Math.floor(r + (255 - r) * amount))
+  g = Math.min(255, Math.floor(g + (255 - g) * amount))
+  b = Math.min(255, Math.floor(b + (255 - b) * amount))
+
+  // Convert back to hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
-  const defaultColor = isInThePast ? cellColors.pastEmpty : cellColors.futureEmpty
+  const defaultColor = isInThePast ? cellColors.pastEmpty : adjustColorLuminosity(cellColors.pastEmpty, 0.6)
 
   if (!event?.events?.length || props.showEvents === false) {
     return defaultColor
@@ -231,7 +250,9 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
     return defaultColor
   }
 
-  return category.color
+  // Apply luminosity adjustment to future cells
+  const categoryColor = category.color
+  return isInThePast ? categoryColor : adjustColorLuminosity(categoryColor, 0.65)
 }
 
 // Canvas drawing functions

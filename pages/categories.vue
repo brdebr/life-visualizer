@@ -39,18 +39,19 @@
               class="handle cursor-move text-gray-400 hover:text-gray-600"
             />
             <div
-              class="w-5 h-5 rounded-full"
+              class="w-5 h-5 rounded-none"
               :style="{ backgroundColor: category.color }"
               :data-color="category.color"
             />
-            <span class="font-medium">{{ category.title }}</span>
+            <span class="font-medium min-w-[15ch]">{{ category.title }}</span>
+            <span class="font-medium text-xs mr-4">{{ category.color }}</span>
+            <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
             <UBadge
               v-if="category.title === 'default'"
               color="gray"
             >
               Default
             </UBadge>
-            <UBadge>Priority: {{ eventCategories.length - index }}</UBadge>
           </div>
 
           <div class="flex gap-2 items-center">
