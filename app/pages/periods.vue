@@ -392,9 +392,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useEventsStore, type PeriodTemplate } from '~/stores/events'
-
 const eventsStore = useEventsStore()
 const showForm = ref(false)
 const isEditing = ref(false)
