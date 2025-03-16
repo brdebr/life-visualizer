@@ -65,9 +65,11 @@
         }"
       >
         <template #header>
-          <span :class="{
-            'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
-          }">
+          <span
+            :class="{
+              'text-water-700': $dayjs().year() === $dayjs(yearItem.startDate).year(),
+            }"
+          >
             {{ yearItem.header }}
           </span>
         </template>

@@ -44,7 +44,6 @@ export const useAppStore = defineStore('app-store', () => {
     const endDate = currentDate.endOf('year')
     const diff = endDate.diff(startDate, 'day')
     const currentDay = currentDate.dayOfYear()
-    // return `${((currentDay / diff) * 100).toFixed(2)}%`
     return ((currentDay / diff) * 100)
   })
   const percentOfCurrentYearString = computed(() => {
@@ -53,10 +52,11 @@ export const useAppStore = defineStore('app-store', () => {
 
   const arrayOfLifeYears = computed(() => {
     return Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => {
+      const parsedYear = parseInt(wasBornForCalc.value) + i
       return {
-        startDate: `${parseInt(wasBornForCalc.value) + i}-01-01`,
-        endDate: `${parseInt(wasBornForCalc.value) + i}-12-31`,
-        header: `${parseInt(wasBornForCalc.value.slice(0, 4), 10) + i} - [ ${i} years old ]`,
+        startDate: `${parsedYear}-01-01`,
+        endDate: `${parsedYear}-12-31`,
+        header: `${parsedYear} - [ ${i} years old ]`,
       }
     })
   })
@@ -170,7 +170,6 @@ export const useAppStore = defineStore('app-store', () => {
     }
     const wasBorn = dayjs(wasBornForCalc.value)
     const expectedEnd = wasBorn.clone().add(yearsToLiveForCalc.value, 'year')
-    // const wasBornDate = wasBorn.format('YYYY-MM-DD')
 
     const events = []
 
@@ -402,26 +401,37 @@ export const useAppStore = defineStore('app-store', () => {
   }
 
   return {
+    // Core date utilities
     dayjs,
+
+    // Basic configuration
     wasBornDate,
     yearsToLive,
-    percentOfCurrentYearString,
-    percentOfCurrentYear,
-    percentOfLife,
     wasBornForCalc,
     yearsToLiveForCalc,
+    isConfigured,
     calculate,
-    dynamicDataset,
+
+    // Age and time calculations
+    age,
+    percentOfCurrentYear,
+    percentOfCurrentYearString,
+    percentOfLife,
+    amountOfDaysLivedStr,
+
+    // Year and timeline data
     arrayOfLifeYears,
+
+    // Events data and operations
+    dynamicDataset,
+    arrayDataset,
     getDayContent,
-    eventCategoriesWithPriority,
     selectedEvent,
     selectEvent,
-    isConfigured,
-    amountOfDaysLivedStr,
-    arrayDataset,
-    age,
+
+    // Categories management
     eventCategories,
+    eventCategoriesWithPriority,
     visibleCategories,
     getCategoryByName,
     addCategory,
@@ -429,6 +439,8 @@ export const useAppStore = defineStore('app-store', () => {
     deleteCategory,
     updateCategoriesOrder,
     toggleCategoryVisibility,
+
+    // Custom events management
     customEvents,
     addCustomEvent,
     deleteCustomEvent,
