@@ -6,6 +6,7 @@ export type EventObject = {
   startDate?: string
   endDate?: string
   category?: string
+  noWeekend?: boolean // Added noWeekend property
 }
 
 export type DateEventsObject = {
@@ -110,6 +111,7 @@ export const useAppStore = defineStore('app-store', () => {
       title: event.title || '',
       description: event.description || '',
       category: event.category || 'default',
+      noWeekend: event.noWeekend || false,
     } satisfies EventObject))
 
     // Static events
@@ -142,16 +144,12 @@ export const useAppStore = defineStore('app-store', () => {
 
     const finalRecord: Record<string, EventObject[]> = {}
 
-    arrayDataset.value.forEach(({ title, description, startDate: date, endDate, category }) => {
-      const events = finalRecord[date!] || []
+    arrayDataset.value.forEach((el) => {
+      const events = finalRecord[el.startDate!] || []
       events.push({
-        title,
-        description,
-        startDate: date,
-        endDate,
-        category,
+        ...el,
       })
-      finalRecord[date!] = events
+      finalRecord[el.startDate!] = events
     })
 
     return finalRecord
@@ -184,6 +182,8 @@ export const useAppStore = defineStore('app-store', () => {
   const getDayContent = (date: string): DateEventsObject => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
+    const isWeekend = [0, 6].includes(dateObj.day()) // 0 is Sunday, 6 is Saturday
+    // console.log(dateId, dateObj.day(), isWeekend)
 
     const directEvents = dynamicDataset.value?.[date] || []
 
@@ -210,8 +210,14 @@ export const useAppStore = defineStore('app-store', () => {
       return buildDefaultDayContent(dateId)
     }
 
+    // console.log('All events', allEvents)
+
     const visibleEvents = allEvents.filter((event) => {
+      // if (isWeekend && event.noWeekend) {
+      //   console.log('Weekend event', event)
+      // }
       if (!event.category) return true
+      if (event.noWeekend && isWeekend) return false
 
       const category = eventCategories.value.find(cat => cat.title === event.category)
       return category?.visible !== false

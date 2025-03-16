@@ -53,6 +53,12 @@ export default defineNuxtConfig({
     plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear', 'isBetween', 'isoWeek', 'dayOfYear'],
     defaultLocale: 'en',
     defaultTimezone: 'UTC',
+    externalPlugins: [
+      {
+        name: 'dayjsBusinessDays',
+        package: 'dayjs-business-days2',
+      },
+    ],
   },
 
   eslint: {

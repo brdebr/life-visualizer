@@ -85,6 +85,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Guardería',
       description: 'Periodo de guardería infantil.',
       category: 'school',
+      noWeekend: true,
       ageStart: 1,
       ageEnd: 3,
       dateStart: { month: 8, day: 1 },
@@ -95,6 +96,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Educación Infantil',
       description: 'Periodo de educación infantil.',
       category: 'school',
+      noWeekend: true,
       ageStart: 3,
       ageEnd: 5,
       dateStart: { month: 8, day: 10 },
@@ -107,6 +109,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Educación Primaria',
       description: 'Periodo de educación primaria.',
       category: 'school',
+      noWeekend: true,
       ageStart: 6,
       ageEnd: 11,
       dateStart: { month: 8, day: 10 },
@@ -119,6 +122,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'ESO',
       description: 'Educación Secundaria Obligatoria.',
       category: 'school',
+      noWeekend: true,
       ageStart: 12,
       ageEnd: 15,
       dateStart: { month: 8, day: 15 },
@@ -131,6 +135,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Bachillerato',
       description: 'Periodo de bachillerato.',
       category: 'school',
+      noWeekend: true,
       ageStart: 16,
       ageEnd: 17,
       dateStart: { month: 8, day: 15 },
@@ -143,6 +148,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Universidad',
       description: 'Periodo universitario.',
       category: 'school',
+      noWeekend: true,
       ageStart: 18,
       ageEnd: 21,
       dateStart: { month: 8, day: 15 },
@@ -163,6 +169,7 @@ export const useEventsStore = defineStore('events-store', () => {
       title: 'Carrera Profesional',
       description: 'Periodo de vida laboral activa.',
       category: 'work',
+      noWeekend: true,
       ageStart: 22,
       ageEnd: 65,
       dateStart: { month: 8, day: 1 },
@@ -311,6 +318,7 @@ export const useEventsStore = defineStore('events-store', () => {
             title: eventTitle,
             description: eventDescription,
             category: template.category,
+            noWeekend: template.noWeekend,
           })
         }
         return
@@ -341,6 +349,7 @@ export const useEventsStore = defineStore('events-store', () => {
           title: template.title,
           description: template.description,
           category: template.category,
+          noWeekend: template.noWeekend,
         })
         return
       }
@@ -378,6 +387,7 @@ export const useEventsStore = defineStore('events-store', () => {
             title: eventTitle,
             description: eventDescription,
             category: template.category,
+            noWeekend: template.noWeekend,
           })
         }
         return
@@ -404,6 +414,7 @@ export const useEventsStore = defineStore('events-store', () => {
         title: template.title,
         description: template.description,
         category: template.category,
+        noWeekend: template.noWeekend,
       })
     })
 
@@ -453,6 +464,7 @@ export type PeriodTemplate = {
   dateEnd?: { month: number, day: number }
   generateYearly?: boolean
   yearlyTitleFormat?: string
+  noWeekend?: boolean // Added noWeekend property
   yearlyDescriptionFormat?: string
   yearStartOffset?: number
   disabled?: boolean

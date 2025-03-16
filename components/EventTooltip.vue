@@ -2,7 +2,7 @@
   <div class="border border-slate-600 rounded-md max-w-[430px] min-w-[300px] mx-auto my-3 px-4 pt-1 pb-2">
     <h3 class="px-2 pt-1 pb-1 mb-2 border-b text-sm flex">
       <span>
-        {{ debouncedEvent?.dateId }}
+        {{ selectedEvent?.dateId || '' }}
       </span>
       <span class="ml-auto pl-1">
         {{ fromNow }}
@@ -35,7 +35,7 @@
             v-if="event.endDate"
             class="ml-auto"
           >
-            {{ `Day ${$dayjs(selectedEvent?.dateId).diff($dayjs(event.startDate), 'day')} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day')}` }}
+            {{ daysCount(event) }}
           </span>
         </h4>
         <p
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+const dayjs = useDayjs()
 const appStore = useAppStore()
 const eventsStore = useEventsStore()
 const { selectedEvent } = storeToRefs(appStore)
@@ -62,6 +63,13 @@ watch(selectedEvent, (newVal) => {
     debouncedEvent.value = newVal
   }
 })
+
+const daysCount = (event: EventObject) => {
+  if (event.noWeekend) {
+    return `Day ${dayjs(selectedEvent.value?.dateId).businessDiff(dayjs(event.startDate))} of ${dayjs(event.endDate).businessDiff(dayjs(event.startDate))}`
+  }
+  return `Day ${dayjs(selectedEvent.value?.dateId).diff(dayjs(event.startDate), 'day')} of ${dayjs(event.endDate).diff(dayjs(event.startDate), 'day')}`
+}
 
 const noEventsData = [{
   title: 'No events for this day.',
