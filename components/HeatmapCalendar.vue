@@ -73,13 +73,14 @@ const isCurrentYear = computed(() => {
 
 const weekendDays = [0, 6]
 
-const cellSize = 5
-const cellMargin = 1
+const weekdayLegend = [
+  { label: 'Mon', x: -2.5, dy: -5.5, dx: 0 },
+  { label: 'Wed', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Fri', x: -2.5, dy: 12, dx: 0 },
+  { label: 'Sun', x: -2.5, dy: 12.5, dx: 0 },
+]
 
-const spaceLeft = 23
-const spaceTop = 6
-
-const space = 1
+const { spacings, cellColors, monthsLabels: monthsLabelsConstants, weekdaysLabels } = MAGIC_VALUES
 
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
 const ctx = ref<CanvasRenderingContext2D | null>(null)
@@ -116,13 +117,6 @@ const computedSizes = computed(() => {
   }
 })
 
-const weekdayLegend = [
-  { label: 'Mon', x: -2.5, dy: -5.5, dx: 0 },
-  { label: 'Wed', x: -2.5, dy: 12, dx: 0 },
-  { label: 'Fri', x: -2.5, dy: 12, dx: 0 },
-  { label: 'Sun', x: -2.5, dy: 12.5, dx: 0 },
-]
-
 // Array of each week in a period, starting on firstDayOfWeek
 const weeks = computed(() => {
   const year = dayjs(startDate.value).year()
@@ -149,14 +143,14 @@ const weeks = computed(() => {
         isInThePast,
         event,
         color: getDayColor(event, isInThePast),
-        x: day.month() * (cellSize + cellMargin + space),
+        x: day.month() * (spacings.cellSize + spacings.cellMargin + spacings.space),
       }
     })
 
     return {
       startDate: startOfWeek,
       index: weekIndex,
-      translateX: weekIndex * (cellSize + cellMargin),
+      translateX: weekIndex * (spacings.cellSize + spacings.cellMargin),
       isFirstWeekOfMonth: days.some(day => day.weekDay === 1),
       label: `${startOfWeek.format('DD/MM/YYYY')} - ${endOfWeek.format('DD/MM/YYYY')}`,
       days: days.filter(day => day.dayId.slice(0, 4) === year.toString()),
@@ -176,7 +170,7 @@ const monthsLabels = computed(() => {
     const labelMonth = month.format('MMM')
     const labelYear = month.format('YY')
     const label = `${labelMonth} ${labelYear}`
-    const translateX = (weeks.value.find(week => week.startDate.isSame(month, 'month'))?.translateX || 0) + (i * (cellSize + cellMargin + space))
+    const translateX = (weeks.value.find(week => week.startDate.isSame(month, 'month'))?.translateX || 0) + (i * (spacings.cellSize + spacings.cellMargin + spacings.space))
 
     return {
       index: i,
@@ -187,9 +181,6 @@ const monthsLabels = computed(() => {
     }
   })
 })
-
-const dayColorMap = computed(() => isDark.value ? defaultHeatmapDarkColorsMap : defaultHeatmapLightColorsMap)
-const debouncedColorMap = useDebounce(dayColorMap, 350)
 
 // Update categoryPriorityMap to include visibility
 const categoryPriorityMap = computed(() => {
@@ -203,9 +194,9 @@ const categoryPriorityMap = computed(() => {
 })
 
 const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
-  const defaultColor = isInThePast ? debouncedColorMap.value.PAST : debouncedColorMap.value.NO_DATA
+  const defaultColor = isInThePast ? cellColors.pastEmpty : cellColors.futureEmpty
 
-  if (!event?.events?.length || event.events[0].title === 'No events for this day.' || props.showEvents === false) {
+  if (!event?.events?.length || props.showEvents === false) {
     return defaultColor
   }
 
@@ -253,7 +244,7 @@ const draw = () => {
   }
 
   drawMonthLabels()
-  drawDayLabels()
+  drawWeekdaysLabels()
   drawDayCells()
 
   if (props.zoomLevel !== 1) {
@@ -264,28 +255,28 @@ const draw = () => {
 const drawMonthLabels = () => {
   if (!ctx.value) return
 
-  ctx.value.font = '8px sans-serif'
-  ctx.value.textAlign = 'left'
+  ctx.value.font = monthsLabelsConstants.font
+  ctx.value.textAlign = monthsLabelsConstants.textAlign
 
   monthsLabels.value.forEach((month) => {
     if (!ctx.value) return
     const isCurrentMonth = isCurrentYear.value && month.index === dayjs().month()
-    ctx.value.fillStyle = isCurrentMonth ? '#4a7ab1' : '#000'
-    ctx.value!.fillText(month.labelMonth, spaceLeft + month.translateX, spaceTop + 2)
+    ctx.value.fillStyle = isCurrentMonth ? monthsLabelsConstants.color.currentMonth : monthsLabelsConstants.color.default
+    ctx.value!.fillText(month.labelMonth, spacings.spaceLeft + month.translateX, spacings.spaceTop + 2)
   })
 }
 
-const drawDayLabels = () => {
+const drawWeekdaysLabels = () => {
   if (!ctx.value) return
 
-  ctx.value.font = '8px sans-serif'
-  ctx.value.letterSpacing = '0.25px'
-  ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
-  ctx.value.textAlign = 'right'
+  ctx.value.font = weekdaysLabels.font
+  ctx.value.letterSpacing = weekdaysLabels.letterSpacing
+  ctx.value.fillStyle = weekdaysLabels.color
+  ctx.value.textAlign = weekdaysLabels.textAlign
 
-  let y = spaceTop + 15
+  let y = spacings.spaceTop + weekdaysLabels.spaceTop
   weekdayLegend.forEach((day) => {
-    ctx.value!.fillText(day.label, spaceLeft - 1 + day.x, y + day.dy)
+    ctx.value!.fillText(day.label, spacings.spaceLeft - 1 + day.x, y + day.dy)
     y += day.dy
   })
 }
@@ -298,30 +289,33 @@ const drawDayCells = () => {
   weeks.value.forEach((week) => {
     week.days.forEach((day) => {
       if (!ctx.value) return
-      const x = spaceLeft + week.translateX + day.x
-      const y = spaceTop + 5 + day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
+      const isWeekendValue = weekendDays.includes(day.weekDay) ? 1 : 0
+      const isHighlighted = highlightedDates.value.includes(day.dayId)
+
+      const x = spacings.spaceLeft + week.translateX + day.x
+      const y = spacings.spaceTop + 5 + day.num * (spacings.cellSize + spacings.cellMargin) + isWeekendValue
 
       // Fill rectangle
-      ctx.value.fillStyle = highlightedDates.value.includes(day.dayId) ? '#ff4242' : day.color
-      ctx.value.fillRect(x, y, cellSize, cellSize)
+      ctx.value.fillStyle = isHighlighted ? cellColors.highlight : day.color
+      ctx.value.fillRect(x, y, spacings.cellSize, spacings.cellSize)
 
       // Stroke for highlighted or today
-      if (highlightedDates.value.includes(day.dayId)) {
-        ctx.value.strokeStyle = '#ff4242'
+      if (isHighlighted) {
+        ctx.value.strokeStyle = cellColors.highlight
         ctx.value.lineWidth = 2
-        ctx.value.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeRect(x, y, spacings.cellSize, spacings.cellSize)
       }
       else if (day.dayId === today) {
-        ctx.value.strokeStyle = isDark.value ? '#3b82f6' : '#0ea5e9' // blue-500 or water-500
+        ctx.value.strokeStyle = cellColors.today
         ctx.value.lineWidth = 1
-        ctx.value.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeRect(x, y, spacings.cellSize, spacings.cellSize)
       }
 
       // Hover effect
       if (day.dayId === hoveredDayId.value) {
-        ctx.value.strokeStyle = '#000'
+        ctx.value.strokeStyle = cellColors.hover
         ctx.value.lineWidth = 1
-        ctx.value.strokeRect(x, y, cellSize, cellSize)
+        ctx.value.strokeRect(x, y, spacings.cellSize, spacings.cellSize)
       }
     })
   })
@@ -334,17 +328,17 @@ const getDayFromPosition = (x: number, y: number): { dayId: string } | null => {
   y = y / scale
 
   for (const week of weeks.value) {
-    const weekX = spaceLeft + week.translateX
+    const weekX = spacings.spaceLeft + week.translateX
 
     for (const day of week.days) {
       const cellX = weekX + day.x
-      const cellY = spaceTop + 5 + day.num * (cellSize + cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
+      const cellY = spacings.spaceTop + 5 + day.num * (spacings.cellSize + spacings.cellMargin) + (weekendDays.includes(day.weekDay) ? 1 : 0)
 
       if (
         x >= cellX
-        && x <= cellX + cellSize
+        && x <= cellX + spacings.cellSize
         && y >= cellY
-        && y <= cellY + cellSize
+        && y <= cellY + spacings.cellSize
       ) {
         return { dayId: day.dayId }
       }

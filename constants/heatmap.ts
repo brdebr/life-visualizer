@@ -1,33 +1,35 @@
-export const EVENT_TYPES = [
-  'NO_DATA',
-  'PERSONAL',
-  'PAST',
-] as const
-
-export type EventTypeEnum = typeof EVENT_TYPES[number]
-
-export type ColorsMapType = {
-  [K in EventTypeEnum]: string
-}
-
-export const defaultHeatmapLightColorsMap: ColorsMapType = {
-  NO_DATA: '#f3f3f3',
-  PERSONAL: '#2563eb',
-  PAST: '#dadada',
-}
-
-export const defaultHeatmapDarkColorsMap: ColorsMapType = {
-  NO_DATA: '#d1d1d1',
-  PERSONAL: '#2563eb',
-  PAST: '#374151',
-}
-
-export const colors = {
-  empty: {
-    past: '#f3f3f3',
-    future: '#e5e7eb',
+// Description: Constants for the heatmap component.
+export const MAGIC_VALUES = {
+  // CELL SPACINGS
+  spacings: {
+    cellSize: 5,
+    cellMargin: 1,
+    spaceLeft: 23,
+    spaceTop: 6,
+    space: 1,
   },
-  event: {
-    personal: '#2563eb',
+  // LEGEND
+  monthsLabels: {
+    font: '8px sans-serif',
+    textAlign: 'left',
+    color: {
+      currentMonth: '#4a7ab1',
+      default: '#000',
+    },
   },
-}
+  weekdaysLabels: {
+    font: '8px sans-serif',
+    letterSpacing: '0.25px',
+    textAlign: 'right',
+    color: '#000',
+    spaceTop: 15,
+  },
+  // CELL COLORS
+  cellColors: {
+    highlight: '#ff4242',
+    today: '#0ea5e9',
+    hover: '#000',
+    pastEmpty: '#dadada',
+    futureEmpty: '#e5e7eb',
+  },
+} as const
