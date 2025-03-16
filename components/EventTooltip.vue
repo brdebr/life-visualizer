@@ -2,7 +2,7 @@
   <div class="border border-slate-600 rounded-md max-w-[430px] min-w-[300px] mx-auto my-3 px-3 pt-1 pb-2">
     <h3 class="px-2 pt-1 pb-1 mb-2 border-b text-sm flex">
       <span>
-        {{ debouncedEvent?.dateId || '' }}
+        {{ debouncedEvent?.dateId }}
       </span>
       <span class="ml-auto pl-1">
         {{ fromNow }}
@@ -16,7 +16,7 @@
       >
         <h4 class="flex gap-2 font-semibold text-sm">
           <span>
-            {{ event?.title ? '· '+ event.title : 'No events this day' }}
+            · {{ event?.title }}
           </span>
           <span
             v-if="event.endDate"
@@ -29,10 +29,10 @@
           v-if="event.endDate"
           class="px-2 -mt-1 pb-1 text-[10px]"
         >
-          {{ event.endDate ? `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` : '' }}
+          {{ `Start: ${$dayjs(event.startDate).format('DD/MM/YYYY')} - End: ${$dayjs(event.endDate).format('DD/MM/YYYY')}` }}
         </p>
         <p class="px-2 pb-2 text-xs">
-          {{ event?.description || '' }}
+          {{ event?.description }}
         </p>
       </div>
     </div>
@@ -50,21 +50,24 @@ watch(selectedEvent, (newVal) => {
   }
 })
 
+const noEventsData = [{
+  title: 'No events for this day.',
+  description: '',
+}] as EventObject[]
+
 const visibleEvents = computed(() => {
-  if (!debouncedEvent.value?.events) return []
+  if (!debouncedEvent.value?.events) return noEventsData
 
-  // If the first event has this title, there are no events
-  if (debouncedEvent.value.events[0]?.title === 'No events for this day.') {
-    return debouncedEvent.value.events
-  }
-
-  // Filter events by visible categories
-  return debouncedEvent.value.events.filter((event) => {
+  const filteredEvents = debouncedEvent.value.events.filter((event) => {
     if (!event.category) return true
     const category = eventsStore.eventCategories.find(cat => cat.title === event.category)
     return category?.visible !== false
   })
+
+  if (filteredEvents.length === 0) return noEventsData
+
+  return filteredEvents
 })
 
-const fromNow = computed(() => selectedEvent.value?.dateId ? appStore.dayjs(selectedEvent.value.dateId).fromNow() : '')
+const fromNow = computed(() => debouncedEvent.value?.dateId ? appStore.dayjs(debouncedEvent.value.dateId).fromNow() : '')
 </script>

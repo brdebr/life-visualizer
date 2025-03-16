@@ -265,7 +265,7 @@ export const useAppStore = defineStore('app-store', () => {
   const buildDefaultDayContent = (dateId: string): DateEventsObject => {
     return {
       dateId,
-      events: [{ title: 'No events for this day.', description: '' }],
+      events: [],
     }
   }
 
