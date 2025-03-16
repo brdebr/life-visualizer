@@ -8,8 +8,10 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "clean": "nuxt cleanup",
+    "types": "nuxt typecheck",
     "lintf": "eslint . --fix",
     "prod": "nuxt generate && nuxt preview",
+    "prod:all": "npm run lintf && npm run types && npm run build && npm run prod",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

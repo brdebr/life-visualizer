@@ -18,6 +18,7 @@ export type EventCategory = {
   title: string
   color: string
   visible?: boolean
+  default?: boolean
 }
 
 export type EventCategoryWithPriority = EventCategory & {
