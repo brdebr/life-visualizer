@@ -66,9 +66,9 @@ watch(selectedEvent, (newVal) => {
 
 const daysCount = (event: EventObject) => {
   if (event.noWeekend) {
-    return `Day ${dayjs(selectedEvent.value?.dateId).businessDiff(dayjs(event.startDate)) + 1} of ${dayjs(event.endDate).businessDiff(dayjs(event.startDate)) + 1}`
+    return `Day ${dayjs(selectedEvent.value?.dateId).businessDiff(dayjs(event.startDate)) + 1} of ${dayjs(event.endDate).businessDiff(dayjs(event.startDate))}`
   }
-  return `Day ${dayjs(selectedEvent.value?.dateId).diff(dayjs(event.startDate), 'day') + 1} of ${dayjs(event.endDate).diff(dayjs(event.startDate), 'day') + 1}`
+  return `Day ${dayjs(selectedEvent.value?.dateId).diff(dayjs(event.startDate), 'day') + 1} of ${dayjs(event.endDate).diff(dayjs(event.startDate), 'day')}`
 }
 
 const noEventsData = [{
