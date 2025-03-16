@@ -8,6 +8,13 @@ export const useEventsStore = defineStore('events-store', () => {
     { title: 'default', color: '#e5e7eb', visible: true },
   ])
 
+  const categoryColorMap = computed(() => {
+    return eventCategories.value.reduce((acc, category) => {
+      acc[category.title] = category.color
+      return acc
+    }, {} as Record<string, string>)
+  })
+
   const eventCategoriesWithPriority = computed(() => {
     return eventCategories.value.map((category, index) => ({
       ...category,
@@ -81,6 +88,7 @@ export const useEventsStore = defineStore('events-store', () => {
     updateCategoriesOrder,
     toggleCategoryVisibility,
     getCategoryByName,
+    categoryColorMap,
 
     // Custom events state and operations
     customEvents,

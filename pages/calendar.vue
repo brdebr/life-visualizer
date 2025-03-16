@@ -6,6 +6,7 @@
         v-bind="{
           year: currentYear,
           zoomLevel: 1.5,
+          categories: eventsStore.eventCategoriesWithPriority,
           selectEvent: appStore.selectEmptyEvent,
           getDayContent: appStore.getEmptyDayContent,
         }"
@@ -61,6 +62,7 @@
         v-bind="{
           year: yearItem.year,
           zoomLevel: 1.2,
+          categories: eventsStore.eventCategoriesWithPriority,
           selectEvent: appStore.selectEvent,
           getDayContent: appStore.getDayContent,
         }"
@@ -84,6 +86,7 @@ useHead({
   title: 'Calendar',
 })
 const appStore = useAppStore()
+const eventsStore = useEventsStore()
 const router = useRouter()
 onBeforeMount(() => {
   if (!appStore.isConfigured) {

@@ -41,6 +41,7 @@
 
 <script setup lang="ts">
 const appStore = useAppStore()
+const eventsStore = useEventsStore()
 const { selectedEvent } = storeToRefs(appStore)
 const debouncedEvent = ref(selectedEvent.value)
 watch(selectedEvent, (newVal) => {
@@ -60,7 +61,7 @@ const visibleEvents = computed(() => {
   // Filter events by visible categories
   return debouncedEvent.value.events.filter((event) => {
     if (!event.category) return true
-    const category = appStore.eventCategories.find(cat => cat.title === event.category)
+    const category = eventsStore.eventCategories.find(cat => cat.title === event.category)
     return category?.visible !== false
   })
 })

@@ -6,6 +6,7 @@
         v-bind="{
           year: currentYear,
           zoomLevel: 1.5,
+          categories: eventsStore.eventCategoriesWithPriority,
           selectEvent: appStore.selectEmptyEvent,
           getDayContent: appStore.getEmptyDayContent,
         }"
@@ -65,6 +66,7 @@
 
 <script setup lang="ts">
 const appStore = useAppStore()
+const eventsStore = useEventsStore()
 
 const currentYear = appStore.dayjs().year()
 </script>
