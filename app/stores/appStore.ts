@@ -138,6 +138,7 @@ export const useAppStore = defineStore('app-store', () => {
     return finalEvents.concat(personalEvents, customEventsMapped, staticDatasetMapped, festivityEvents)
   })
 
+  // The dynamic dataset is a record of events grouped by date
   const dynamicDataset = computed(() => {
     if (!isConfigured.value) {
       return {}
@@ -145,12 +146,56 @@ export const useAppStore = defineStore('app-store', () => {
 
     const finalRecord: Record<string, EventObject[]> = {}
 
+    // Filter events that are not visible
     arrayDataset.value.forEach((el) => {
-      const events = finalRecord[el.startDate!] || []
+      // Check if event should be shown
+      const startDateObj = dayjs(el.startDate!)
+      const isWeekend = [0, 6].includes(startDateObj.day()) // 0 is Sunday, 6 is Saturday
+
+      // Skip events with noWeekend flag on weekend days
+      if (el.noWeekend && isWeekend) return
+
+      // Skip events with categories that are not visible
+      if (!el.category) {
+        return
+      }
+      const category = eventCategories.value.find(cat => cat.title === el.category)
+      if (category?.visible === false) return
+
+      // Add the event to its start date
+      const startDate = el.startDate!
+      const events = finalRecord[startDate] || []
       events.push({
         ...el,
       })
-      finalRecord[el.startDate!] = events
+      finalRecord[startDate] = events
+
+      // Skip if no endDate or if it's the same as startDate
+      if (!el.endDate || el.startDate === el.endDate) return
+
+      // If event spans multiple days (has different end date), add it to all dates in between
+      const start = dayjs(el.startDate)
+      const end = dayjs(el.endDate)
+      let current = start.add(1, 'day')
+
+      // Add event to each day in the span until reaching the end date
+      while (current.isSameOrBefore(end, 'day')) {
+        const currentDateStr = current.format('YYYY-MM-DD')
+
+        // For multi-day events, check weekend filtering for each day
+        const currentIsWeekend = [0, 6].includes(current.day())
+        if (el.noWeekend && currentIsWeekend) {
+          current = current.add(1, 'day')
+          continue
+        }
+
+        const dateEvents = finalRecord[currentDateStr] || []
+        dateEvents.push({
+          ...el,
+        })
+        finalRecord[currentDateStr] = dateEvents
+        current = current.add(1, 'day')
+      }
     })
 
     return finalRecord
@@ -183,54 +228,15 @@ export const useAppStore = defineStore('app-store', () => {
   const getDayContent = (date: string): DateEventsObject => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
-    const isWeekend = [0, 6].includes(dateObj.day()) // 0 is Sunday, 6 is Saturday
-    // console.log(dateId, dateObj.day(), isWeekend)
-
-    const directEvents = dynamicDataset.value?.[date] || []
-
-    const spanningEvents: EventObject[] = []
-
-    Object.values(dynamicDataset.value || {}).forEach((events) => {
-      events.forEach((event) => {
-        if (!event.endDate || event.startDate === event.endDate) return
-
-        if (event.startDate === date) return
-
-        const eventStart = dayjs(event.startDate)
-        const eventEnd = dayjs(event.endDate)
-
-        if ((dateObj.isAfter(eventStart) && dateObj.isBefore(eventEnd)) || dateObj.isSame(eventEnd)) {
-          spanningEvents.push(event)
-        }
-      })
-    })
-
-    const allEvents = [...directEvents, ...spanningEvents]
+    const allEvents = dynamicDataset.value?.[date] || []
 
     if (!allEvents.length) {
       return buildDefaultDayContent(dateId)
     }
 
-    // console.log('All events', allEvents)
-
-    const visibleEvents = allEvents.filter((event) => {
-      // if (isWeekend && event.noWeekend) {
-      //   console.log('Weekend event', event)
-      // }
-      if (!event.category) return true
-      if (event.noWeekend && isWeekend) return false
-
-      const category = eventCategories.value.find(cat => cat.title === event.category)
-      return category?.visible !== false
-    })
-
-    if (!visibleEvents.length) {
-      return buildDefaultDayContent(dateId)
-    }
-
     return {
       dateId,
-      events: visibleEvents,
+      events: allEvents,
     }
   }
 
