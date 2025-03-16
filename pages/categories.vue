@@ -55,7 +55,7 @@
 
           <div class="flex gap-2 items-center">
             <UToggle
-              v-model="category.visible"
+              :model-value="category.visible"
               :disabled="category.title === 'default'"
               @change="toggleVisibility(index)"
             />

@@ -5,6 +5,7 @@ export const useEventsStore = defineStore('events-store', () => {
     { title: 'historical', color: '#8b75e1', visible: true },
     { title: 'personal', color: '#c6e6e4', visible: true },
     { title: 'vacation', color: '#a6f2bf', visible: true },
+    { title: 'yearly', color: '#feffd6', visible: true },
     { title: 'work', color: '#e3ddc0', visible: false },
     { title: 'school', color: '#d0e4fb', visible: true },
     { title: 'default', color: '#e5e7eb', visible: true },
@@ -178,8 +179,9 @@ export const useEventsStore = defineStore('events-store', () => {
       id: 'birthdays',
       title: 'Cumpleaños',
       description: 'Celebración de cumpleaños cada año.',
-      category: 'personal',
+      category: 'yearly',
       ageStart: 0,
+      ageEnd: -1,
       dateStart: { month: 0, day: 0 }, // Actual birth date
       generateYearly: true,
       yearlyTitleFormat: '%numº Cumpleaños',
@@ -220,6 +222,50 @@ export const useEventsStore = defineStore('events-store', () => {
       },
       generateYearly: true,
       yearlyTitleFormat: 'Verano del %year',
+    },
+    {
+      id: 'christmas',
+      title: 'Navidad',
+      description: 'Celebración de la Navidad',
+      category: 'yearly',
+      ageStart: 0,
+      ageEnd: -1,
+      dateStart: { month: 11, day: 25 }, // December 25th (months are 0-indexed)
+      generateYearly: true,
+      yearlyTitleFormat: 'Navidad %year',
+    },
+    {
+      id: 'halloween',
+      title: 'Halloween',
+      description: 'Noche de Halloween',
+      category: 'yearly',
+      ageStart: 0,
+      ageEnd: -1,
+      dateStart: { month: 9, day: 31 }, // October 31st
+      generateYearly: true,
+      yearlyTitleFormat: 'Halloween %year',
+    },
+    {
+      id: 'valentines',
+      title: 'San Valentín',
+      description: 'Día de los enamorados',
+      category: 'yearly',
+      ageStart: 0,
+      ageEnd: -1,
+      dateStart: { month: 1, day: 14 }, // February 14th
+      generateYearly: true,
+      yearlyTitleFormat: 'San Valentín %year',
+    },
+    {
+      id: 'treekings',
+      title: 'Día de Reyes',
+      description: 'Celebración del día de los Reyes Magos',
+      category: 'yearly',
+      ageStart: 0,
+      ageEnd: -1,
+      dateStart: { month: 0, day: 6 }, // January 6th
+      generateYearly: true,
+      yearlyTitleFormat: 'Día de Reyes %year',
     },
   ])
 
@@ -295,10 +341,12 @@ export const useEventsStore = defineStore('events-store', () => {
         })
         return
       }
+      // Events with endAge = -1 are considered to last until the end of life
+      const endAgeForCalc = endAge === -1 ? yearsToLiveForCalc.value : endAge
 
       // For period events with yearly generation
       if (template.generateYearly) {
-        for (let i = startAge; i <= endAge; i++) {
+        for (let i = startAge; i <= endAgeForCalc; i++) {
           const yearIndex = template.yearStartOffset ? i - template.yearStartOffset : i - startAge + 1
 
           const startDate = wasBornDate.clone()

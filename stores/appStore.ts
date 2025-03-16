@@ -1,3 +1,5 @@
+import { festivities } from '#imports'
+
 export type EventObject = {
   title?: string
   description?: string
@@ -98,8 +100,10 @@ export const useAppStore = defineStore('app-store', () => {
     const wasBorn = dayjs(wasBornForCalc.value)
     const expectedEnd = wasBorn.clone().add(yearsToLiveForCalc.value, 'year')
 
+    // Dynamic events
     const personalEvents: EventObject[] = eventsStore.buildDynamicEvents(wasBorn, yearsToLiveForCalc)
 
+    // Custom events
     const customEventsMapped: EventObject[] = customEvents.value.map(event => ({
       startDate: event.startDate || '',
       endDate: event.endDate,
@@ -108,6 +112,7 @@ export const useAppStore = defineStore('app-store', () => {
       category: event.category || 'default',
     } satisfies EventObject))
 
+    // Static events
     const staticDatasetMapped: EventObject[] = staticDataset.filter(item =>
       dayjs(item.date).isBetween(wasBorn, expectedEnd, 'day', '[)'),
     ).map((event) => {
@@ -118,9 +123,16 @@ export const useAppStore = defineStore('app-store', () => {
       } satisfies EventObject
     })
 
+    // Festivities
+    const festivityEvents: EventObject[] = festivities.map(event => ({
+      startDate: event.startDate,
+      title: event.title,
+      category: 'vacation',
+    } satisfies EventObject))
+
     const finalEvents: EventObject[] = []
 
-    return finalEvents.concat(personalEvents, customEventsMapped, staticDatasetMapped)
+    return finalEvents.concat(personalEvents, customEventsMapped, staticDatasetMapped, festivityEvents)
   })
 
   const dynamicDataset = computed(() => {

@@ -60,7 +60,12 @@ const techList = [
 ]
 
 const clearLocalStorage = () => {
+  // preserve only what is in the key 'setup-store'
+  const setupStoreData = window.localStorage.getItem('setup-store')
   window.localStorage.clear()
+  if (setupStoreData) {
+    window.localStorage.setItem('setup-store', setupStoreData)
+  }
   // navigate to /
   window.location.href = '/'
 }
