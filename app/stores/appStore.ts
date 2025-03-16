@@ -138,6 +138,7 @@ export const useAppStore = defineStore('app-store', () => {
     return finalEvents.concat(personalEvents, customEventsMapped, staticDatasetMapped, festivityEvents)
   })
 
+  // The dynamic dataset is a record of events grouped by date
   const dynamicDataset = computed(() => {
     if (!isConfigured.value) {
       return {}
@@ -146,11 +147,31 @@ export const useAppStore = defineStore('app-store', () => {
     const finalRecord: Record<string, EventObject[]> = {}
 
     arrayDataset.value.forEach((el) => {
-      const events = finalRecord[el.startDate!] || []
+      // Add the event to its start date
+      const startDate = el.startDate!
+      const events = finalRecord[startDate] || []
       events.push({
         ...el,
       })
-      finalRecord[el.startDate!] = events
+      finalRecord[startDate] = events
+
+      // If event spans multiple days (has different end date), add it to all dates in between
+      if (el.endDate && el.startDate !== el.endDate) {
+        const start = dayjs(el.startDate)
+        const end = dayjs(el.endDate)
+        let current = start.add(1, 'day')
+
+        // Add event to each day in the span until reaching the end date
+        while (current.isSameOrBefore(end, 'day')) {
+          const currentDateStr = current.format('YYYY-MM-DD')
+          const dateEvents = finalRecord[currentDateStr] || []
+          dateEvents.push({
+            ...el,
+          })
+          finalRecord[currentDateStr] = dateEvents
+          current = current.add(1, 'day')
+        }
+      }
     })
 
     return finalRecord
@@ -184,39 +205,14 @@ export const useAppStore = defineStore('app-store', () => {
     const dateObj = dayjs(date)
     const dateId = dateObj.format('dddd - YYYY-MM-DD')
     const isWeekend = [0, 6].includes(dateObj.day()) // 0 is Sunday, 6 is Saturday
-    // console.log(dateId, dateObj.day(), isWeekend)
 
-    const directEvents = dynamicDataset.value?.[date] || []
-
-    const spanningEvents: EventObject[] = []
-
-    Object.values(dynamicDataset.value || {}).forEach((events) => {
-      events.forEach((event) => {
-        if (!event.endDate || event.startDate === event.endDate) return
-
-        if (event.startDate === date) return
-
-        const eventStart = dayjs(event.startDate)
-        const eventEnd = dayjs(event.endDate)
-
-        if ((dateObj.isAfter(eventStart) && dateObj.isBefore(eventEnd)) || dateObj.isSame(eventEnd)) {
-          spanningEvents.push(event)
-        }
-      })
-    })
-
-    const allEvents = [...directEvents, ...spanningEvents]
+    const allEvents = dynamicDataset.value?.[date] || []
 
     if (!allEvents.length) {
       return buildDefaultDayContent(dateId)
     }
 
-    // console.log('All events', allEvents)
-
     const visibleEvents = allEvents.filter((event) => {
-      // if (isWeekend && event.noWeekend) {
-      //   console.log('Weekend event', event)
-      // }
       if (!event.category) return true
       if (event.noWeekend && isWeekend) return false
 

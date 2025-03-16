@@ -54,7 +54,17 @@ export default defineNuxtConfig({
 
   dayjs: {
     locales: ['es', 'en'],
-    plugins: ['relativeTime', 'utc', 'timezone', 'duration', 'weekOfYear', 'isBetween', 'isoWeek', 'dayOfYear'],
+    plugins: [
+      'relativeTime',
+      'utc',
+      'timezone',
+      'duration',
+      'weekOfYear',
+      'isBetween',
+      'isoWeek',
+      'dayOfYear',
+      'isSameOrBefore',
+    ],
     defaultLocale: 'en',
     defaultTimezone: 'UTC',
     externalPlugins: [
