@@ -148,13 +148,6 @@ export const useAppStore = defineStore('app-store', () => {
 
     // Filter events that are not visible
     arrayDataset.value.forEach((el) => {
-      // Check if event should be shown
-      const startDateObj = dayjs(el.startDate!)
-      const isWeekend = [0, 6].includes(startDateObj.day()) // 0 is Sunday, 6 is Saturday
-
-      // Skip events with noWeekend flag on weekend days
-      if (el.noWeekend && isWeekend) return
-
       // Skip events with categories that are not visible
       if (!el.category) {
         return
@@ -162,38 +155,29 @@ export const useAppStore = defineStore('app-store', () => {
       const category = eventCategories.value.find(cat => cat.title === el.category)
       if (category?.visible === false) return
 
-      // Add the event to its start date
-      const startDate = el.startDate!
-      const events = finalRecord[startDate] || []
-      events.push({
-        ...el,
-      })
-      finalRecord[startDate] = events
+      if (!el.startDate) return
 
-      // Skip if no endDate or if it's the same as startDate
-      if (!el.endDate || el.startDate === el.endDate) return
-
-      // If event spans multiple days (has different end date), add it to all dates in between
+      // Process all dates for this event (start date to end date)
       const start = dayjs(el.startDate)
-      const end = dayjs(el.endDate)
-      let current = start.add(1, 'day')
+      const end = el.endDate ? dayjs(el.endDate) : start
+      let current = start.clone()
 
       // Add event to each day in the span until reaching the end date
       while (current.isSameOrBefore(end, 'day')) {
         const currentDateStr = current.format('YYYY-MM-DD')
 
-        // For multi-day events, check weekend filtering for each day
-        const currentIsWeekend = [0, 6].includes(current.day())
-        if (el.noWeekend && currentIsWeekend) {
-          current = current.add(1, 'day')
-          continue
+        // Check for weekend only for the current day being processed
+        const isWeekend = [0, 6].includes(current.day()) // 0 is Sunday, 6 is Saturday
+
+        // Skip this specific day if it's a weekend and noWeekend is true
+        if (!(el.noWeekend && isWeekend)) {
+          const dateEvents = finalRecord[currentDateStr] || []
+          dateEvents.push({
+            ...el,
+          })
+          finalRecord[currentDateStr] = dateEvents
         }
 
-        const dateEvents = finalRecord[currentDateStr] || []
-        dateEvents.push({
-          ...el,
-        })
-        finalRecord[currentDateStr] = dateEvents
         current = current.add(1, 'day')
       }
     })
