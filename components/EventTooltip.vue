@@ -22,7 +22,7 @@
             v-if="event.endDate"
             class="ml-auto"
           >
-            {{ `Day ${$dayjs(debouncedEvent?.dateId).diff($dayjs(event.startDate), 'day')} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day')}` }}
+            {{ `Day ${$dayjs(debouncedEvent?.dateId).diff($dayjs(event.startDate), 'day') + 1} of ${$dayjs(event.endDate).diff($dayjs(event.startDate), 'day') + 1}` }}
           </span>
         </h4>
         <p

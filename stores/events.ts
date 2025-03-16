@@ -186,28 +186,44 @@ export const useEventsStore = defineStore('events-store', () => {
       yearlyDescriptionFormat: 'Has cumplido %num años.',
     },
     {
-      id: 'template-1742081477978',
+      id: 'vacations-summer-kid',
       title: 'Vacaciones',
       description: 'Vacaciones de verano',
       category: 'vacation',
-      ageStart: 5,
-      ageEnd: 18,
+      ageStart: 4,
+      ageEnd: 11,
       dateStart: {
         month: 5,
         day: 21,
       },
       dateEnd: {
         month: 8,
-        day: 10,
+        day: 9,
       },
       generateYearly: true,
-      yearlyTitleFormat: 'Verano %num',
+      yearlyTitleFormat: 'Verano del %year',
+    },
+    {
+      id: 'vacations-summer-teen',
+      title: 'Vacaciones',
+      description: 'Vacaciones de verano',
+      category: 'vacation',
+      ageStart: 12,
+      ageEnd: 18,
+      dateStart: {
+        month: 5,
+        day: 26,
+      },
+      dateEnd: {
+        month: 8,
+        day: 14,
+      },
+      generateYearly: true,
+      yearlyTitleFormat: 'Verano del %year',
     },
   ])
-  // const cosa: PeriodTemplate = { id: 'template-1742081477978', title: 'Vacaciones', description: 'Vacaciones de verano', category: 'vacation', ageStart: 5, ageEnd: 18, dateStart: { month: 5, day: 21 }, dateEnd: { month: 8, day: 10 }, generateYearly: true, yearlyTitleFormat: 'Verano %num' }
 
   const addPeriodTemplate = (template: PeriodTemplate) => {
-    // Generate a unique ID if none provided
     if (!template.id) {
       template.id = `template-${crypto.randomUUID()}`
     }
@@ -230,18 +246,16 @@ export const useEventsStore = defineStore('events-store', () => {
 
   const buildDynamicEvents = (wasBornDate: dayjs.Dayjs, yearsToLiveForCalc: Ref<number>) => {
     const events: EventObject[] = []
+    const buildEventTitle = (template: PeriodTemplate, key: 'yearlyTitleFormat' | 'yearlyDescriptionFormat', vars: { yearIndex?: number, yearNum?: number }, fallback: string) => {
+      if (!template.generateYearly || !template[key]) return fallback
+      return template[key].replace('%num', vars.yearIndex?.toString() || '').replace('%year', vars.yearNum?.toString() || '')
+    }
 
     periodTemplates.value.forEach((template) => {
-      // Special case for birthdays to have events for all years
       if (template.id === 'birthdays') {
         for (let i = 0; i <= yearsToLiveForCalc.value; i++) {
-          const eventTitle = template.generateYearly && template.yearlyTitleFormat
-            ? template.yearlyTitleFormat.replace('%num', (i + 1).toString())
-            : template.title
-
-          const eventDescription = template.generateYearly && template.yearlyDescriptionFormat
-            ? template.yearlyDescriptionFormat.replace('%num', (i + 1).toString())
-            : template.description
+          const eventTitle = buildEventTitle(template, 'yearlyTitleFormat', { yearIndex: i + 1 }, template.title)
+          const eventDescription = buildEventTitle(template, 'yearlyDescriptionFormat', { yearIndex: i + 1 }, template.description)
 
           events.push({
             startDate: wasBornDate.clone().add(i, 'year').format('YYYY-MM-DD'),
@@ -285,15 +299,7 @@ export const useEventsStore = defineStore('events-store', () => {
       // For period events with yearly generation
       if (template.generateYearly) {
         for (let i = startAge; i <= endAge; i++) {
-          const yearNumber = template.yearStartOffset ? i - template.yearStartOffset : i - startAge + 1
-
-          const eventTitle = template.yearlyTitleFormat
-            ? template.yearlyTitleFormat.replace('%num', yearNumber.toString())
-            : `${template.title} ${yearNumber}`
-
-          const eventDescription = template.yearlyDescriptionFormat
-            ? template.yearlyDescriptionFormat.replace('%num', yearNumber.toString())
-            : template.description
+          const yearIndex = template.yearStartOffset ? i - template.yearStartOffset : i - startAge + 1
 
           const startDate = wasBornDate.clone()
             .add(i, 'year')
@@ -301,11 +307,19 @@ export const useEventsStore = defineStore('events-store', () => {
             .date(template.dateStart.day)
             .format('YYYY-MM-DD')
 
+          // check if the dateEnd is smaller than dateStart (month and day)
+          const lastsMoreThanAYear = template.dateEnd && (template.dateEnd.month < template.dateStart.month || (template.dateEnd.month === template.dateStart.month && template.dateEnd.day < template.dateStart.day))
+          const yearEnd = lastsMoreThanAYear ? i + 1 : i
+          const yearNum = wasBornDate.clone().add(i, 'year').year()
+
           const endDate = wasBornDate.clone()
-            .add(i + 1, 'year')
+            .add(yearEnd, 'year')
             .month(template.dateEnd?.month || template.dateStart.month)
             .date(template.dateEnd?.day || template.dateStart.day)
             .format('YYYY-MM-DD')
+
+          const eventTitle = buildEventTitle(template, 'yearlyTitleFormat', { yearIndex, yearNum }, template.title)
+          const eventDescription = buildEventTitle(template, 'yearlyDescriptionFormat', { yearIndex, yearNum }, template.description)
 
           events.push({
             startDate,
