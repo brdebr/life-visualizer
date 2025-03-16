@@ -40,6 +40,10 @@ export default defineNuxtConfig({
     dataValue: 'light',
   },
 
+  future: {
+    compatibilityVersion: 4,
+  },
+
   compatibilityDate: '2025-03-15',
 
   nitro: isNetlify()
