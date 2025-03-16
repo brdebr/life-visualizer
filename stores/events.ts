@@ -77,105 +77,253 @@ export const useEventsStore = defineStore('events-store', () => {
     customEvents.value.splice(index, 1)
   }
 
-  const buildDynamicEvents = (wasBornDate: dayjs.Dayjs, yearsToLiveForCalc: Ref<number>) => {
-    const events: EventObject[] = []
-
-    // Guardería (1-3 años)
-    events.push({
-      startDate: wasBornDate.clone().add(1, 'year').month(8).day(1).format('YYYY-MM-DD'),
-      endDate: wasBornDate.clone().add(3, 'year').month(5).day(30).format('YYYY-MM-DD'),
+  // Period templates for dynamic events
+  const periodTemplates = useLocalStorage<PeriodTemplate[]>('periodTemplates', [
+    {
+      id: 'preschool',
       title: 'Guardería',
       description: 'Periodo de guardería infantil.',
       category: 'school',
+      ageStart: 1,
+      ageEnd: 3,
+      dateStart: { month: 8, day: 1 },
+      dateEnd: { month: 5, day: 30 },
+    },
+    {
+      id: 'kindergarten',
+      title: 'Educación Infantil',
+      description: 'Periodo de educación infantil.',
+      category: 'school',
+      ageStart: 3,
+      ageEnd: 5,
+      dateStart: { month: 8, day: 10 },
+      dateEnd: { month: 5, day: 20 },
+      generateYearly: true,
+      yearlyTitleFormat: '%numº Infantil',
+    },
+    {
+      id: 'primary',
+      title: 'Educación Primaria',
+      description: 'Periodo de educación primaria.',
+      category: 'school',
+      ageStart: 6,
+      ageEnd: 11,
+      dateStart: { month: 8, day: 10 },
+      dateEnd: { month: 5, day: 20 },
+      generateYearly: true,
+      yearlyTitleFormat: '%numº Primaria',
+    },
+    {
+      id: 'secondary',
+      title: 'ESO',
+      description: 'Educación Secundaria Obligatoria.',
+      category: 'school',
+      ageStart: 12,
+      ageEnd: 15,
+      dateStart: { month: 8, day: 15 },
+      dateEnd: { month: 5, day: 25 },
+      generateYearly: true,
+      yearlyTitleFormat: '%numº ESO',
+    },
+    {
+      id: 'highschool',
+      title: 'Bachillerato',
+      description: 'Periodo de bachillerato.',
+      category: 'school',
+      ageStart: 16,
+      ageEnd: 17,
+      dateStart: { month: 8, day: 15 },
+      dateEnd: { month: 5, day: 25 },
+      generateYearly: true,
+      yearlyTitleFormat: '%numº Bachillerato',
+    },
+    {
+      id: 'university',
+      title: 'Universidad',
+      description: 'Periodo universitario.',
+      category: 'school',
+      ageStart: 18,
+      ageEnd: 21,
+      dateStart: { month: 8, day: 15 },
+      dateEnd: { month: 5, day: 25 },
+      generateYearly: true,
+      yearlyTitleFormat: 'Curso %numº Universidad',
+    },
+    {
+      id: 'majority',
+      title: 'Mayoría de Edad',
+      description: 'Has alcanzado la mayoría de edad.',
+      category: 'personal',
+      ageStart: 18,
+      dateStart: { month: 0, day: 0 }, // Actual birth date
+    },
+    {
+      id: 'career',
+      title: 'Carrera Profesional',
+      description: 'Periodo de vida laboral activa.',
+      category: 'work',
+      ageStart: 22,
+      ageEnd: 65,
+      dateStart: { month: 8, day: 1 },
+    },
+    {
+      id: 'retirement',
+      title: 'Jubilación',
+      description: 'Comienzo del periodo de jubilación.',
+      category: 'personal',
+      ageStart: 65,
+      dateStart: { month: 0, day: 0 }, // Actual birth date
+    },
+    {
+      id: 'birthdays',
+      title: 'Cumpleaños',
+      description: 'Celebración de cumpleaños cada año.',
+      category: 'personal',
+      ageStart: 0,
+      dateStart: { month: 0, day: 0 }, // Actual birth date
+      generateYearly: true,
+      yearlyTitleFormat: '%numº Cumpleaños',
+      yearlyDescriptionFormat: 'Has cumplido %num años.',
+    },
+  ])
+
+  const addPeriodTemplate = (template: PeriodTemplate) => {
+    // Generate a unique ID if none provided
+    if (!template.id) {
+      template.id = `template-${crypto.randomUUID()}`
+    }
+    periodTemplates.value.push(template)
+  }
+
+  const updatePeriodTemplate = (id: string, template: PeriodTemplate) => {
+    const index = periodTemplates.value.findIndex(t => t.id === id)
+    if (index !== -1) {
+      periodTemplates.value[index] = { ...template, id }
+    }
+  }
+
+  const deletePeriodTemplate = (id: string) => {
+    const index = periodTemplates.value.findIndex(t => t.id === id)
+    if (index !== -1) {
+      periodTemplates.value.splice(index, 1)
+    }
+  }
+
+  const buildDynamicEvents = (wasBornDate: dayjs.Dayjs, yearsToLiveForCalc: Ref<number>) => {
+    const events: EventObject[] = []
+
+    periodTemplates.value.forEach((template) => {
+      // Special case for birthdays to have events for all years
+      if (template.id === 'birthdays') {
+        for (let i = 0; i <= yearsToLiveForCalc.value; i++) {
+          const eventTitle = template.generateYearly && template.yearlyTitleFormat
+            ? eval('`' + template.yearlyTitleFormat + '`')
+            : template.title
+
+          const eventDescription = template.generateYearly && template.yearlyDescriptionFormat
+            ? eval('`' + template.yearlyDescriptionFormat + '`')
+            : template.description
+
+          events.push({
+            startDate: wasBornDate.clone().add(i, 'year').format('YYYY-MM-DD'),
+            title: eventTitle,
+            description: eventDescription,
+            category: template.category,
+          })
+        }
+        return
+      }
+
+      // For other templates
+      const startAge = template.ageStart
+      const endAge = template.ageEnd
+
+      // For single day events
+      if (!endAge) {
+        let startDate
+        if (template.dateStart.month === 0 && template.dateStart.day === 0) {
+          // Use exact birthday
+          startDate = wasBornDate.clone().add(startAge, 'year').format('YYYY-MM-DD')
+        }
+        else {
+          // Use specific month and day
+          startDate = wasBornDate.clone()
+            .add(startAge, 'year')
+            .month(template.dateStart.month)
+            .date(template.dateStart.day)
+            .format('YYYY-MM-DD')
+        }
+
+        events.push({
+          startDate,
+          title: template.title,
+          description: template.description,
+          category: template.category,
+        })
+        return
+      }
+
+      // For period events with yearly generation
+      if (template.generateYearly) {
+        for (let i = startAge; i <= endAge; i++) {
+          const yearNumber = template.yearStartOffset ? i - template.yearStartOffset : i - startAge + 1
+
+          const eventTitle = template.yearlyTitleFormat
+            ? eval('`' + template.yearlyTitleFormat.replace('${yearNumber}', yearNumber) + '`')
+            : `${template.title} ${yearNumber}`
+
+          const eventDescription = template.yearlyDescriptionFormat
+            ? eval('`' + template.yearlyDescriptionFormat.replace('${yearNumber}', yearNumber) + '`')
+            : template.description
+
+          const startDate = wasBornDate.clone()
+            .add(i, 'year')
+            .month(template.dateStart.month)
+            .date(template.dateStart.day)
+            .format('YYYY-MM-DD')
+
+          const endDate = wasBornDate.clone()
+            .add(i + 1, 'year')
+            .month(template.dateEnd?.month || template.dateStart.month)
+            .date(template.dateEnd?.day || template.dateStart.day)
+            .format('YYYY-MM-DD')
+
+          events.push({
+            startDate,
+            endDate,
+            title: eventTitle,
+            description: eventDescription,
+            category: template.category,
+          })
+        }
+        return
+      }
+
+      // For regular period events
+      const startDate = wasBornDate.clone()
+        .add(startAge, 'year')
+        .month(template.dateStart.month)
+        .date(template.dateStart.day)
+        .format('YYYY-MM-DD')
+
+      const endDate = endAge
+        ? wasBornDate.clone()
+            .add(endAge, 'year')
+            .month(template.dateEnd?.month || template.dateStart.month)
+            .date(template.dateEnd?.day || template.dateStart.day)
+            .format('YYYY-MM-DD')
+        : undefined
+
+      events.push({
+        startDate,
+        endDate,
+        title: template.title,
+        description: template.description,
+        category: template.category,
+      })
     })
 
-    // Educación Infantil (3-5 años)
-    for (let i = 3; i <= 5; i++) {
-      events.push({
-        startDate: wasBornDate.clone().add(i, 'year').month(8).day(10).format('YYYY-MM-DD'),
-        endDate: wasBornDate.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
-        title: `${i - 2}º Infantil`,
-        description: `Curso ${i - 2}º de Educación Infantil.`,
-        category: 'school',
-      })
-    }
-
-    // Educación Primaria (6-11 años)
-    for (let i = 6; i <= 11; i++) {
-      events.push({
-        startDate: wasBornDate.clone().add(i, 'year').month(8).day(10).format('YYYY-MM-DD'),
-        endDate: wasBornDate.clone().add(i + 1, 'year').month(5).day(20).format('YYYY-MM-DD'),
-        title: `${i - 5}º Primaria`,
-        description: `Curso ${i - 5}º de Educación Primaria.`,
-        category: 'school',
-      })
-    }
-
-    // ESO (12-15 años)
-    for (let i = 12; i <= 15; i++) {
-      events.push({
-        startDate: wasBornDate.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
-        endDate: wasBornDate.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
-        title: `${i - 11}º ESO`,
-        description: `Curso ${i - 11}º de Educación Secundaria Obligatoria (ESO).`,
-        category: 'school',
-      })
-    }
-
-    // Bachillerato (16-17 años)
-    for (let i = 16; i <= 17; i++) {
-      events.push({
-        startDate: wasBornDate.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
-        endDate: wasBornDate.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
-        title: `${i - 15}º Bachillerato`,
-        description: `Curso ${i - 15}º de Bachillerato.`,
-        category: 'school',
-      })
-    }
-
-    // Universidad (18-21 años)
-    for (let i = 18; i <= 21; i++) {
-      events.push({
-        startDate: wasBornDate.clone().add(i, 'year').month(8).day(15).format('YYYY-MM-DD'),
-        endDate: wasBornDate.clone().add(i + 1, 'year').month(5).day(25).format('YYYY-MM-DD'),
-        title: `Curso ${i - 17}º Universidad`,
-        description: `Curso ${i - 17}º de la universidad.`,
-        category: 'school',
-      })
-    }
-
-    // Majority Age, Career, and Retirement
-    const legalAgeDate = wasBornDate.clone().add(18, 'year').format('YYYY-MM-DD')
-    const startWorkDate = wasBornDate.clone().add(22, 'year').month(8).day(1).format('YYYY-MM-DD')
-    const startRetirementDate = wasBornDate.clone().add(65, 'year').format('YYYY-MM-DD')
-
-    events.push(
-      { startDate: legalAgeDate, title: 'Mayoría de Edad', description: 'Has alcanzado la mayoría de edad.', category: 'personal' },
-      {
-        startDate: startWorkDate,
-        endDate: startRetirementDate,
-        title: 'Carrera Profesional',
-        description: 'Periodo de vida laboral activa.',
-        category: 'work',
-      },
-      {
-        startDate: startRetirementDate,
-        title: 'Jubilación',
-        description: 'Comienzo del periodo de jubilación.',
-        category: 'personal',
-      },
-    )
-
-    const birthdays: EventObject[] = Array.from({ length: yearsToLiveForCalc.value + 1 }, (_, i) => ({
-      startDate: wasBornDate.clone().add(i, 'year').format('YYYY-MM-DD'),
-      title: i === 0 ? 'Nacimiento' : `${i}º Cumpleaños`,
-      description: i === 0 ? 'Fecha de nacimiento.' : `Has cumplido ${i} años.`,
-      category: 'personal',
-    }))
-
-    const personalEvents = birthdays.concat(events)
-
-    return personalEvents
+    return events
   }
 
   return {
@@ -199,6 +347,28 @@ export const useEventsStore = defineStore('events-store', () => {
     updateCustomEvent,
     deleteCustomEvent,
 
+    // Period templates state and operations
+    periodTemplates,
+    addPeriodTemplate,
+    updatePeriodTemplate,
+    deletePeriodTemplate,
+
     buildDynamicEvents,
   }
 })
+
+// Add new type for period templates
+interface PeriodTemplate {
+  id: string
+  title: string
+  description: string
+  category: string
+  ageStart: number
+  ageEnd?: number
+  dateStart: { month: number, day: number }
+  dateEnd?: { month: number, day: number }
+  generateYearly?: boolean
+  yearlyTitleFormat?: string
+  yearlyDescriptionFormat?: string
+  yearStartOffset?: number
+}
