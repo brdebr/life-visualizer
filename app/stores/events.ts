@@ -1,4 +1,5 @@
 import type dayjs from '#build/dayjs.imports.mjs'
+import { customEventsData } from '~/data/customEventsData'
 
 export const useEventsStore = defineStore('events-store', () => {
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
@@ -65,7 +66,7 @@ export const useEventsStore = defineStore('events-store', () => {
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
 
-  const customEvents = useLocalStorage<EventObject[]>('customEvents', [])
+  const customEvents = useLocalStorage<EventObject[]>('customEvents', customEventsData)
 
   const addCustomEvent = (event: EventObject) => {
     customEvents.value.push(event)
@@ -80,203 +81,7 @@ export const useEventsStore = defineStore('events-store', () => {
   }
 
   // Period templates for dynamic events
-  const periodTemplates = useLocalStorage<PeriodTemplate[]>('periodTemplates', [
-    {
-      id: 'preschool',
-      title: 'Guardería',
-      description: 'Periodo de guardería infantil.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 1,
-      ageEnd: 3,
-      dateStart: { month: 8, day: 1 },
-      dateEnd: { month: 5, day: 30 },
-    },
-    {
-      id: 'kindergarten',
-      title: 'Educación Infantil',
-      description: 'Periodo de educación infantil.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 3,
-      ageEnd: 5,
-      dateStart: { month: 8, day: 10 },
-      dateEnd: { month: 5, day: 20 },
-      generateYearly: true,
-      yearlyTitleFormat: '%numº Infantil',
-    },
-    {
-      id: 'primary',
-      title: 'Educación Primaria',
-      description: 'Periodo de educación primaria.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 6,
-      ageEnd: 11,
-      dateStart: { month: 8, day: 10 },
-      dateEnd: { month: 5, day: 20 },
-      generateYearly: true,
-      yearlyTitleFormat: '%numº Primaria',
-    },
-    {
-      id: 'secondary',
-      title: 'ESO',
-      description: 'Educación Secundaria Obligatoria.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 12,
-      ageEnd: 15,
-      dateStart: { month: 8, day: 15 },
-      dateEnd: { month: 5, day: 25 },
-      generateYearly: true,
-      yearlyTitleFormat: '%numº ESO',
-    },
-    {
-      id: 'highschool',
-      title: 'Bachillerato',
-      description: 'Periodo de bachillerato.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 16,
-      ageEnd: 17,
-      dateStart: { month: 8, day: 15 },
-      dateEnd: { month: 5, day: 25 },
-      generateYearly: true,
-      yearlyTitleFormat: '%numº Bachillerato',
-    },
-    {
-      id: 'university',
-      title: 'Universidad',
-      description: 'Periodo universitario.',
-      category: 'school',
-      noWeekend: true,
-      ageStart: 18,
-      ageEnd: 21,
-      dateStart: { month: 8, day: 15 },
-      dateEnd: { month: 5, day: 25 },
-      generateYearly: true,
-      yearlyTitleFormat: 'Universidad: Curso %num',
-    },
-    {
-      id: 'majority',
-      title: 'Mayoría de Edad',
-      description: 'Has alcanzado la mayoría de edad.',
-      category: 'personal',
-      ageStart: 18,
-      dateStart: { month: 0, day: 0 }, // Actual birth date
-    },
-    {
-      id: 'career',
-      title: 'Carrera Profesional',
-      description: 'Periodo de vida laboral activa.',
-      category: 'work',
-      noWeekend: true,
-      disabled: true,
-      ageStart: 22,
-      ageEnd: 65,
-      dateStart: { month: 8, day: 1 },
-    },
-    {
-      id: 'retirement',
-      title: 'Jubilación',
-      description: 'Comienzo del periodo de jubilación.',
-      category: 'personal',
-      ageStart: 65,
-      dateStart: { month: 0, day: 0 }, // Actual birth date
-    },
-    {
-      id: 'birthdays',
-      title: 'Cumpleaños',
-      description: 'Celebración de cumpleaños cada año.',
-      category: 'yearly',
-      ageStart: 0,
-      ageEnd: -1,
-      dateStart: { month: 0, day: 0 }, // Actual birth date
-      generateYearly: true,
-      yearlyTitleFormat: '%numº Cumpleaños',
-      yearlyDescriptionFormat: 'Has cumplido %num años.',
-    },
-    {
-      id: 'vacations-summer-kid',
-      title: 'Vacaciones',
-      description: 'Vacaciones de verano',
-      category: 'vacation',
-      ageStart: 4,
-      ageEnd: 11,
-      dateStart: {
-        month: 5,
-        day: 21,
-      },
-      dateEnd: {
-        month: 8,
-        day: 9,
-      },
-      generateYearly: true,
-      yearlyTitleFormat: 'Verano del %year',
-    },
-    {
-      id: 'vacations-summer-teen',
-      title: 'Vacaciones',
-      description: 'Vacaciones de verano',
-      category: 'vacation',
-      ageStart: 12,
-      ageEnd: 18,
-      dateStart: {
-        month: 5,
-        day: 26,
-      },
-      dateEnd: {
-        month: 8,
-        day: 14,
-      },
-      generateYearly: true,
-      yearlyTitleFormat: 'Verano del %year',
-    },
-    {
-      id: 'christmas',
-      title: 'Navidad',
-      description: 'Celebración de la Navidad',
-      category: 'yearly',
-      ageStart: 0,
-      ageEnd: -1,
-      dateStart: { month: 11, day: 25 }, // December 25th (months are 0-indexed)
-      generateYearly: true,
-      yearlyTitleFormat: 'Navidad %year',
-    },
-    {
-      id: 'halloween',
-      title: 'Halloween',
-      description: 'Noche de Halloween',
-      category: 'yearly',
-      ageStart: 0,
-      ageEnd: -1,
-      dateStart: { month: 9, day: 31 }, // October 31st
-      generateYearly: true,
-      yearlyTitleFormat: 'Halloween %year',
-    },
-    {
-      id: 'valentines',
-      title: 'San Valentín',
-      description: 'Día de los enamorados',
-      category: 'yearly',
-      ageStart: 0,
-      ageEnd: -1,
-      dateStart: { month: 1, day: 14 }, // February 14th
-      generateYearly: true,
-      yearlyTitleFormat: 'San Valentín %year',
-    },
-    {
-      id: 'treekings',
-      title: 'Día de Reyes',
-      description: 'Celebración del día de los Reyes Magos',
-      category: 'yearly',
-      ageStart: 0,
-      ageEnd: -1,
-      dateStart: { month: 0, day: 6 }, // January 6th
-      generateYearly: true,
-      yearlyTitleFormat: 'Día de Reyes %year',
-    },
-  ])
+  const periodTemplates = useLocalStorage<PeriodTemplate[]>('periodTemplates', customPeriodsData)
 
   const addPeriodTemplate = (template: PeriodTemplate) => {
     if (!template.id) {
