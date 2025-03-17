@@ -19,6 +19,9 @@
           >{{ tech.label }}</a>
         </li>
       </ul>
+      <p class="text-sm">
+        Version deployed: {{ runtimeConfig.public.gitHash }}
+      </p>
       <UButton
         color="primary"
         size="sm"
@@ -32,6 +35,8 @@
 </template>
 
 <script setup lang="ts">
+const runtimeConfig = useRuntimeConfig()
+
 const techList = [
   {
     label: 'Nuxt 3',

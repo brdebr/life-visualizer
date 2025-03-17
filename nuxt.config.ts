@@ -1,4 +1,7 @@
+import { execSync } from 'child_process'
+
 const isNetlify = () => process.env.NETLIFY === 'true'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 
@@ -38,6 +41,12 @@ export default defineNuxtConfig({
     fallback: 'light',
     classSuffix: '',
     dataValue: 'light',
+  },
+
+  runtimeConfig: {
+    public: {
+      gitHash: execSync('git rev-parse HEAD').toString().trim().slice(0, 6) || 'unknown',
+    },
   },
 
   future: {
