@@ -197,6 +197,6 @@ const handleClick = () => {
   searchStore.indexDataset()
   setTimeout(() => {
     router.push('/calendar')
-  }, 350)
+  }, 150)
 }
 </script>
