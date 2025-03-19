@@ -22,10 +22,11 @@
       <p class="text-sm">
         Version deployed: {{ runtimeConfig.public.gitHash }}
       </p>
+      <p class="text-sm">
+        Commit date: {{ appVersionDate }} | Days since last commit: {{ daysSinceLastCommit }}
+      </p>
       <UButton
-        color="primary"
-        size="sm"
-        variant="outline"
+        color="red"
         @click="clearLocalStorage"
       >
         Clean local storage
@@ -36,6 +37,15 @@
 
 <script setup lang="ts">
 const runtimeConfig = useRuntimeConfig()
+
+const clearLocalStorage = () => {
+  const setupStoreData = window.localStorage.getItem('setup-store')
+  window.localStorage.clear()
+  if (setupStoreData) {
+    window.localStorage.setItem('setup-store', setupStoreData)
+  }
+  window.location.href = '/'
+}
 
 const techList = [
   {
@@ -63,15 +73,8 @@ const techList = [
     url: 'https://vue-tippy.netlify.app/',
   },
 ]
-
-const clearLocalStorage = () => {
-  // preserve only what is in the key 'setup-store'
-  const setupStoreData = window.localStorage.getItem('setup-store')
-  window.localStorage.clear()
-  if (setupStoreData) {
-    window.localStorage.setItem('setup-store', setupStoreData)
-  }
-  // navigate to /
-  window.location.href = '/'
-}
+const dayjs = useDayjs()
+const configs = useRuntimeConfig()
+const appVersionDate = configs.public.gitCommitDate
+const daysSinceLastCommit = dayjs().diff(dayjs(appVersionDate), 'day')
 </script>

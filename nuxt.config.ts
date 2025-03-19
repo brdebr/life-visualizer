@@ -46,6 +46,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       gitHash: execSync('git rev-parse HEAD').toString().trim().slice(0, 6) || 'unknown',
+      gitCommitDate: execSync('git log -1 --format=%cd --date=format:%Y-%m-%d').toString().trim() || 'unknown',
     },
   },
 
