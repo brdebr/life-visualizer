@@ -97,17 +97,24 @@ onMounted(() => {
   if (!canvasRef.value) {
     return
   }
-  const canvas = canvasRef.value
-  const dpr = window.devicePixelRatio || 1
-  // Set style dimensions to computedSizes
-  canvas.style.width = `${computedSizes.value.width}px`
-  canvas.style.height = `${computedSizes.value.height}px`
-  // Set canvas resolution based on devicePixelRatio
-  canvas.width = computedSizes.value.width * dpr
-  canvas.height = computedSizes.value.height * dpr
-  ctx.value = canvas.getContext('2d')
-  // Scale drawing context to counter the increased resolution
-  ctx.value?.scale(dpr, dpr)
+  const viewportWidth = window.innerWidth
+  if (viewportWidth < 1110) {
+    const canvas = canvasRef.value
+    const dpr = window.devicePixelRatio || 1
+    // Set style dimensions to computedSizes
+    canvas.style.width = `${computedSizes.value.width}px`
+    canvas.style.height = `${computedSizes.value.height}px`
+    // Set canvas resolution based on devicePixelRatio
+    canvas.width = computedSizes.value.width * dpr
+    canvas.height = computedSizes.value.height * dpr
+    ctx.value = canvas.getContext('2d')
+    // Scale drawing context to counter the increased resolution
+    ctx.value?.scale(dpr, dpr)
+  }
+  else {
+    ctx.value = canvasRef.value.getContext('2d')
+  }
+
   requestAnimationFrame(draw)
 })
 

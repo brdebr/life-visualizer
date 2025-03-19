@@ -61,7 +61,7 @@
         :key="yearItem.startDate"
         v-bind="{
           year: yearItem.year,
-          zoomLevel: 1.2,
+          zoomLevel: yearCalendarZoom,
           categories: eventsStore.eventCategoriesWithPriority,
           selectEvent: appStore.selectEvent,
           getDayContent: appStore.getDayContent,
@@ -91,6 +91,21 @@ const router = useRouter()
 onBeforeMount(() => {
   if (!appStore.isConfigured) {
     router.push('/setup')
+  }
+})
+const { width } = useWindowSize()
+
+// Use reactive zoom level for the current year calendar
+const yearCalendarZoom = computed(() => {
+  switch (true) {
+    case width.value < 705:
+      return 1.2
+    case width.value < 1120:
+      return 1.6
+    case width.value < 1440:
+      return 1.3
+    default:
+      return 1.1
   }
 })
 
