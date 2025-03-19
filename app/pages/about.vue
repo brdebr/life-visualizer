@@ -25,12 +25,27 @@
       <p class="text-sm">
         Commit date: {{ appVersionDate }} | Days since last commit: {{ daysSinceLastCommit }}
       </p>
+      <UButton
+        color="red"
+        @click="clearLocalStorage"
+      >
+        Clean local storage
+      </UButton>
     </div>
   </UCard>
 </template>
 
 <script setup lang="ts">
 const runtimeConfig = useRuntimeConfig()
+
+const clearLocalStorage = () => {
+  const setupStoreData = window.localStorage.getItem('setup-store')
+  window.localStorage.clear()
+  if (setupStoreData) {
+    window.localStorage.setItem('setup-store', setupStoreData)
+  }
+  window.location.href = '/'
+}
 
 const techList = [
   {

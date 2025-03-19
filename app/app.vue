@@ -46,7 +46,7 @@ const daysSinceLastCommit = dayjs().diff(dayjs(appVersionDate), 'day')
 // Alert the user if the app version has changed
 // And then save the new version and clear the local storage
 if (appVersionSaved.value !== appVersion) {
-  alert('The app has been updated.\nYour local storage will be cleared.\nThe new version was deployed ' + daysSinceLastCommit + ' days ago.')
+  alert(`The app has been updated to the version ${appVersion} - you have ${appVersionSaved.value}.\nYour local storage will be cleared.\nThe new version was deployed ${daysSinceLastCommit} days ago.`)
   const setupStoreData = window.localStorage.getItem('setup-store')
   window.localStorage.clear()
   if (setupStoreData) {
