@@ -4,6 +4,34 @@
       Custom Events
     </h1>
 
+    <!-- Import events section -->
+    <div class="bg-gray-100 p-4 rounded-lg mb-4">
+      <h2 class="text-lg font-semibold mb-4">
+        Import Events from Endpoint
+      </h2>
+      <div class="flex gap-4">
+        <input
+          v-model="importEndpoint"
+          placeholder="Enter API endpoint URL"
+          class="flex-1 px-3 py-2 border rounded-md"
+        >
+        <button
+          class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+          :disabled="isLoading"
+          @click="loadEventsFromEndpoint"
+        >
+          {{ isLoading ? 'Loading...' : 'Load Events' }}
+        </button>
+      </div>
+      <p
+        v-if="importMessage"
+        class="mt-2 text-sm"
+        :class="importError ? 'text-red-500' : 'text-green-500'"
+      >
+        {{ importMessage }}
+      </p>
+    </div>
+
     <!-- Add new event form -->
     <div class="bg-gray-100 p-4 rounded-lg mb-8">
       <h2 class="text-lg font-semibold mb-4">
@@ -152,11 +180,105 @@
 </template>
 
 <script setup lang="ts">
+import type { ImportEventPayload } from '~/stores/appStore'
+
 const dayjs = useDayjs()
 const store = useEventsStore()
 
 const isEditing = ref(false)
 const editingIndex = ref(-1)
+
+// Import events data
+const importEndpoint = ref('')
+const isLoading = ref(false)
+const importMessage = ref('')
+const importError = ref(false)
+
+// Load events from the provided endpoint
+const loadEventsFromEndpoint = async () => {
+  if (!importEndpoint.value) {
+    importError.value = true
+    importMessage.value = 'Please enter an endpoint URL'
+    return
+  }
+
+  try {
+    isLoading.value = true
+    importMessage.value = ''
+    importError.value = false
+
+    const response = await fetch(importEndpoint.value)
+
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`)
+    }
+
+    const data = await response.json() as ImportEventPayload
+
+    if ((!data.events || !Array.isArray(data.events))
+      && (!data.periods || !Array.isArray(data.periods))) {
+      throw new Error('Invalid data format: expected { events: [...] } and/or { periods: [...] }')
+    }
+
+    // Add each event to the store
+    let importedCount = 0
+    let updatedCount = 0
+
+    // Process regular events
+    if (data.events && Array.isArray(data.events)) {
+      for (const event of data.events) {
+        if (event.title && event.startDate) {
+          // Check if event with same title already exists
+          const existingIndex = store.customEvents.findIndex(e => e.title === event.title)
+
+          if (existingIndex !== -1) {
+            // Update existing event
+            store.updateCustomEvent(existingIndex, { ...event })
+            updatedCount++
+          }
+          else {
+            // Add new event
+            store.addCustomEvent({ ...event })
+            importedCount++
+          }
+        }
+      }
+    }
+
+    // Process periods
+    if (data.periods && Array.isArray(data.periods)) {
+      for (const period of data.periods) {
+        if (period.title && period.id) {
+          // Find if a period with the same id already exists
+          const existingPeriodIndex = store.periodTemplates.findIndex(p => p.id === period.id)
+
+          if (existingPeriodIndex !== -1) {
+            // Update the existing period template
+            store.updatePeriodTemplate(period.id, { ...period })
+            updatedCount++
+          }
+          else {
+            // Add as a new period template
+            store.addPeriodTemplate({ ...period })
+            importedCount++
+          }
+        }
+      }
+    }
+
+    importError.value = false
+    importMessage.value = `Successfully imported ${importedCount} items and updated ${updatedCount} existing items`
+    importEndpoint.value = '' // Clear the input
+  }
+  catch (error) {
+    console.error('Error importing events:', error)
+    importError.value = true
+    importMessage.value = `Error: ${error instanceof Error ? error.message : 'Failed to load events'}`
+  }
+  finally {
+    isLoading.value = false
+  }
+}
 
 const newEvent = ref<EventObject>({
   title: '',

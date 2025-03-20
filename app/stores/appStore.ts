@@ -9,6 +9,12 @@ export type EventObject = {
   noWeekend?: boolean // Added noWeekend property
 }
 
+// New type for import events payload
+export type ImportEventPayload = {
+  events?: EventObject[]
+  periods?: PeriodTemplate[]
+}
+
 export type DateEventsObject = {
   dateId: string
   events?: EventObject[]
