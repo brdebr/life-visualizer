@@ -60,11 +60,13 @@
         v-for="(yearItem, index) in appStore.arrayOfLifeYears"
         :key="yearItem.startDate"
         v-bind="{
+          index,
           year: yearItem.year,
           zoomLevel: yearCalendarZoom,
           categories: eventsStore.eventCategoriesWithPriority,
           selectEvent: appStore.selectEvent,
           getDayContent: appStore.getDayContent,
+          wasBornDate: appStore.wasBornForCalc,
         }"
         v-model:rendered="renderedArrays[index]"
       >
