@@ -145,9 +145,19 @@ const weeks = computed(() => {
   const endDateComputed = end.isBefore(maxEnd) ? end : maxEnd
   const weeksCount = endDateComputed.diff(startDateComputed, 'week') + 1
 
-  return Array.from({ length: weeksCount }, (_, weekIndex) => {
+  // Clear the month mapping at the start of recalculation
+  const monthsMapX: Record<string, number> = {}
+
+  const weeksArray = Array.from({ length: weeksCount }, (_, weekIndex) => {
     const startOfWeek = startDateComputed.clone().add(weekIndex, 'week').startOf('isoWeek')
     const endOfWeek = startOfWeek.endOf('isoWeek')
+    const translateX = weekIndex * (spacings.cellSize + spacings.cellMargin)
+
+    // Store the first week of each month in our map
+    const monthKey = startOfWeek.format('YYYY-MM')
+    if (!monthsMapX[monthKey]) {
+      monthsMapX[monthKey] = translateX
+    }
 
     const days = Array.from({ length: 7 }, (__, dayIndex) => {
       const day = startOfWeek.clone().add(dayIndex, 'day').startOf('day')
@@ -168,12 +178,17 @@ const weeks = computed(() => {
     return {
       startDate: startOfWeek,
       index: weekIndex,
-      translateX: weekIndex * (spacings.cellSize + spacings.cellMargin),
+      translateX,
       isFirstWeekOfMonth: days.some(day => day.weekDay === 1),
       label: `${startOfWeek.format('DD/MM/YYYY')} - ${endOfWeek.format('DD/MM/YYYY')}`,
       days: days.filter(day => day.dayId.slice(0, 4) === year.toString()),
     }
   })
+
+  return {
+    monthsMapX,
+    weeksArray,
+  }
 })
 
 const monthsLabels = computed(() => {
@@ -188,7 +203,9 @@ const monthsLabels = computed(() => {
     const labelMonth = month.format('MMM')
     const labelYear = month.format('YY')
     const label = `${labelMonth} ${labelYear}`
-    const weekTranslateX = weeks.value.find(week => week.startDate.isSame(month, 'month'))?.translateX || 0
+
+    const monthKey = month.format('YYYY-MM')
+    const weekTranslateX = weeks.value.monthsMapX[monthKey] || 0
     const translateX = weekTranslateX + (i * (spacings.cellSize + spacings.cellMargin + spacings.space))
 
     return {
@@ -325,7 +342,7 @@ const drawDayCells = () => {
 
   const today = dayjs().format('YYYY-MM-DD')
 
-  weeks.value.forEach((week) => {
+  weeks.value.weeksArray.forEach((week) => {
     week.days.forEach((day) => {
       if (!ctx.value) return
       const isWeekendValue = weekendDays.includes(day.weekDay) ? 1 : 0
@@ -367,7 +384,7 @@ const getDayFromPosition = (x: number, y: number): { dayId: string } | null => {
   x = x / scale
   y = y / scale
 
-  for (const week of weeks.value) {
+  for (const week of weeks.value.weeksArray) {
     const weekX = spacings.spaceLeft + week.translateX
 
     for (const day of week.days) {
