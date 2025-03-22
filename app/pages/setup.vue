@@ -185,6 +185,9 @@ const percentOfLife = computed(() => {
 
 const handleClick = () => {
   if (!bornDay.value || !bornMonth.value || !bornYear.value || !expectedYearsToLive.value) return
+
+  console.time('Total Setup Process')
+
   const date = `${bornYear.value}-${bornMonth.value}-${bornDay.value}`
   appStore.wasBornDate = date
   appStore.yearsToLive = expectedYearsToLive.value
@@ -193,8 +196,14 @@ const handleClick = () => {
   savedYearsToLive.value = expectedYearsToLive.value
 
   loading.value = true
+
+  console.time('App Store Calculate')
   appStore.calculate()
+
+  console.time('Search Index')
   searchStore.indexDataset()
+  console.timeEnd('Search Index')
+
   setTimeout(() => {
     router.push('/calendar')
   }, 150)

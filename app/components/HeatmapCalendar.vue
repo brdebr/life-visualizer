@@ -41,6 +41,8 @@ export type HeatmapProps = {
   height?: number
   zoomLevel?: number
   showEvents?: boolean
+  wasBornDate?: string
+  index?: number
   categories?: EventCategoryWithPriority[]
   selectEvent: (dateId: string) => void
   getDayContent: (dateId: string) => DateEventsObject
@@ -93,6 +95,7 @@ const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
 const ctx = ref<CanvasRenderingContext2D | null>(null)
 const hoveredDayId = ref<string | null>(null)
 
+const rendered = defineModel<boolean>('rendered', { default: false })
 onMounted(() => {
   if (!canvasRef.value) {
     return
@@ -115,7 +118,7 @@ onMounted(() => {
     ctx.value = canvasRef.value.getContext('2d')
   }
 
-  requestAnimationFrame(draw)
+  requestAnimationFrame(() => draw(true))
 })
 
 // Watch for changes that require redrawing
@@ -126,7 +129,7 @@ watch(() => [
   hoveredDayId.value,
   isDark.value,
 ], () => {
-  requestAnimationFrame(draw)
+  requestAnimationFrame(() => draw())
 })
 
 const computedSizes = computed(() => {
@@ -250,8 +253,13 @@ const adjustColorLuminosity = (color: string, amount: number): string => {
 const getDayColor = (dateEventObject: DateEventsObject | null, isInThePast: boolean): string => {
   const defaultColor = isInThePast ? cellColors.pastEmpty : adjustColorLuminosity(cellColors.pastEmpty, 0.6)
   const events = dateEventObject?.events
+  const isBeforeBorn = props.index === 0 && props.wasBornDate && dayjs(dateEventObject?.dateId).isBefore(props.wasBornDate)
+  const beforeBornLightness = 0.78
 
   if (!events?.length || props.showEvents === false) {
+    if (isBeforeBorn) {
+      return adjustColorLuminosity(cellColors.pastEmpty, beforeBornLightness)
+    }
     return defaultColor
   }
 
@@ -281,12 +289,17 @@ const getDayColor = (dateEventObject: DateEventsObject | null, isInThePast: bool
 
   // Apply luminosity adjustment to future cells
   const categoryColor = category.color
-  const categoryColorForLongEvent = isLongEvent ? adjustColorLuminosity(categoryColor, 0.4) : categoryColor
-  return isInThePast ? categoryColorForLongEvent : adjustColorLuminosity(categoryColor, 0.7)
+  const categoryColorConsideringLongEvent = isLongEvent ? adjustColorLuminosity(categoryColor, 0.4) : categoryColor
+
+  if (isBeforeBorn) {
+    return adjustColorLuminosity(categoryColorConsideringLongEvent, beforeBornLightness)
+  }
+
+  return isInThePast ? categoryColorConsideringLongEvent : adjustColorLuminosity(categoryColor, 0.7)
 }
 
 // Canvas drawing functions
-const draw = () => {
+const draw = (isFirst?: boolean) => {
   if (!ctx.value || !canvasRef.value) return
 
   const canvas = canvasRef.value
@@ -303,6 +316,9 @@ const draw = () => {
 
   if (props.zoomLevel !== 1) {
     ctx.value.restore()
+  }
+  if (isFirst) {
+    rendered.value = true
   }
 }
 
