@@ -93,6 +93,7 @@ const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef')
 const ctx = ref<CanvasRenderingContext2D | null>(null)
 const hoveredDayId = ref<string | null>(null)
 
+const rendered = defineModel<boolean>('rendered', { default: false })
 onMounted(() => {
   if (!canvasRef.value) {
     return
@@ -115,7 +116,7 @@ onMounted(() => {
     ctx.value = canvasRef.value.getContext('2d')
   }
 
-  requestAnimationFrame(draw)
+  requestAnimationFrame(() => draw(true))
 })
 
 // Watch for changes that require redrawing
@@ -126,7 +127,7 @@ watch(() => [
   hoveredDayId.value,
   isDark.value,
 ], () => {
-  requestAnimationFrame(draw)
+  requestAnimationFrame(() => draw())
 })
 
 const computedSizes = computed(() => {
@@ -286,7 +287,7 @@ const getDayColor = (dateEventObject: DateEventsObject | null, isInThePast: bool
 }
 
 // Canvas drawing functions
-const draw = () => {
+const draw = (isFirst?: boolean) => {
   if (!ctx.value || !canvasRef.value) return
 
   const canvas = canvasRef.value
@@ -303,6 +304,9 @@ const draw = () => {
 
   if (props.zoomLevel !== 1) {
     ctx.value.restore()
+  }
+  if (isFirst) {
+    rendered.value = true
   }
 }
 

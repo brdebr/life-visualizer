@@ -182,7 +182,7 @@ export const useAppStore = defineStore('app-store', () => {
         finalRecord[currentDateStr] = dateEvents
       }
     })
-
+    console.timeEnd('App Store Calculate')
     return finalRecord
   })
 

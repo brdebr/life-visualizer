@@ -57,7 +57,7 @@
       class="flex flex-wrap justify-center gap-2 max-w-[100vw]"
     >
       <HeatmapCalendar
-        v-for="yearItem in appStore.arrayOfLifeYears"
+        v-for="(yearItem, index) in appStore.arrayOfLifeYears"
         :key="yearItem.startDate"
         v-bind="{
           year: yearItem.year,
@@ -66,6 +66,7 @@
           selectEvent: appStore.selectEvent,
           getDayContent: appStore.getDayContent,
         }"
+        v-model:rendered="renderedArrays[index]"
       >
         <template #header>
           <span
@@ -94,6 +95,18 @@ onBeforeMount(() => {
   }
 })
 const { width } = useWindowSize()
+const renderedArrays = ref<Array<boolean>>([])
+
+const renderedCount = computed(() => renderedArrays.value.filter(item => item).length)
+watchEffect(() => {
+  if (renderedCount.value === appStore.arrayOfLifeYears.length) {
+    console.timeEnd('Total Setup Process')
+  }
+})
+
+// onMounted(() => {
+//   console.timeEnd('Total Setup Process')
+// })
 
 // Use reactive zoom level for the current year calendar
 const yearCalendarZoom = computed(() => {
