@@ -230,23 +230,15 @@ const adjustColorLuminosity = (color: string, amount: number): string => {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
-const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): string => {
+const getDayColor = (dateEventObject: DateEventsObject | null, isInThePast: boolean): string => {
   const defaultColor = isInThePast ? cellColors.pastEmpty : adjustColorLuminosity(cellColors.pastEmpty, 0.6)
+  const events = dateEventObject?.events
 
-  if (!event?.events?.length || props.showEvents === false) {
+  if (!events?.length || props.showEvents === false) {
     return defaultColor
   }
 
-  const visibleEvents = event.events.filter((e) => {
-    if (!e.category || !categoryPriorityMap.value[e.category]) return false
-    return categoryPriorityMap.value[e.category]?.visible
-  })
-
-  if (!visibleEvents.length) {
-    return defaultColor
-  }
-
-  const topEvent = visibleEvents.reduce((highest, current) => {
+  const topEvent = events.reduce((highest, current) => {
     if (!current?.category || !highest?.category) {
       return highest
     }
@@ -257,14 +249,14 @@ const getDayColor = (event: DateEventsObject | null, isInThePast: boolean): stri
     }
 
     return currentCat.priority > highestCat.priority ? current : highest
-  }, visibleEvents[0])
+  }, events[0])
 
   if (!topEvent?.category) {
     return defaultColor
   }
 
   const category = categoryPriorityMap.value[topEvent.category]
-  if (!category?.visible) {
+  if (!category) {
     return defaultColor
   }
 
