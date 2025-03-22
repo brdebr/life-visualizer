@@ -37,11 +37,11 @@ useSeoMeta({
 
 const dayjs = useDayjs()
 
-const appVersionSaved = useLocalStorage('appVersion', 'unknown')
 const configs = useRuntimeConfig()
 const appVersion = configs.public.gitHash
 const appVersionDate = configs.public.gitCommitDate
 const daysSinceLastCommit = dayjs().diff(dayjs(appVersionDate), 'day')
+const appVersionSaved = useLocalStorage('appVersion', configs.public.gitHash)
 
 // Alert the user if the app version has changed
 // And then save the new version and clear the local storage

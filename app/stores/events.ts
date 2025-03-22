@@ -1,5 +1,21 @@
 import type dayjs from '#build/dayjs.imports.mjs'
-import { customEventsData } from '~/data/customEventsData'
+
+export type PeriodTemplate = {
+  id: string
+  title: string
+  description: string
+  category: string
+  ageStart: number
+  ageEnd?: number
+  dateStart: { month: number, day: number }
+  dateEnd?: { month: number, day: number }
+  generateYearly?: boolean
+  yearlyTitleFormat?: string
+  noWeekend?: boolean
+  yearlyDescriptionFormat?: string
+  yearStartOffset?: number
+  disabled?: boolean
+}
 
 export const useEventsStore = defineStore('events-store', () => {
   const eventCategories = useLocalStorage<EventCategory[]>('eventCategories', [
@@ -8,6 +24,7 @@ export const useEventsStore = defineStore('events-store', () => {
     { title: 'work', color: '#e3ddc0', visible: true },
     { title: 'personal', color: '#8ee1db', visible: true },
     { title: 'yearly', color: '#aacb62', visible: true },
+    { title: 'education', color: '#9ab6d5', visible: true },
     { title: 'school', color: '#9ab6d5', visible: true },
     { title: 'default', color: '#e5e7eb', visible: true, default: true },
   ])
@@ -66,7 +83,7 @@ export const useEventsStore = defineStore('events-store', () => {
       || eventCategories.value.find(cat => cat.title === 'default')!
   }
 
-  const customEvents = useLocalStorage<EventObject[]>('customEvents', customEventsData)
+  const customEvents = useLocalStorage<EventObject[]>('customEvents', [])
 
   const addCustomEvent = (event: EventObject) => {
     customEvents.value.push(event)
@@ -258,21 +275,3 @@ export const useEventsStore = defineStore('events-store', () => {
     buildDynamicEvents,
   }
 })
-
-// Add new type for period templates
-export type PeriodTemplate = {
-  id: string
-  title: string
-  description: string
-  category: string
-  ageStart: number
-  ageEnd?: number
-  dateStart: { month: number, day: number }
-  dateEnd?: { month: number, day: number }
-  generateYearly?: boolean
-  yearlyTitleFormat?: string
-  noWeekend?: boolean // Added noWeekend property
-  yearlyDescriptionFormat?: string
-  yearStartOffset?: number
-  disabled?: boolean
-}

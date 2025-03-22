@@ -9,6 +9,12 @@ export type EventObject = {
   noWeekend?: boolean // Added noWeekend property
 }
 
+// New type for import events payload
+export type ImportEventPayload = {
+  events?: EventObject[]
+  periods?: PeriodTemplate[]
+}
+
 export type DateEventsObject = {
   dateId: string
   events?: EventObject[]
@@ -157,28 +163,23 @@ export const useAppStore = defineStore('app-store', () => {
 
       if (!el.startDate) return
 
-      // Process all dates for this event (start date to end date)
       const start = dayjs(el.startDate)
       const end = el.endDate ? dayjs(el.endDate) : start
-      let current = start.clone()
 
-      // Add event to each day in the span until reaching the end date
-      while (current.isSameOrBefore(end, 'day')) {
+      const daysDiff = end.diff(start, 'day') + 1
+      const weekendDays = [0, 6]
+
+      for (let i = 0; i < daysDiff; i++) {
+        const current = start.clone().add(i, 'day')
+        const isWeekend = weekendDays.includes(current.day())
+        if (el.noWeekend && isWeekend) continue
+
         const currentDateStr = current.format('YYYY-MM-DD')
-
-        // Check for weekend only for the current day being processed
-        const isWeekend = [0, 6].includes(current.day()) // 0 is Sunday, 6 is Saturday
-
-        // Skip this specific day if it's a weekend and noWeekend is true
-        if (!(el.noWeekend && isWeekend)) {
-          const dateEvents = finalRecord[currentDateStr] || []
-          dateEvents.push({
-            ...el,
-          })
-          finalRecord[currentDateStr] = dateEvents
-        }
-
-        current = current.add(1, 'day')
+        const dateEvents = finalRecord[currentDateStr] || []
+        dateEvents.push({
+          ...el,
+        })
+        finalRecord[currentDateStr] = dateEvents
       }
     })
 
