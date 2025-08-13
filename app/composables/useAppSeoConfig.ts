@@ -4,11 +4,14 @@ const THUMBNAIL_URL = '/thumbnail.jpg'
 export const useAppSeoConfig = (faviconEmoji = '⌛') => {
   const appTitle = 'Life Visualizer'
   const appDescription = 'Little project to visualize your whole life like a Github contributions heatmap'
+
+  const faviconSvgHref = buildSvgFavicon(isDev() ? '⚠️' : faviconEmoji)
+
   const faviconLink = {
     rel: 'icon',
-    href: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2296%22>' + faviconEmoji + '</text></svg>',
+    href: isDev() ? faviconSvgHref : '/favicon.svg',
   }
-  const titleTemplate = (pageTitle: string | undefined) => pageTitle ? `${appTitle} - ${pageTitle}` : appTitle
+  const titleTemplate = (pageTitle?: string) => pageTitle ? `${appTitle} - ${pageTitle}` : appTitle
   const imageUrl = (process.env.URL || '') + THUMBNAIL_URL
 
   const seoMeta = {
