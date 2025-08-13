@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "engines": {
-    "node": "20.11.x",
-    "npm": "10.5.x"
+    "node": "20",
+    "npm": "10"
   },
   "scripts": {
     "build": "nuxt build",
@@ -23,5 +23,8 @@
     "typescript": "^5.9.2",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "sass": "^1.90.0"
   }
 }
