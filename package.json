@@ -10,12 +10,15 @@
     "clean": "nuxt cleanup",
     "types": "nuxt typecheck",
     "lintf": "eslint . --fix",
-    "prod": "nuxt generate && nuxt preview",
-    "prod:all": "npm run lintf && npm run types && npm run build && npm run prod",
+    "prod": "nuxt build && nuxt generate && nuxt preview",
+    "prod:all": "npm run lintf && npm run types && npm run prod",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^2.14.2",
+    "@iconify-json/fluent": "^1.2.40",
+    "@iconify-json/heroicons": "^1.2.3",
+    "@iconify-json/material-symbols": "^1.2.60",
+    "@nuxt/ui": "^2.22.3",
     "@nuxtjs/tailwindcss": "^6.11.4",
     "@pinia/nuxt": "^0.5.1",
     "@vueuse/nuxt": "^10.9.0",
@@ -31,7 +34,7 @@
     "@nuxt/eslint": "^1.2.0",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "dayjs-nuxt": "^2.1.9",
-    "nuxt": "^3.16.0",
+    "nuxt": "^3.16.1",
     "sass": "^1.72.0",
     "vite-plugin-eslint2": "^5.0.3"
   }
