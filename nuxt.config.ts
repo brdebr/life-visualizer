@@ -91,4 +91,11 @@ export default defineNuxtConfig({
     },
     checker: true,
   },
+  icon: {
+    provider: 'none',
+    fallbackToApi: false,
+    clientBundle: {
+      scan: true,
+    },
+  },
 })
